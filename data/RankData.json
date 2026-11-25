@@ -1,0 +1,258 @@
+{
+ "Journey": [
+  {
+   "at": 3,
+   "kind": "diamonds",
+   "text": "250 Diamonds",
+   "amount": 250
+  },
+  {
+   "at": 5,
+   "kind": "title",
+   "text": "Season Rookie"
+  },
+  {
+   "at": 10,
+   "kind": "diamonds",
+   "text": "400 Diamonds",
+   "amount": 400
+  },
+  {
+   "at": 15,
+   "kind": "diamonds",
+   "text": "400 Diamonds",
+   "amount": 400
+  },
+  {
+   "at": 20,
+   "kind": "title",
+   "text": "Veteran Tactician"
+  },
+  {
+   "at": 30,
+   "kind": "diamonds",
+   "text": "150 Diamonds",
+   "amount": 150
+  },
+  {
+   "at": 40,
+   "kind": "diamonds",
+   "text": "250 Diamonds",
+   "amount": 250
+  },
+  {
+   "at": 50,
+   "kind": "title",
+   "text": "Season Conqueror"
+  }
+ ],
+ "ProtectedMatches": 5,
+ "DivisionSize": 200,
+ "Tiers": [
+  {
+   "min": 0,
+   "name": "Bronze",
+   "color": [
+    176,
+    112,
+    64
+   ],
+   "title": "Academy Cadet",
+   "divisions": true
+  },
+  {
+   "min": 600,
+   "name": "Silver",
+   "color": [
+    196,
+    204,
+    214
+   ],
+   "title": "Rising Apprentice",
+   "divisions": true
+  },
+  {
+   "min": 1200,
+   "name": "Gold",
+   "color": [
+    236,
+    196,
+    92
+   ],
+   "title": "Elite Tactician",
+   "divisions": true
+  },
+  {
+   "min": 1800,
+   "name": "Platinum",
+   "color": [
+    96,
+    220,
+    214
+   ],
+   "title": "Arcane Strategist",
+   "divisions": true
+  },
+  {
+   "min": 2400,
+   "name": "Diamond",
+   "color": [
+    110,
+    170,
+    255
+   ],
+   "title": "Awakened Hero",
+   "divisions": true
+  },
+  {
+   "min": 3000,
+   "name": "Master",
+   "color": [
+    190,
+    110,
+    255
+   ],
+   "title": "Anime Champion",
+   "divisions": false
+  },
+  {
+   "min": 3600,
+   "name": "Grandmaster",
+   "color": [
+    255,
+    95,
+    95
+   ],
+   "title": "Legendary Emperor",
+   "divisions": false
+  },
+  {
+   "min": 4200,
+   "animated": true,
+   "name": "Mythic",
+   "color": [
+    255,
+    200,
+    120
+   ],
+   "title": "Mythic Sovereign",
+   "divisions": false
+  }
+ ],
+ "Placement": [
+  45,
+  30,
+  20,
+  10,
+  -5,
+  -15,
+  -25,
+  -35
+ ],
+ "MaxLoss": 35,
+ "TierRewards": [
+  [
+   {
+    "kind": "title",
+    "text": "Academy Cadet"
+   }
+  ],
+  [
+   {
+    "kind": "title",
+    "text": "Rising Apprentice"
+   },
+   {
+    "kind": "diamonds",
+    "text": "250 Diamonds",
+    "amount": 250
+   }
+  ],
+  [
+   {
+    "kind": "title",
+    "text": "Elite Tactician"
+   },
+   {
+    "kind": "diamonds",
+    "text": "400 Diamonds",
+    "amount": 400
+   }
+  ],
+  [
+   {
+    "kind": "title",
+    "text": "Arcane Strategist"
+   },
+   {
+    "kind": "diamonds",
+    "text": "400 Diamonds",
+    "amount": 400
+   }
+  ],
+  [
+   {
+    "kind": "title",
+    "text": "Awakened Hero"
+   },
+   {
+    "kind": "diamonds",
+    "text": "150 Diamonds",
+    "amount": 150
+   },
+   {
+    "kind": "diamonds",
+    "text": "250 Diamonds",
+    "amount": 250
+   }
+  ],
+  [
+   {
+    "kind": "title",
+    "text": "Anime Champion"
+   },
+   {
+    "kind": "diamonds",
+    "text": "250 Diamonds",
+    "amount": 250
+   },
+   {
+    "kind": "diamonds",
+    "text": "400 Diamonds",
+    "amount": 400
+   }
+  ],
+  [
+   {
+    "kind": "title",
+    "text": "Legendary Emperor"
+   },
+   {
+    "kind": "diamonds",
+    "text": "400 Diamonds",
+    "amount": 400
+   },
+   {
+    "kind": "diamonds",
+    "text": "150 Diamonds",
+    "amount": 150
+   }
+  ],
+  [
+   {
+    "kind": "title",
+    "text": "Mythic Sovereign"
+   },
+   {
+    "kind": "diamonds",
+    "text": "250 Diamonds",
+    "amount": 250
+   },
+   {
+    "kind": "diamonds",
+    "text": "250 Diamonds",
+    "amount": 250
+   }
+  ]
+ ]
+}

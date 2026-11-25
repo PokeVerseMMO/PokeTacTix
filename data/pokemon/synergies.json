@@ -1,0 +1,381 @@
+{
+ "types": {
+  "Normal": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "hpPct": 0.06,
+     "atkPct": 0.04
+    },
+    {
+     "hpPct": 0.12,
+     "atkPct": 0.08
+    },
+    {
+     "hpPct": 0.2,
+     "atkPct": 0.12
+    }
+   ],
+   "team": false
+  },
+  "Fire": {
+   "thresholds": [
+    2,
+    4,
+    6,
+    8
+   ],
+   "effects": [
+    {
+     "atkPct": 0.1
+    },
+    {
+     "atkPct": 0.2
+    },
+    {
+     "atkPct": 0.35
+    },
+    {
+     "atkPct": 0.55
+    }
+   ],
+   "team": false
+  },
+  "Water": {
+   "thresholds": [
+    2,
+    4,
+    6,
+    8
+   ],
+   "effects": [
+    {
+     "hpPct": 0.08
+    },
+    {
+     "hpPct": 0.16,
+     "healPower": 0.1
+    },
+    {
+     "hpPct": 0.26,
+     "healPower": 0.2
+    },
+    {
+     "hpPct": 0.4,
+     "healPower": 0.3
+    }
+   ],
+   "team": false
+  },
+  "Electric": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "speedPct": 0.12
+    },
+    {
+     "speedPct": 0.25
+    },
+    {
+     "speedPct": 0.45
+    }
+   ],
+   "team": false
+  },
+  "Grass": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "lifesteal": 0.06
+    },
+    {
+     "lifesteal": 0.12
+    },
+    {
+     "lifesteal": 0.2
+    }
+   ],
+   "team": false
+  },
+  "Ice": {
+   "thresholds": [
+    2,
+    3,
+    4
+   ],
+   "effects": [
+    {
+     "mr": 15
+    },
+    {
+     "mr": 30,
+     "power": 0.1
+    },
+    {
+     "mr": 50,
+     "power": 0.25
+    }
+   ],
+   "team": false
+  },
+  "Fighting": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "atkPct": 0.08,
+     "pen": 0.05
+    },
+    {
+     "atkPct": 0.16,
+     "pen": 0.1
+    },
+    {
+     "atkPct": 0.3,
+     "pen": 0.2
+    }
+   ],
+   "team": false
+  },
+  "Poison": {
+   "thresholds": [
+    2,
+    4
+   ],
+   "effects": [
+    {
+     "pen": 0.08
+    },
+    {
+     "pen": 0.18,
+     "atkPct": 0.08
+    }
+   ],
+   "team": false
+  },
+  "Ground": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "armor": 10
+    },
+    {
+     "armor": 20
+    },
+    {
+     "armor": 35,
+     "hpPct": 0.08
+    }
+   ],
+   "team": false
+  },
+  "Flying": {
+   "thresholds": [
+    2,
+    3,
+    4
+   ],
+   "effects": [
+    {
+     "speedPct": 0.08
+    },
+    {
+     "speedPct": 0.16
+    },
+    {
+     "speedPct": 0.28,
+     "crit": 0.08
+    }
+   ],
+   "team": false
+  },
+  "Psychic": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "power": 0.15
+    },
+    {
+     "power": 0.3
+    },
+    {
+     "power": 0.55
+    }
+   ],
+   "team": false
+  },
+  "Bug": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "atkPct": 0.06
+    },
+    {
+     "atkPct": 0.12,
+     "speedPct": 0.06
+    },
+    {
+     "atkPct": 0.22,
+     "speedPct": 0.12
+    }
+   ],
+   "team": false
+  },
+  "Rock": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "armor": 12,
+     "hpPct": 0.05
+    },
+    {
+     "armor": 25,
+     "hpPct": 0.1
+    },
+    {
+     "armor": 40,
+     "hpPct": 0.15
+    }
+   ],
+   "team": false
+  },
+  "Ghost": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "critDmg": 0.15,
+     "startMana": 10
+    },
+    {
+     "critDmg": 0.3,
+     "startMana": 20
+    },
+    {
+     "critDmg": 0.5,
+     "startMana": 30
+    }
+   ],
+   "team": false
+  },
+  "Dragon": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "dmgMul": 0.1
+    },
+    {
+     "dmgMul": 0.22
+    },
+    {
+     "dmgMul": 0.4
+    }
+   ],
+   "team": false
+  },
+  "Dark": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "crit": 0.1
+    },
+    {
+     "crit": 0.2
+    },
+    {
+     "crit": 0.35
+    }
+   ],
+   "team": false
+  },
+  "Steel": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "armor": 15,
+     "mr": 15,
+     "shield": 0.08
+    },
+    {
+     "armor": 30,
+     "mr": 30,
+     "shield": 0.14
+    },
+    {
+     "armor": 50,
+     "mr": 50,
+     "shield": 0.22
+    }
+   ],
+   "team": false
+  },
+  "Fairy": {
+   "thresholds": [
+    2,
+    4,
+    6
+   ],
+   "effects": [
+    {
+     "mr": 10,
+     "healPower": 0.1
+    },
+    {
+     "mr": 20,
+     "healPower": 0.2
+    },
+    {
+     "mr": 30,
+     "healPower": 0.3
+    }
+   ],
+   "team": true
+  }
+ }
+}

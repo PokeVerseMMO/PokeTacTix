@@ -1,0 +1,139 @@
+{
+ "statuses": {
+  "burn": {
+   "label": "Burn",
+   "duration": 4,
+   "dotPct": 0.03,
+   "stack": "refresh",
+   "color": "#ff7a3a"
+  },
+  "poison": {
+   "label": "Poison",
+   "duration": 5,
+   "dotPct": 0.012,
+   "stack": "stack",
+   "maxStacks": 5,
+   "color": "#b060d0"
+  },
+  "paralysis": {
+   "label": "Paralysis",
+   "duration": 4,
+   "speed": -0.3,
+   "skipChance": 0.2,
+   "stack": "refresh",
+   "color": "#f5d63a"
+  },
+  "freeze": {
+   "label": "Freeze",
+   "duration": 1.5,
+   "hardCc": true,
+   "stack": "refresh",
+   "color": "#8fe0ff"
+  },
+  "sleep": {
+   "label": "Sleep",
+   "duration": 2.5,
+   "hardCc": true,
+   "wakeOnDamage": true,
+   "stack": "refresh",
+   "color": "#9aa3c0"
+  },
+  "confusion": {
+   "label": "Confusion",
+   "duration": 3,
+   "selfChance": 0.3,
+   "stack": "refresh",
+   "color": "#ff8ad0"
+  },
+  "flinch": {
+   "label": "Flinch",
+   "duration": 0.6,
+   "hardCc": true,
+   "stack": "refresh",
+   "color": "#e8e0b0"
+  },
+  "slow": {
+   "label": "Slow",
+   "duration": 3,
+   "speed": -0.25,
+   "stack": "refresh",
+   "color": "#7aa8ff"
+  }
+ },
+ "ccImmunitySeconds": 4,
+ "onHit": {
+  "Fire": [
+   "burn",
+   0.15
+  ],
+  "Electric": [
+   "paralysis",
+   0.15
+  ],
+  "Ice": [
+   "freeze",
+   0.1
+  ],
+  "Poison": [
+   "poison",
+   0.25
+  ],
+  "Psychic": [
+   "confusion",
+   0.12
+  ],
+  "Fighting": [
+   "flinch",
+   0.12
+  ],
+  "Water": [
+   "slow",
+   0.15
+  ],
+  "Grass": [
+   "sleep",
+   0.07
+  ],
+  "Bug": [
+   "slow",
+   0.15
+  ],
+  "Ground": [
+   "slow",
+   0.1
+  ],
+  "Rock": [
+   "flinch",
+   0.08
+  ],
+  "Dark": [
+   "flinch",
+   0.1
+  ],
+  "Fairy": [
+   "sleep",
+   0.06
+  ],
+  "Ghost": [
+   "confusion",
+   0.1
+  ]
+ },
+ "synergyScale": 0.35,
+ "abilityDefault": {
+  "Fire": "burn",
+  "Water": "slow",
+  "Electric": "paralysis",
+  "Grass": "poison",
+  "Ice": "freeze",
+  "Poison": "poison",
+  "Psychic": "confusion",
+  "Fighting": "flinch",
+  "Ghost": "confusion",
+  "Bug": "slow",
+  "Ground": "slow",
+  "Rock": "flinch",
+  "Dark": "flinch",
+  "Fairy": "sleep"
+ }
+}

@@ -1,0 +1,29 @@
+// Browser regression test for the 3D client. Needs a running server (PORT=8096 PREP_SECONDS=60 TEST_START_ITEMS=cloud,odm node server/server.ts).
+import { chromium } from "/opt/npm-tools/node_modules/playwright/index.mjs";
+const URL = process.env.URL || "http://localhost:8096/";
+const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+const errs = []; p.on("pageerror", (e) => errs.push(e.stack || String(e))); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
+const ok = (c, msg) => { if (!c) { console.error("FAIL:", msg); process.exitCode = 1; } else console.log("ok:", msg); };
+await p.goto(URL); await p.waitForSelector(".cmd"); await p.waitForTimeout(1500);
+await p.click("#solo"); await p.waitForSelector("#shop .card:not(.empty)");
+const gold0 = +(await p.textContent("#gold"));
+for (let i = 1; i <= 3; i++) { await p.click(`#shop .card:nth-child(${i})`); await p.waitForTimeout(200); }
+await p.waitForTimeout(700);
+ok(+(await p.textContent("#gold")) < gold0, "buying spends gold");
+await p.mouse.move(405, 420); await p.mouse.down(); await p.mouse.move(640, 300, { steps: 12 });
+ok(await p.isVisible("#sellZone"), "sell zone appears while dragging"); await p.mouse.up(); await p.waitForTimeout(500);
+ok((await p.textContent("#fielded")).startsWith("1/"), "drag from bench to board fields a unit");
+await p.mouse.click(650, 250); await p.waitForTimeout(500);
+ok(!(await p.getAttribute("#inspector", "class")).includes("closed"), "clicking a unit opens the inspector");
+await p.screenshot({ path: "shots/ui3d-inspector.png" });
+await p.click("#inspector .sell"); await p.waitForTimeout(500);
+ok((await p.textContent("#fielded")).startsWith("0/"), "sell button sells the unit");
+await p.click("#reroll"); await p.waitForTimeout(400);
+ok(true, "reroll clicked");
+await p.click("#bag .item:nth-child(1)"); await p.mouse.click(310, 410); await p.waitForTimeout(400);
+await p.click("#ready"); await p.waitForTimeout(7000);
+await p.screenshot({ path: "shots/ui3d-combat.png" });
+ok(/Round 2/.test(await p.textContent("#round")) || /Combat|Preparation/.test(await p.textContent("#phase")), "round progresses");
+ok(errs.length === 0, "no browser errors " + JSON.stringify(errs.slice(0, 3)));
+await b.close();

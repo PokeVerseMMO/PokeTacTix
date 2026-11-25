@@ -1,0 +1,535 @@
+[
+ {
+  "role": "Guardian",
+  "name": "Panda",
+  "faction": "JJK",
+  "id": "panda",
+  "tier": 2,
+  "stats": {
+   "maxMana": 90,
+   "mr": 25,
+   "health": 950,
+   "speed": 0.65,
+   "startMana": 30,
+   "armor": 35,
+   "range": 1,
+   "attack": 50
+  },
+  "ability": {
+   "shield": 0.18,
+   "text": "Shield self for 18% maximum HP and gain 15% damage reduction for 4s. Strike for 160% AD physical damage; adjacent enemies take half damage.",
+   "reduction": 0.15,
+   "impact": 0.44,
+   "name": "Gorilla Guard",
+   "splash": 0.5,
+   "ad": 1.6,
+   "buffDuration": 4,
+   "duration": 1.15
+  }
+ },
+ {
+  "role": "Assassin",
+  "name": "Kento Nanami",
+  "faction": "JJK",
+  "id": "nanami",
+  "tier": 3,
+  "stats": {
+   "maxMana": 70,
+   "mr": 25,
+   "health": 780,
+   "speed": 0.85,
+   "startMana": 20,
+   "armor": 25,
+   "range": 1,
+   "attack": 75
+  },
+  "ability": {
+   "repeatImpact": 0.5,
+   "text": "Strike for 200% AD physical damage and mark until cleansed or defeated. Nanami deals 30% more direct damage to marked targets. Recasts deal 300% AD physical damage and stun for 0.5s.",
+   "impact": 0.46,
+   "repeatAd": 3,
+   "name": "Ratio Technique",
+   "mark": 0.3,
+   "ad": 2,
+   "stun": 0.5,
+   "duration": 1.1,
+   "repeatDuration": 1.2
+  }
+ },
+ {
+  "role": "Support",
+  "name": "Shoko Ieiri",
+  "faction": "JJK",
+  "id": "shoko",
+  "tier": 2,
+  "stats": {
+   "maxMana": 80,
+   "mr": 30,
+   "health": 650,
+   "speed": 0.7,
+   "startMana": 30,
+   "armor": 15,
+   "range": 3,
+   "attack": 40
+  },
+  "ability": {
+   "ad": 0.8,
+   "base": 160,
+   "name": "Reverse Cursed Technique",
+   "text": "Heal the lowest-HP% ally for (160S + 80% AD), cleanse one removable debuff, and grant 10% damage reduction for 3s.",
+   "buffDuration": 3,
+   "duration": 1.5,
+   "reduction": 0.1,
+   "impact": 0.58
+  }
+ },
+ {
+  "role": "Assassin",
+  "name": "Katana Man",
+  "faction": "CSM",
+  "id": "katana_man",
+  "tier": 3,
+  "stats": {
+   "maxMana": 70,
+   "mr": 20,
+   "health": 760,
+   "speed": 0.95,
+   "startMana": 0,
+   "armor": 20,
+   "range": 1,
+   "attack": 75
+  },
+  "ability": {
+   "text": "After a brief draw stance, dash through the target for 300% AD physical damage. Up to two other enemies on the path take half damage.",
+   "name": "Iai Slash",
+   "splash": 0.5,
+   "ad": 3,
+   "duration": 1.35,
+   "maxSecondary": 2,
+   "impact": 0.52
+  }
+ },
+ {
+  "role": "Ranger",
+  "name": "Reze",
+  "faction": "CSM",
+  "id": "reze",
+  "tier": 4,
+  "stats": {
+   "maxMana": 80,
+   "mr": 25,
+   "health": 780,
+   "speed": 0.8,
+   "startMana": 20,
+   "armor": 20,
+   "range": 3,
+   "attack": 75
+  },
+  "ability": {
+   "text": "First cast: transform into Bomb Devil form and detonate within 1 hex of self for (45S + 75% AD) magic damage. Later casts: throw three bombs for that damage each, with half damage to adjacent enemies. Remaining bombs retarget a living enemy in range if their victim dies.",
+   "cues": [
+    0.42,
+    0.72,
+    1.02
+   ],
+   "name": "Bombardment",
+   "splash": 0.5,
+   "ad": 0.75,
+   "duration": 1.5,
+   "base": 45,
+   "impact": 0.42
+  }
+ },
+ {
+  "role": "Support",
+  "name": "Himeno",
+  "faction": "CSM",
+  "id": "himeno",
+  "tier": 3,
+  "stats": {
+   "maxMana": 90,
+   "mr": 30,
+   "health": 740,
+   "speed": 0.7,
+   "startMana": 30,
+   "armor": 20,
+   "range": 3,
+   "attack": 45
+  },
+  "ability": {
+   "attackReduction": 0.2,
+   "buffDuration": 4,
+   "text": "A ghost hand stuns an enemy for 0.8s and reduces its AD by 20% for 4s. Shield the lowest-HP% ally for (120S + 60% AD) for 4s.",
+   "impact": 0.6,
+   "name": "Ghost's Grasp",
+   "shieldBase": 120,
+   "stun": 0.8,
+   "shieldAd": 0.6,
+   "duration": 1.5
+  }
+ },
+ {
+  "role": "Caster",
+  "name": "Akane Sawatari",
+  "faction": "CSM",
+  "id": "akane",
+  "tier": 3,
+  "stats": {
+   "maxMana": 90,
+   "mr": 30,
+   "health": 750,
+   "speed": 0.7,
+   "startMana": 30,
+   "armor": 20,
+   "range": 3,
+   "attack": 45
+  },
+  "ability": {
+   "silence": 1.5,
+   "name": "Serpent's Seal",
+   "text": "Summon a serpent to strike the enemy with the highest mana percentage within 3 hexes for (180S + 120% AD) magic damage and silence them for 1.5s.",
+   "ad": 1.2,
+   "duration": 1.7,
+   "base": 180,
+   "impact": 0.65
+  }
+ },
+ {
+  "role": "Guardian",
+  "name": "Heathcliff",
+  "faction": "SAO",
+  "id": "heathcliff",
+  "tier": 4,
+  "stats": {
+   "maxMana": 100,
+   "mr": 35,
+   "health": 1200,
+   "speed": 0.6,
+   "startMana": 30,
+   "armor": 55,
+   "range": 1,
+   "attack": 60
+  },
+  "ability": {
+   "effectDuration": 4,
+   "shieldAd": 0.8,
+   "name": "Divine Bulwark",
+   "shieldBase": 300,
+   "text": "Gain a (300S + 80% AD) shield for 4s. Adjacent allies gain 20% damage reduction for 4s.",
+   "duration": 1.5,
+   "reduction": 0.2,
+   "impact": 0.5
+  }
+ },
+ {
+  "role": "Assassin",
+  "name": "Yuuki",
+  "faction": "SAO",
+  "id": "yuuki",
+  "tier": 4,
+  "stats": {
+   "maxMana": 80,
+   "mr": 25,
+   "health": 800,
+   "speed": 1.05,
+   "startMana": 0,
+   "armor": 20,
+   "range": 1,
+   "attack": 80
+  },
+  "ability": {
+   "strikeAd": 0.2,
+   "cues": [
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1,
+    1.1,
+    1.2,
+    1.48
+   ],
+   "name": "Mother's Rosario",
+   "text": "Strike ten times for 20% AD physical damage each, then thrust for 150% AD Ã— (1 + 2 Ã— the target's missing-health fraction).",
+   "finisherAd": 1.5,
+   "duration": 1.95,
+   "missingHealthScale": 2,
+   "impact": 0.3
+  }
+ },
+ {
+  "role": "Support",
+  "name": "Leafa",
+  "faction": "SAO",
+  "id": "leafa",
+  "tier": 2,
+  "stats": {
+   "maxMana": 80,
+   "mr": 25,
+   "health": 720,
+   "speed": 0.75,
+   "startMana": 20,
+   "armor": 20,
+   "range": 2,
+   "attack": 45
+  },
+  "ability": {
+   "healAd": 0.8,
+   "maxAllies": 2,
+   "text": "Heal the two lowest-HP% allies within 3 hexes for (160S + 80% AD) each and grant them 25% attack speed for 4s.",
+   "effectDuration": 4,
+   "name": "Sylph's Blessing",
+   "healBase": 160,
+   "attackSpeedBonus": 0.25,
+   "impact": 0.58,
+   "duration": 1.5
+  }
+ },
+ {
+  "role": "Caster",
+  "name": "Eugeo",
+  "faction": "SAO",
+  "id": "eugeo",
+  "tier": 4,
+  "stats": {
+   "maxMana": 100,
+   "mr": 35,
+   "health": 850,
+   "speed": 0.7,
+   "startMana": 20,
+   "armor": 30,
+   "range": 2,
+   "attack": 55
+  },
+  "ability": {
+   "root": 1.5,
+   "text": "Send ice through a 4-hex line, dealing (180S + 150% AD) magic damage to each enemy hit and rooting them for 1.5s.",
+   "width": 1,
+   "release": 0.72,
+   "name": "Blue Rose Prison",
+   "impact": 0.8,
+   "ad": 1.5,
+   "length": 4,
+   "base": 180,
+   "duration": 1.65
+  }
+ },
+ {
+  "role": "Assassin",
+  "name": "Kenny Ackerman",
+  "faction": "AOT",
+  "id": "kenny",
+  "tier": 3,
+  "stats": {
+   "maxMana": 80,
+   "mr": 20,
+   "health": 760,
+   "speed": 0.9,
+   "startMana": 0,
+   "armor": 20,
+   "range": 3,
+   "attack": 78
+  },
+  "ability": {
+   "preferredTargetDistance": [
+    2,
+    3
+   ],
+   "repositionRange": 2,
+   "name": "Crossfire Ambush",
+   "cues": [
+    0.6,
+    0.82
+   ],
+   "ad": 1.4,
+   "text": "Grapple to a safe flank that preserves shooting distance, then fire two shots at one enemy for 140% AD physical damage each.",
+   "duration": 1.45,
+   "impact": 0.6
+  }
+ },
+ {
+  "role": "Ranger",
+  "name": "Sasha Blouse",
+  "faction": "AOT",
+  "id": "sasha",
+  "tier": 2,
+  "stats": {
+   "maxMana": 60,
+   "mr": 20,
+   "health": 700,
+   "speed": 0.8,
+   "startMana": 20,
+   "armor": 15,
+   "range": 4,
+   "attack": 70
+  },
+  "ability": {
+   "effectDuration": 6,
+   "previewCues": [
+    0.72,
+    1.97,
+    3.22
+   ],
+   "name": "Hunter's Focus",
+   "thirdAd": 3,
+   "text": "Focus for up to 6s. Against one target, the first two basic attacks deal normal damage; the third deals 300% AD instead of its normal damage.",
+   "duration": 0.5,
+   "previewDuration": 4,
+   "impact": 0.32
+  }
+ },
+ {
+  "role": "Support",
+  "name": "Erwin Smith",
+  "faction": "AOT",
+  "id": "erwin",
+  "tier": 4,
+  "stats": {
+   "maxMana": 100,
+   "mr": 35,
+   "health": 950,
+   "speed": 0.65,
+   "startMana": 30,
+   "armor": 35,
+   "range": 1,
+   "attack": 55
+  },
+  "ability": {
+   "attackBonus": 0.2,
+   "radius": 2,
+   "name": "Commander's Rally",
+   "attackSpeedBonus": 0.25,
+   "text": "Rally allies within 2 hexes, including Erwin, granting 20% bonus AD and 25% attack speed for 5s.",
+   "duration": 1.45,
+   "effectDuration": 5,
+   "impact": 0.5
+  }
+ },
+ {
+  "role": "Ranger",
+  "name": "Ayato Kirishima",
+  "faction": "TG",
+  "id": "ayato",
+  "tier": 3,
+  "stats": {
+   "maxMana": 75,
+   "mr": 25,
+   "health": 780,
+   "speed": 1.05,
+   "startMana": 10,
+   "armor": 20,
+   "range": 3,
+   "attack": 70
+  },
+  "ability": {
+   "text": "Hop to a safe firing position and launch three feathers for 70% AD physical damage each. Gain 35% attack speed for 4s.",
+   "impact": 0.48,
+   "repositionRange": 1,
+   "name": "Ukaku Skirmish",
+   "duration": 1.4,
+   "ad": 0.7,
+   "attackSpeedBonus": 0.35,
+   "cues": [
+    0.48,
+    0.64,
+    0.8
+   ],
+   "effectDuration": 4
+  }
+ },
+ {
+  "role": "Ranger",
+  "name": "Yoshimura",
+  "faction": "TG",
+  "id": "yoshimura",
+  "tier": 4,
+  "stats": {
+   "maxMana": 90,
+   "mr": 35,
+   "health": 1100,
+   "speed": 0.55,
+   "startMana": 40,
+   "armor": 40,
+   "range": 4,
+   "attack": 90
+  },
+  "ability": {
+   "radius": 1,
+   "duration": 1.7,
+   "impact": 1.35,
+   "windup": 1,
+   "name": "Owl's Judgment",
+   "splash": 0.6,
+   "ad": 2,
+   "release": 1.08,
+   "base": 100,
+   "text": "After a 1s wind-up, bombard a marked hex for (100S + 200% AD) physical damage. Enemies on adjacent hexes take 60% damage."
+  }
+ },
+ {
+  "role": "Support",
+  "name": "Hinami Fueguchi",
+  "faction": "TG",
+  "id": "hinami",
+  "tier": 3,
+  "stats": {
+   "maxMana": 90,
+   "mr": 30,
+   "health": 760,
+   "speed": 0.7,
+   "startMana": 30,
+   "armor": 20,
+   "range": 2,
+   "attack": 45
+  },
+  "ability": {
+   "maxAllies": 2,
+   "text": "Shield the two lowest-HP% allies within 3 hexes for (180S + 80% AD) for 4s. Enemies adjacent to those allies lose 20% attack speed for 4s.",
+   "attackSpeedReduction": 0.2,
+   "effectDuration": 4,
+   "name": "Guardian Bloom",
+   "shieldBase": 180,
+   "shieldAd": 0.8,
+   "impact": 0.6,
+   "duration": 1.6
+  }
+ },
+ {
+  "role": "Caster",
+  "name": "Tatara",
+  "faction": "TG",
+  "id": "tatara",
+  "tier": 4,
+  "stats": {
+   "maxMana": 100,
+   "mr": 35,
+   "health": 950,
+   "speed": 0.65,
+   "startMana": 20,
+   "armor": 35,
+   "range": 2,
+   "attack": 55
+  },
+  "ability": {
+   "channelStart": 0.35,
+   "text": "Channel a locked forward cone for 2s, dealing (70S + 60% AD) magic damage every 0.5s, up to four hits. Hard interruption ends the channel.",
+   "impact": 0.55,
+   "duration": 2.8,
+   "cues": [
+    0.55,
+    1.05,
+    1.55,
+    2.05
+   ],
+   "name": "Crimson Furnace",
+   "base": 70,
+   "ad": 0.6,
+   "length": 3,
+   "halfAngleDegrees": 30,
+   "channelDuration": 2
+  }
+ }
+]

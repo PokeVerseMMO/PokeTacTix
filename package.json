@@ -1,0 +1,19 @@
+{
+  "name": "poketactix-pc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PokéTactix for PC: authoritative game server plus desktop client",
+  "scripts": {
+    "server": "node server/server.ts",
+    "test": "node --test test/",
+    "sim": "node test/simulate.ts"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

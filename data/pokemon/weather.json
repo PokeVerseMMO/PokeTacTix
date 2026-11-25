@@ -1,0 +1,54 @@
+{
+ "duration": 12,
+ "weather": {
+  "sun": {
+   "label": "Harsh Sunlight",
+   "boost": {
+    "Fire": 1.25
+   },
+   "nerf": {
+    "Water": 0.8
+   }
+  },
+  "rain": {
+   "label": "Rain",
+   "boost": {
+    "Water": 1.25
+   },
+   "nerf": {
+    "Fire": 0.8
+   }
+  },
+  "sandstorm": {
+   "label": "Sandstorm",
+   "def": {
+    "types": [
+     "Rock",
+     "Ground",
+     "Steel"
+    ],
+    "armorPct": 0.25,
+    "mrPct": 0.25
+   },
+   "chipPct": 0.012,
+   "chipImmune": [
+    "Rock",
+    "Ground",
+    "Steel"
+   ]
+  },
+  "snow": {
+   "label": "Snow",
+   "boost": {
+    "Ice": 1.15
+   },
+   "def": {
+    "types": [
+     "Ice"
+    ],
+    "armorPct": 0.25,
+    "mrPct": 0.25
+   }
+  }
+ }
+}

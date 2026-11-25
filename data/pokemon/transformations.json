@@ -1,0 +1,240 @@
+{
+ "megaStones": [
+  {
+   "key": "mega_abomasnow",
+   "species": "snover",
+   "form": "abomasnow_mega",
+   "name": "Mega Stone: Abomasnow"
+  },
+  {
+   "key": "mega_aerodactyl",
+   "species": "aerodactyl",
+   "form": "aerodactyl_mega",
+   "name": "Mega Stone: Aerodactyl"
+  },
+  {
+   "key": "mega_alakazam",
+   "species": "abra",
+   "form": "alakazam_mega",
+   "name": "Mega Stone: Alakazam"
+  },
+  {
+   "key": "mega_blastoise",
+   "species": "squirtle",
+   "form": "blastoise_mega",
+   "name": "Mega Stone: Blastoise"
+  },
+  {
+   "key": "mega_charizard",
+   "species": "charmander",
+   "form": "charizard_mega",
+   "name": "Mega Stone: Charizard"
+  },
+  {
+   "key": "mega_charizard_x",
+   "species": "charmander",
+   "form": "charizard_x_mega",
+   "name": "Mega Stone: Charizard X"
+  },
+  {
+   "key": "mega_dragonite",
+   "species": "dratini",
+   "form": "dragonite_mega",
+   "name": "Mega Stone: Dragonite"
+  },
+  {
+   "key": "mega_garchomp",
+   "species": "gible",
+   "form": "garchomp_mega",
+   "name": "Mega Stone: Garchomp"
+  },
+  {
+   "key": "mega_garchomp_z",
+   "species": "gible",
+   "form": "garchomp_z_mega",
+   "name": "Mega Stone: Garchomp Z"
+  },
+  {
+   "key": "mega_gardevoir",
+   "species": "ralts",
+   "form": "gardevoir_mega",
+   "name": "Mega Stone: Gardevoir"
+  },
+  {
+   "key": "mega_gengar",
+   "species": "gastly",
+   "form": "gengar_mega",
+   "name": "Mega Stone: Gengar"
+  },
+  {
+   "key": "mega_greninja_ash",
+   "species": "froakie",
+   "form": "greninja_ash_mega",
+   "name": "Mega Stone: Greninja ASH"
+  },
+  {
+   "key": "mega_greninja",
+   "species": "froakie",
+   "form": "greninja_mega",
+   "name": "Mega Stone: Greninja"
+  },
+  {
+   "key": "mega_gyarados",
+   "species": "magikarp",
+   "form": "gyarados_mega",
+   "name": "Mega Stone: Gyarados"
+  },
+  {
+   "key": "mega_lucario",
+   "species": "riolu",
+   "form": "lucario_mega",
+   "name": "Mega Stone: Lucario"
+  },
+  {
+   "key": "mega_lucario_z",
+   "species": "riolu",
+   "form": "lucario_z_mega",
+   "name": "Mega Stone: Lucario Z"
+  },
+  {
+   "key": "mega_metagross",
+   "species": "beldum",
+   "form": "metagross_mega",
+   "name": "Mega Stone: Metagross"
+  },
+  {
+   "key": "mega_mewtwo_x",
+   "species": "mewtwo",
+   "form": "mewtwo_x_mega",
+   "name": "Mega Stone: Mewtwo X"
+  },
+  {
+   "key": "mega_mewtwo_y",
+   "species": "mewtwo",
+   "form": "mewtwo_y_mega",
+   "name": "Mega Stone: Mewtwo Y"
+  },
+  {
+   "key": "mega_pidgeot",
+   "species": "pidgey",
+   "form": "pidgeot_mega",
+   "name": "Mega Stone: Pidgeot"
+  },
+  {
+   "key": "mega_raichu_x",
+   "species": "pikachu",
+   "form": "raichu_x_mega",
+   "name": "Mega Stone: Raichu X"
+  },
+  {
+   "key": "mega_raichu_y",
+   "species": "pikachu",
+   "form": "raichu_y_mega",
+   "name": "Mega Stone: Raichu Y"
+  },
+  {
+   "key": "mega_rayquaza",
+   "species": "rayquaza",
+   "form": "rayquaza_mega",
+   "name": "Mega Stone: Rayquaza"
+  },
+  {
+   "key": "mega_salamence",
+   "species": "bagon",
+   "form": "salamence_mega",
+   "name": "Mega Stone: Salamence"
+  },
+  {
+   "key": "mega_scizor",
+   "species": "scyther",
+   "form": "scizor_mega",
+   "name": "Mega Stone: Scizor"
+  },
+  {
+   "key": "mega_starmie",
+   "species": "staryu",
+   "form": "starmie_mega",
+   "name": "Mega Stone: Starmie"
+  },
+  {
+   "key": "mega_tyranitar",
+   "species": "larvitar",
+   "form": "tyranitar_mega",
+   "name": "Mega Stone: Tyranitar"
+  },
+  {
+   "key": "mega_venusaur",
+   "species": "bulbasaur",
+   "form": "venusaur_mega",
+   "name": "Mega Stone: Venusaur"
+  }
+ ],
+ "gmax": {
+  "squirtle": "blastoise_gmax",
+  "caterpie": "butterfree_gmax",
+  "charmander": "charizard_gmax",
+  "eevee": "eevee_gmax",
+  "gastly": "gengar_gmax",
+  "lapras": "lapras_gmax",
+  "machop": "machamp_gmax",
+  "snorlax": "snorlax_gmax",
+  "bulbasaur": "venusaur_gmax"
+ },
+ "dynamaxBand": {
+  "key": "dynamax_band",
+  "name": "Dynamax Band",
+  "text": "Gigantamax species only: at 4s the holder grows for 10s (+50% HP, +30% attack). One per team."
+ },
+ "rules": {
+  "megaPerTeam": 1,
+  "megaHp": 1.3,
+  "megaAttack": 1.25,
+  "megaDefense": 15,
+  "gmaxStart": 4,
+  "gmaxDuration": 10,
+  "gmaxHp": 1.5,
+  "gmaxAttack": 1.3,
+  "megaRequiresFinalForm": true
+ },
+ "pve": {
+  "creepSets": [
+   [
+    "rattata",
+    "zubat",
+    "geodude"
+   ],
+   [
+    "machop",
+    "pidgey",
+    "oddish"
+   ],
+   [
+    "growlithe",
+    "gastly",
+    "tentacool"
+   ],
+   [
+    "scyther",
+    "magikarp",
+    "abra"
+   ]
+  ],
+  "bosses": [
+   {
+    "id": "snorlax",
+    "name": "Wild Snorlax",
+    "stars": 3
+   },
+   {
+    "id": "mewtwo",
+    "name": "Legendary Mewtwo",
+    "stars": 2
+   },
+   {
+    "id": "rayquaza",
+    "name": "Legendary Rayquaza",
+    "stars": 2
+   }
+  ]
+ }
+}

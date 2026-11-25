@@ -1,0 +1,534 @@
+{
+ "PlacementXP": [
+  70,
+  58,
+  50,
+  44,
+  36,
+  30,
+  24,
+  18
+ ],
+ "Free": [
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "id": "kirito_well_played",
+   "kind": "emote",
+   "duplicateDiamonds": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "id": "erwin_respect",
+   "kind": "emote",
+   "duplicateDiamonds": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "kind": "gold",
+   "amount": 50
+  },
+  {
+   "id": "Brock",
+   "kind": "commander",
+   "duplicateDiamonds": 500
+  }
+ ],
+ "Tiers": 30,
+ "LegacyFree": [
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 300
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "radiant",
+   "kind": "effect"
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 300
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "Levi_Steel",
+   "kind": "skin"
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 300
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 150
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "moonlit",
+   "kind": "board"
+  }
+ ],
+ "XPPerTier": 80,
+ "RewardVersion": 2,
+ "PriceRobux": 999,
+ "Name": "Monthly Pass",
+ "ProductId": 3721943151,
+ "Premium": [
+  {
+   "items": [
+    {
+     "id": "void",
+     "kind": "board",
+     "duplicateDiamonds": 1750
+    },
+    {
+     "id": "yuji_gg",
+     "kind": "emote",
+     "duplicateDiamonds": 250
+    }
+   ],
+   "kind": "bundle"
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "void",
+   "kind": "profileFrame",
+   "duplicateDiamonds": 375
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "void",
+   "kind": "playerBanner",
+   "duplicateDiamonds": 500
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "nanami_clocking_out",
+   "kind": "emote",
+   "duplicateDiamonds": 500
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "void",
+   "kind": "bubbleFrame",
+   "duplicateDiamonds": 375
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "nobara_bored_already",
+   "kind": "emote",
+   "duplicateDiamonds": 250
+  },
+  {
+   "id": "limitless_ease",
+   "kind": "lobbyPose",
+   "duplicateDiamonds": 375
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "kind": "gold",
+   "amount": 100
+  },
+  {
+   "id": "Gojo_Purple",
+   "kind": "skin",
+   "duplicateDiamonds": 2500
+  }
+ ],
+ "PracticeFactor": {
+  "Hard": 0.7,
+  "Tutorial": 0,
+  "Intermediate": 0.6,
+  "Beginner": 0.5
+ },
+ "LegacyPremium": [
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "id": "sakura",
+   "kind": "effect"
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "id": "ember",
+   "kind": "board"
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "id": "Kirito_Ember",
+   "kind": "skin"
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "id": "thunder",
+   "kind": "effect"
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "id": "void",
+   "kind": "board"
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "kind": "gold",
+   "amount": 200
+  },
+  {
+   "kind": "gold",
+   "amount": 250
+  },
+  {
+   "id": "Gojo_Purple",
+   "kind": "skin"
+  }
+ ],
+ "Showcase": "Red"
+}
