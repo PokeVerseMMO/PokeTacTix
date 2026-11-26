@@ -26,7 +26,7 @@ async function resolveRoot(win) {
   const cur = path.join(app.getPath("userData"), "game");
   const local = (rel) => { const p = path.join(cur, rel); return fs.existsSync(p) ? p : null; };
   let manifest;
-  try { manifest = await (await get("version.json", 6000)).json(); } catch (e) { console.log("update check skipped:", e.message); return fs.existsSync(path.join(cur, "server.cjs")) ? cur : bundled; }
+  try { manifest = await (await get("version.json", 6000)).json(); } catch (e) { console.log("update check skipped:", e.message); const hint = /^40[134]/.test(e.message) ? "Update check failed (" + e.message.split(" ")[0] + "): put a read-only GitHub token in update-token.txt next to PokeTactix.exe, or make the repo public." : "Update check failed: " + e.message; status(win, hint); await new Promise((r) => setTimeout(r, 4500)); return fs.existsSync(path.join(cur, "server.cjs")) ? cur : bundled; }
   if (!manifest.files) return bundled;
   const have = (rel) => { const p = local(rel) || (fs.existsSync(path.join(bundled, rel)) ? path.join(bundled, rel) : null); return p ? sha1(p) : null; };
   const need = Object.entries(manifest.files).filter(([rel, h]) => have(rel) !== h);
