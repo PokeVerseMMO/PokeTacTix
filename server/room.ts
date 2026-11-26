@@ -118,6 +118,7 @@ export class Room {
         ? { name: BOSSES[(enc / 2 - 1) % BOSSES.length].name, boss: true }
         : { name: "Wild Pokémon", boss: false };
     }
+    this.plan = null; if (!isNpcRound(m.round)) { this.plan = this.makePlan(m.players.filter((p) => !p.eliminated)); this.planRound = m.round; }
     for (const p of m.players) if (!p.eliminated && (!p.human || !p.connected)) botTurn(m, p, this.difficulty);
     this.prepEndsAt = Date.now() + (PREP_SECONDS * 1000) / SPEED;
     this.pushAll();
@@ -153,6 +154,24 @@ export class Room {
     }
   }
 
+  // Who fights whom is decided when preparation starts so every player can see their next opponent.
+  plan: [Player, Player, boolean][] | null = null; planRound = 0;
+  makePlan(alive: Player[]): [Player, Player, boolean][] {
+    const m = this.match, order = [...alive].sort(() => m.rng() - 0.5), pairs: [Player, Player, boolean][] = [];
+    while (order.length >= 2) pairs.push([order.shift()!, order.shift()!, false]);
+    if (order.length === 1) {
+      const solo = order[0];
+      const ghost = alive.filter((p) => p !== solo)[Math.floor(m.rng() * (alive.length - 1))];
+      pairs.push([solo, ghost, true]); // ghost fight: no damage dealt to the ghost
+    }
+    return pairs;
+  }
+  opponentOf(seat: number): number | null {
+    if (!this.plan || this.planRound !== this.match.round) return null;
+    for (const [a, b, ghost] of this.plan) { if (a.seat === seat) return b.seat; if (!ghost && b.seat === seat) return a.seat; }
+    return null;
+  }
+
   combat() {
     const m = this.match;
     if (m.phase !== "Preparation") return;
@@ -163,14 +182,7 @@ export class Room {
     }
     const alive = m.players.filter((p) => !p.eliminated);
     if (isNpcRound(m.round)) return this.npcCombat(alive);
-    const order = [...alive].sort(() => m.rng() - 0.5);
-    const pairs: [Player, Player, boolean][] = [];
-    while (order.length >= 2) pairs.push([order.shift()!, order.shift()!, false]);
-    if (order.length === 1) {
-      const solo = order[0];
-      const ghost = alive.filter((p) => p !== solo)[Math.floor(m.rng() * (alive.length - 1))];
-      pairs.push([solo, ghost, true]); // ghost fight: no damage dealt to the ghost
-    }
+    const pairs = this.plan && this.planRound === m.round ? this.plan.filter(([a, b]) => !a.eliminated && !b.eliminated) : this.makePlan(alive);
     this.fights.clear(); this.combatAt = Date.now();
     let longest = 0;
     const slots = (p: Player) => this.slotsOf(p);
@@ -303,7 +315,7 @@ export class Room {
       t: "state", round: m.round, phase: m.phase,
       timeLeft: m.phase === "Preparation" ? Math.max(0, Math.round((this.prepEndsAt - Date.now()) * SPEED / 1000)) : m.phase === "Supply" && this.supply ? Math.max(0, Math.round((this.supply.endsAt - Date.now()) * SPEED / 1000)) : 0,
       supply: m.phase === "Supply" && this.supply ? { stage: this.supply.stage, entries: this.supply.entries, order: this.supply.order, turn: this.supply.order[this.supply.idx] ?? null } : null,
-      message, seat, npc: this.npcMeta, ranked: this.ranked, pool: this.poolInfo(p),
+      message, seat, npc: this.npcMeta, opponent: this.opponentOf(seat), ranked: this.ranked, pool: this.poolInfo(p),
       you: {
         name: p.name, hp: p.hp, gold: p.gold, level: p.level, xp: p.xp, xpNeed: need, commander: p.commander, cmd: p.cmd ?? { used: 0 },
         units: p.units, shop: p.shop, shopLocked: p.shopLocked, rerollCost: rerollCost(p), ready: p.ready,

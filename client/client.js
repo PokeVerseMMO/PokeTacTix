@@ -355,6 +355,11 @@ function buildList(now) {
     return ob.map((u) => ({ key: "u" + u.uid, id: u.id, art: formId(u), def: defOf(u.id), fcolor: fRGB(defOf(u.id).faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: false, spawnFx: false, noPop: true, cell: u.col !== null ? { col: u.col, row: u.row } : { bench: benchO.indexOf(u) } }));
   }
   const y = state.you, bench = y.units.filter((u) => u.col === null);
+  if (state.phase === "Preparation" && state.opponent != null) { // next opponent's backrow (bench) along the far edge
+    const o = state.players.find((q) => q.seat === state.opponent && !q.eliminated), ob = o && o.board ? o.board.filter((u) => u.col === null) : [];
+    ob.forEach((u, i) => { const w = scene.worldOf({ bench: i }, false), d = defOf(u.id); if (!d) return;
+      list.push({ key: "o" + u.uid + "_" + o.seat, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: false, spawnFx: false, noPop: true, world: { x: 1.2 - w.x, z: -w.z + 0.5, y: 0.03 } }); });
+  }
   for (const u of y.units) {
     const d = defOf(u.id), isDrag = drag && drag.moved && drag.uid === u.uid;
     const e = { key: "u" + u.uid, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: true, selected: u.uid === selUid, spawnFx: !fresh, noPop: fresh };
@@ -384,6 +389,9 @@ function updateWalkers(now) {
     if (q.seat === mySeat || q.eliminated) continue; const a = avatars.get(q.seat);
     if (a ? a.island === viewed : q.seat === viewed) list.push({ key: "p" + q.seat, cmd: (q.commander || "Blue").toLowerCase(), x: a ? a.x : -9.2, y: a ? a.y : 0.95, z: a ? a.z : 7.7, yaw: a ? a.yaw : 1.25, mv: a ? a.mv : 0 });
   }
+  { const opp = state.opponent != null && viewed === mySeat && state.phase === "Preparation" ? state.players.find((q) => q.seat === state.opponent && !q.eliminated) : null; // next opponent stands on their podium across the board
+    scene.showOppPodium(!!opp);
+    if (opp) list.push({ key: "opp" + opp.seat, cmd: (opp.commander || "Blue").toLowerCase(), x: 9.2, y: 0.95, z: -7.7, yaw: 1.25 + Math.PI, mv: 0 }); }
   scene.setRemote(list);
   const lp = scene.localPose();
   if (lp && now - lastAvatarSent > 100 && ws && ws.readyState === 1) { lastAvatarSent = now; ws.send(JSON.stringify({ t: "avatar", island: viewed, x: lp.x, y: lp.y, z: lp.z, yaw: lp.yaw, mv: lp.mv })); }

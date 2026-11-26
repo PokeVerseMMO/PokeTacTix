@@ -78,7 +78,7 @@ export class UnitVisual {
     this.starGroup = new THREE.Group(); this.starGroup.position.y = 0.3; this.ui.add(this.starGroup);
     this.pips = new THREE.Group(); this.pips.position.set(-0.7, 0, 0); this.ui.add(this.pips);
     if (!style.npc) {
-      this.icons = new THREE.Group(); this.icons.position.set(0, -top + 0.02 + 0.05, 0.4); this.root.add(this.icons);
+      this.icons = new THREE.Group(); this.icons.position.set(0, 0.12, 0.62); this.root.add(this.icons);
       for (const [i, nm] of [[-1, def?.role], [1, def?.faction]]) {
         const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: iconTexture(nm, i < 0 ? "#ffd66b" : "#9fe0ff"), transparent: true, depthTest: false })); s.scale.set(0.42, 0.42, 1); s.position.set(i * 0.3, 0, 0); s.renderOrder = 19; this.icons.add(s);
       }
