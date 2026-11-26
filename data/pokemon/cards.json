@@ -1,0 +1,221 @@
+{
+ "rounds": [
+  2,
+  9,
+  15
+ ],
+ "odds": {
+  "Common": 50,
+  "Epic": 35,
+  "Legendary": 15
+ },
+ "rerolls": 2,
+ "rarityNames": {
+  "Common": "Blue",
+  "Epic": "Purple",
+  "Legendary": "Orange"
+ },
+ "cards": [
+  {
+   "id": "allys_call",
+   "name": "Ally's Call",
+   "rarity": "Legendary",
+   "text": "Starring up a Hero grants 1 random Hero(es) with at least 1 shared Synergy.",
+   "icon": "art/types/Fairy.png",
+   "fx": {
+    "allyCall": true
+   }
+  },
+  {
+   "id": "death_oracle",
+   "name": "Death Oracle",
+   "rarity": "Legendary",
+   "text": "Commander gains 35 Shield. The next up to 35 Shop refresh(es) will cost 1 HP instead.",
+   "icon": "art/types/Ghost.png",
+   "fx": {
+    "shield": 35,
+    "hpRerolls": 35
+   }
+  },
+  {
+   "id": "premium_client_2",
+   "name": "Premium Client II",
+   "rarity": "Legendary",
+   "text": "When you refresh the Shop, there's a 48% chance of obtaining a free Shop Refresh.",
+   "icon": "art/ui/icons/gold.png",
+   "fx": {
+    "freeReroll": 0.48
+   }
+  },
+  {
+   "id": "rising_festivities",
+   "name": "Rising Festivities",
+   "rarity": "Legendary",
+   "text": "Gain 5 Gold. Afterward, gain 1 random Hero(es) each round costing (Commander Level -5) Gold (Min 1 Gold).",
+   "icon": "art/types/Normal.png",
+   "fx": {
+    "gold": 5,
+    "festive": true
+   }
+  },
+  {
+   "id": "shield_of_fortune",
+   "name": "Shield of Fortune",
+   "rarity": "Legendary",
+   "text": "Gain 10 Gold and 30 Shield of Fortune (consumed first). After 5 round(s), any remaining Shield of Fortune is converted into Gold at a 1:1 ratio.",
+   "icon": "art/types/Steel.png",
+   "fx": {
+    "gold": 10,
+    "fortune": 30,
+    "fortuneRounds": 5
+   }
+  },
+  {
+   "id": "the_more_the_merrier",
+   "name": "The More, the Merrier",
+   "rarity": "Legendary",
+   "text": "After the battle, gain 1 Gold for every 1 Synergy activated.",
+   "icon": "art/ui/icons/gold.png",
+   "fx": {
+    "merrier": true
+   }
+  },
+  {
+   "id": "vault_upgrade",
+   "name": "Vault Upgrade",
+   "rarity": "Legendary",
+   "text": "Increase the interest limit to 8. Gain 12 Gold.",
+   "icon": "art/ui/icons/gold.png",
+   "weight": 2,
+   "fx": {
+    "interestCap": 8,
+    "gold": 12
+   }
+  },
+  {
+   "id": "customize_recruitment_2",
+   "name": "Customize Recruitment II",
+   "rarity": "Epic",
+   "text": "The chance of finding 4-Gold Heroes in Shop refreshes increases by 9%, while the chances for 1-, 2-, and 3-Gold Heroes decrease by 3%.",
+   "icon": "art/ui/icons/range.png",
+   "fx": {
+    "shopMod": [
+     -3,
+     -3,
+     -3,
+     9,
+     0
+    ]
+   }
+  },
+  {
+   "id": "fast_promotion",
+   "name": "Fast Promotion",
+   "rarity": "Epic",
+   "text": "The next Hero you purchase costs no Gold and is instantly upgraded to 2-Star.",
+   "icon": "art/ui/icons/attack.png",
+   "fx": {
+    "fastPromo": 1
+   }
+  },
+  {
+   "id": "full_throttle",
+   "name": "Full Throttle",
+   "rarity": "Epic",
+   "text": "Reduce EXP required to upgrade Commander Level by 15%.",
+   "icon": "art/ui/icons/mp.png",
+   "fx": {
+    "xpDiscount": 0.15
+   }
+  },
+  {
+   "id": "payday",
+   "name": "Payday",
+   "rarity": "Epic",
+   "text": "Gain 7 Gold immediately and 7 Gold per round for the next 2 rounds.",
+   "icon": "art/ui/icons/gold.png",
+   "fx": {
+    "gold": 7,
+    "paydayRounds": 2,
+    "paydayAmt": 7
+   }
+  },
+  {
+   "id": "premium_client_1",
+   "name": "Premium Client I",
+   "rarity": "Epic",
+   "text": "When you refresh the Shop, there's a 35% chance of obtaining a free Shop Refresh.",
+   "icon": "art/ui/icons/gold.png",
+   "fx": {
+    "freeReroll": 0.35
+   }
+  },
+  {
+   "id": "trust_fund",
+   "name": "Trust Fund",
+   "rarity": "Epic",
+   "text": "Gain 8 / 16 / 25 Gold upon reaching Commander Lv.8 / 9 / 10, respectively.",
+   "icon": "art/ui/icons/gold.png",
+   "fx": {
+    "trustFund": true
+   }
+  },
+  {
+   "id": "customize_recruitment_1",
+   "name": "Customize Recruitment I",
+   "rarity": "Common",
+   "text": "The chance of finding 3-Gold Heroes in Shop refreshes increases by 10%, while the chances for 1- and 2-Gold Heroes decrease by 5%.",
+   "icon": "art/ui/icons/range.png",
+   "fx": {
+    "shopMod": [
+     -5,
+     -5,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "healing_fountain",
+   "name": "Healing Fountain",
+   "rarity": "Common",
+   "text": "Restore 3 Commander HP each round, and gain 4 Gold.",
+   "icon": "art/ui/icons/health.png",
+   "fx": {
+    "fountain": true,
+    "gold": 4
+   }
+  },
+  {
+   "id": "jump_the_gun",
+   "name": "Jump the Gun",
+   "rarity": "Common",
+   "text": "Add 8 Commander EXP.",
+   "icon": "art/ui/icons/mp.png",
+   "fx": {
+    "xp": 8
+   }
+  },
+  {
+   "id": "jump_the_gun_plus",
+   "name": "Jump the Gun+",
+   "rarity": "Common",
+   "text": "Gain 11 Commander EXP.",
+   "icon": "art/ui/icons/mp.png",
+   "fx": {
+    "xp": 11
+   }
+  },
+  {
+   "id": "rock_solid",
+   "name": "Rock Solid",
+   "rarity": "Common",
+   "text": "Commander gains 20 Shield.",
+   "icon": "art/types/Rock.png",
+   "fx": {
+    "shield": 20
+   }
+  }
+ ]
+}

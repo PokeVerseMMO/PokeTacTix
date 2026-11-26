@@ -30,12 +30,12 @@ test("equip / unequip rules", () => {
 });
 
 test("reward schedule follows the original rules", () => {
-  const { m, p } = player();
-  rules.reward(m, p, 4, true); assert.deepStrictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").map((k) => ITEMS[k].rarity), ["Rare"]);
-  p.items = []; rules.reward(m, p, 8, true); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 3); assert.ok(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").every((k) => ITEMS[k].rarity === "Epic"));
-  p.items = []; rules.reward(m, p, 12, true); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 2); assert.ok(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").every((k) => ITEMS[k].rarity === "Epic"));
-  p.items = []; rules.reward(m, p, 16, true); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 4); assert.ok(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").every((k) => ITEMS[k].rarity === "Legendary"));
-  p.items = []; rules.reward(m, p, 16, false); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 1); assert.strictEqual(ITEMS[p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega")[0]].rarity, "Rare");
+  const { m, p } = player(); const reward = (...a: any[]) => { const r = (rules.reward as any)(...a); rules.autoPick(a[1]); return r; };
+  reward(m, p, 4, true); assert.deepStrictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").map((k) => ITEMS[k].rarity), ["Rare"]);
+  p.items = []; reward(m, p, 8, true); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 3); assert.ok(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").every((k) => ITEMS[k].rarity === "Epic"));
+  p.items = []; reward(m, p, 12, true); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 2); assert.ok(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").every((k) => ITEMS[k].rarity === "Epic"));
+  p.items = []; reward(m, p, 16, true); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 4); assert.ok(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").every((k) => ITEMS[k].rarity === "Legendary"));
+  p.items = []; reward(m, p, 16, false); assert.strictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").length, 1); assert.strictEqual(ITEMS[p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega")[0]].rarity, "Rare");
   assert.ok(rules.isNpcRound(4) && !rules.isNpcRound(5) && !rules.isBossEncounter(4) && rules.isBossEncounter(8));
 });
 
@@ -62,9 +62,10 @@ test("items change combat outcomes", () => {
 test("commander passives hook into combat", () => {
   const side = [{ id: "squirtle", stars: 1, col: 2, row: 3 }, { id: "pikachu", stars: 1, col: 5, row: 3 }];
   const foe = [{ id: "geodude", stars: 2, col: 3, row: 3 }];
-  const plain = simulate(side, foe, 3), kirito = simulate(side, foe, 3, { commanders: ["Misty", undefined] }), levi = simulate(side, foe, 3, { commanders: ["Brock", undefined] });
-  assert.notDeepStrictEqual(plain.events, kirito.events);
-  assert.notDeepStrictEqual(plain.events, levi.events);
+  const plain = simulate(side, foe, 3), water = simulate(side.map((x, i) => ({ ...x, water: i === 0, hpMul: 0.2 })), foe, 3), love = simulate(side.map((x, i) => ({ ...x, love: i === 1 })), foe, 3, { stage: 2 });
+  assert.ok(water.events.some((e: any) => e.k === "shield"), "Misty Water Shield triggers");
+  assert.ok(love.events.some((e: any) => e.name === "love_energy"), "Joy Love Energy fires");
+  assert.notDeepStrictEqual(plain.events, love.events);
 });
 
 test("Joy earns a gold bonus and NPC rounds hand out equipment", async () => {
@@ -105,4 +106,15 @@ test("ranks and persisted profiles", () => {
   assert.strictEqual(prof.rankInfo(4300).label, "Mythic");
   prof.resetProfileCache();
   assert.strictEqual(prof.getProfile("rita").rp, 270, "reloaded from disk");
+});
+
+test("equipment rewards offer three choices and the pick goes into the bag", () => {
+  const { m, p } = player(); p.items = [];
+  rules.reward(m, p, 4, true);
+  assert.strictEqual(p.picks![0].length, 3, "three options");
+  assert.ok(new Set(p.picks![0]).size === 3, "options are distinct");
+  assert.strictEqual(rules.act(m, p, { a: "pick", item: "nonsense" } as any).ok, false);
+  const choice = p.picks![0][1]; const before = p.items.length;
+  assert.ok(rules.act(m, p, { a: "pick", item: choice } as any).ok);
+  assert.ok(p.items.includes(choice) && p.items.length > before - 1 && !p.picks!.length, "picked item is in the bag");
 });

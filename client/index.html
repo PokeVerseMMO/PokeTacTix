@@ -39,6 +39,7 @@
       <div id="timerWrap"><div id="timer">30</div></div>
       <div id="phase" class="tb r">Preparation</div>
     </div>
+    <div id="roundStrip"><div class="tb2 l"><i id="tFill"></i></div><div class="tb2 r"><i id="tFill2"></i></div><div id="rDmg"></div><div id="rIcons"></div></div>
     <div id="topRight">
       <div id="levelChip" class="hudbox"><div class="lvTop"><b>Level <span id="level">3</span></b><span id="fielded"></span></div><div class="xpTrack"><i id="xpbar"></i></div></div>
       <div id="goldChip" class="hudbox"><img src="art/ui/icons/gold.png" alt=""><b id="gold">0</b></div>
@@ -46,15 +47,17 @@
     </div>
     <div id="toolbar">
       <button data-tool="synergies" class="tb-btn on" title="Synergies"><img src="art/ui/toolbar/synergies.png" alt="Synergies"></button>
-      <button data-tool="equipment" class="tb-btn on" title="Equipment bag"><img src="art/ui/toolbar/equipment.png" alt="Equipment"></button>
-      <button data-tool="combat" class="tb-btn" title="Ready / start combat"><img src="art/ui/toolbar/combat.png" alt="Combat"></button>
+      <button data-tool="damage" class="tb-btn" title="Damage"><img src="art/ui/toolbar/damage.png" alt="Damage"></button>
+      <button data-tool="equipment" class="tb-btn" title="Bag: equip items"><img src="art/ui/toolbar/equipment.png" alt="Bag"></button>
       <button data-tool="emotes" class="tb-btn" title="Emotes"><img src="art/ui/toolbar/emotes.png" alt="Emotes"></button>
       <button data-tool="statistics" class="tb-btn on" title="Standings"><img src="art/ui/toolbar/statistics.png" alt="Standings"></button>
       <div id="emoteMenu" class="hidden"><button>😀</button><button>👍</button><button>😢</button><button>🔥</button><button>❤️</button></div>
     </div>
-    <div id="synergies"><div class="sgrid" id="facGrid"></div><div class="sdiv"></div><div class="sgrid" id="roleGrid"></div></div>
+    <div id="synergies"><div class="sgrid" id="facGrid"></div><div class="sgrid" id="roleGrid"></div><div id="synEmpty" class="hidden">Deploy Pokémon to activate type and role bonuses.</div></div>
     <div id="emoteBubble" class="hidden"></div>
-    <div id="bag"></div>
+    <div id="synDetail" class="hidden"></div><div id="pickPanel" class="hidden"></div><div id="blessPanel" class="hidden"></div><div id="supplyPanel" class="hidden"></div><div id="cardPanel" class="hidden"></div><button id="cardStack" title="Pokémon Cards"></button><div id="cardDetails" class="hidden"></div><button id="cmdSkill" title="Commander skill"></button><div id="cmdDetails" class="hidden"></div><div id="joy"><i id="joyKnob"></i></div><button id="jumpBtn" title="Jump (Space)">⤒</button><div id="scoutBar" class="hidden"></div><div id="scoutPanel" class="hidden"></div><div id="dmgPanel" class="lpanel hidden"></div>
+    <div id="bagPanel" class="lpanel hidden"></div>
+    <div id="bag" class="hidden"></div>
     <div id="standings2"></div>
     <div id="inspector" class="closed"></div>
     <div id="sellZone" class="hidden">Drop here to sell</div>
@@ -62,7 +65,7 @@
     <div id="msg" class="msg"></div>
     <div id="tray">
       <div id="trayLeft">
-        <button id="xp" class="rbtn blue"><span>Buy XP</span><em><img src="art/ui/icons/gold.png" alt="">4</em></button>
+        <button id="xp" class="rbtn blue"><span>Buy XP</span><em><img src="art/ui/icons/gold.png" alt=""><span id="xpCost">1</span></em></button>
         <button id="reroll" class="rbtn blue"><span>Reroll</span><em><img src="art/ui/icons/gold.png" alt=""><b id="rerollCost">2</b></em></button>
       </div>
       <div id="shopWrap"><div id="shop"></div></div>

@@ -1,0 +1,20 @@
+// Needs: PORT=8097 PREP_SECONDS=90  (server running)
+import { chromium } from "/opt/npm-tools/node_modules/playwright/index.mjs";
+const URL = process.env.URL || "http://localhost:8097/";
+const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader","--ignore-gpu-blocklist"] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+const errs = []; p.on("pageerror", (e) => errs.push(String(e.stack || e)));
+const ok = (c, m) => { console.log(c ? "ok:" : "FAIL:", m); if (!c) process.exitCode = 1; };
+await p.goto(URL); await p.waitForSelector(".cmd"); await p.waitForTimeout(800);
+await p.click("#solo"); await p.waitForSelector("#shop .card:not(.empty)"); await p.waitForTimeout(2000);
+const pose = () => p.evaluate(() => { const s = window.__scene; return s && s.localPose(); });
+const a = await pose(); ok(!!a, "local pose exists " + JSON.stringify(a));
+await p.keyboard.down("a"); await p.waitForTimeout(1500); await p.keyboard.up("a");
+const b1 = await pose(); ok(a && b1 && Math.hypot(b1.x - a.x, b1.z - a.z) > 0.5, "WASD moves " + JSON.stringify(b1));
+await p.keyboard.down("Space"); await p.waitForTimeout(250); const j = await pose(); await p.keyboard.up("Space");
+ok(j && b1 && j.y > b1.y + 0.05, "Space jumps y " + (j && j.y));
+const jb = await p.locator("#joy").boundingBox();
+await p.mouse.move(jb.x + 42, jb.y + 42); await p.mouse.down(); await p.mouse.move(jb.x + 80, jb.y + 42, { steps: 4 }); await p.waitForTimeout(1200);
+const c1 = await pose(); await p.mouse.up(); ok(c1.x > b1.x + 0.3, "joystick moves right " + c1.x);
+ok(errs.length === 0, "no page errors " + errs.join("|").slice(0, 300));
+await b.close();

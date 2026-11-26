@@ -1,15 +1,20 @@
 // A match room: up to 8 seats, humans and bots, driven round by round.
-import { BY_ID, ENEMIES, RULES, TRANSFORM } from "./data.ts";
+import { buildSupply, botChoice, claim, supplyOrder, stageOf, STAGE_LEN, type SupplyEntry } from "./supply.ts";
+import { BY_ID, ENEMIES, GOGO, RULES, TRANSFORM } from "./data.ts";
 import { simulate, type CombatResult, type Slot } from "./combat.ts";
 import { recordMatch, getProfile, rankInfo } from "./profiles.ts";
 import {
-  act, addPlayer, botTurn, deployed, eliminate, encounterOf, isBossEncounter, isNpcRound, newMatch, prepare, recordResult, reward, rerollCost, traitCounts,
+  absorb, act, trapReward, addPlayer, pk, xpNeed, autoBless, autoCard, autoPick, botTurn, deployed, eliminate, encounterOf, isBossEncounter, isNpcRound, newMatch, prepare, recordResult, reward, rerollCost, traitCounts,
   type Action, type Match, type Player,
 } from "./rules.ts";
 
 export interface Conn { send(msg: unknown): void; close(): void }
 const PREP_SECONDS = Number(process.env.PREP_SECONDS ?? 30);
+const SUPPLY_TURN_SECONDS = Number(process.env.SUPPLY_TURN_SECONDS ?? 12);
 const COMBAT_PAD_MS = Number(process.env.COMBAT_PAD_MS ?? 3000);
+const ROMAN = ["", "I", "II", "III", "IV", "V"];
+// base commander damage for losing a round (stage table from Config.Damage.table; later stages keep the last row)
+export const roundDamage = (round: number) => { const t = RULES.damage.table, st = Math.min(5, stageOf(round)), i = ((Math.max(1, round) - 1) % STAGE_LEN); return (t[ROMAN[st]] ?? t.V)[Math.min(i, 5)]; };
 const SPEED = Number(process.env.SPEED ?? 1); // test hook: >1 shortens waits
 const BOSSES: { id: string; name: string; stars: number }[] = TRANSFORM.pve.bosses;
 const CREEP_SETS: string[][] = TRANSFORM.pve.creepSets;
@@ -68,11 +73,42 @@ export class Room {
     }
     if (process.env.TEST_START_GOLD) for (const p of this.match.players) if (p.human) p.gold += Number(process.env.TEST_START_GOLD);
     if (process.env.TEST_START_UNITS) for (const p of this.match.players) if (p.human) for (const spec of process.env.TEST_START_UNITS.split(",")) { const [id, st] = spec.split(":"); p.units.push({ uid: this.match.nextUid++, id, stars: Number(st || 1), col: null, row: null, items: [] }); }
+    if (process.env.TEST_START_BLESS) for (const p of this.match.players) if (p.human) { p.bless = [{ uid: null }]; p.items.push("blessing_transfer"); }
     if (process.env.TEST_START_ITEMS) for (const p of this.match.players) if (p.human) p.items.push(...process.env.TEST_START_ITEMS.split(","));
     this.nextRound();
   }
 
+  supply: { stage: number; entries: SupplyEntry[]; order: number[]; idx: number; endsAt: number } | null = null;
+  // After the last round of a stage, a Supply draft happens before the next Preparation.
   nextRound() {
+    const m = this.match;
+    if (m.round > 0 && m.round % STAGE_LEN === 0 && m.players.filter((p) => !p.eliminated).length >= 2) return this.startSupply();
+    this.beginPrep();
+  }
+  startSupply() {
+    const m = this.match; m.phase = "Supply";
+    const order = supplyOrder(m);
+    this.supply = { stage: stageOf(m.round), entries: buildSupply(m, stageOf(m.round), order.length), order, idx: 0, endsAt: 0 };
+    this.supplyTurn();
+  }
+  supplyTurn() {
+    const m = this.match, S = this.supply!;
+    if (this.timer) clearTimeout(this.timer);
+    while (S.idx < S.order.length) {
+      const p = m.players[S.order[S.idx]];
+      if (!p.human || !p.connected) { this.supplyTake(p, botChoice(S.entries)); S.idx++; continue; }
+      S.endsAt = Date.now() + (SUPPLY_TURN_SECONDS * 1000) / SPEED;
+      this.pushAll();
+      this.timer = setTimeout(() => { const q = m.players[S.order[S.idx]]; this.supplyTake(q, botChoice(S.entries)); S.idx++; this.supplyTurn(); }, (SUPPLY_TURN_SECONDS * 1000) / SPEED);
+      return;
+    }
+    this.supply = null; this.beginPrep();
+  }
+  supplyTake(p: Player, e: SupplyEntry | undefined) {
+    if (!e) return; e.by = p.seat; claim(this.match, p, e);
+    if (!p.human || !p.connected) autoBless(this.match, p);
+  }
+  beginPrep() {
     const m = this.match;
     prepare(m);
     this.npcMeta = null;
@@ -91,6 +127,11 @@ export class Room {
   handle(seat: number, action: Action) {
     const m = this.match, p = m.players[seat];
     if (!p || !this.started) return;
+    if ((action as any).a === "supplypick") {
+      const S = this.supply, e = S?.entries.find((x) => x.id === (action as any).id);
+      if (m.phase !== "Supply" || !S || S.order[S.idx] !== seat || !e || e.by !== null) return this.push(seat, "Not your turn to choose.");
+      this.supplyTake(p, e); S.idx++; this.supplyTurn(); return;
+    }
     const res = act(m, p, action);
     this.push(seat, res.ok ? "" : res.error);
     if (res.ok && action.a === "ready") this.checkAllReady();
@@ -108,6 +149,7 @@ export class Room {
     const m = this.match;
     if (m.phase !== "Preparation") return;
     m.phase = "Combat";
+    for (const p of m.players) { autoCard(m, p); autoPick(p); autoBless(m, p); } // any reward not chosen in time is taken automatically
     for (const p of m.players) if (p.human && p.connected && !p.eliminated) {
       /* human boards stay as arranged */
     }
@@ -126,7 +168,7 @@ export class Room {
     const slots = (p: Player) => this.slotsOf(p);
     const results: { a: Player; b: Player; res: CombatResult; ghost: boolean }[] = [];
     for (const [a, b, ghost] of pairs) {
-      const res = simulate(slots(a), slots(b), Math.floor(m.rng() * 1e9), { commanders: [a.commander, b.commander] });
+      const res = simulate(slots(a), slots(b), Math.floor(m.rng() * 1e9), { commanders: [a.commander, b.commander], trap: [a.cmd?.trap, b.cmd?.trap], stage: stageOf(m.round) });
       results.push({ a, b, res, ghost });
       longest = Math.max(longest, res.duration);
       this.fights.set(a.seat, { you: 0, result: res, vs: b.name });
@@ -141,7 +183,7 @@ export class Room {
   }
 
   slotsOf(p: Player): Slot[] {
-    return deployed(p).map((u) => ({ id: u.id, stars: u.stars, col: u.col!, row: u.row!, items: [...u.items] }));
+    return deployed(p).map((u) => ({ id: u.id, stars: u.stars, col: u.col!, row: u.row!, items: [...u.items], blessing: u.blessing, water: p.cmd?.water === u.uid || undefined, love: p.cmd?.love === u.uid || undefined, hpMul: 1 + (p.cardBuff?.hp ?? 0), adMul: 1 + (p.cardBuff?.ad ?? 0) }));
   }
 
   npcLineup(round: number): Slot[] {
@@ -167,7 +209,7 @@ export class Room {
     const lineup = this.npcLineup(m.round);
     const results: { a: Player; b: Player; res: CombatResult; ghost: boolean }[] = [];
     for (const p of alive) {
-      const res = simulate(this.slotsOf(p), lineup, Math.floor(m.rng() * 1e9), { commanders: [p.commander, undefined] });
+      const res = simulate(this.slotsOf(p), lineup, Math.floor(m.rng() * 1e9), { commanders: [p.commander, undefined], trap: [p.cmd?.trap, undefined], stage: stageOf(m.round) });
       results.push({ a: p, b: p, res, ghost: true });
       longest = Math.max(longest, res.duration);
       this.fights.set(p.seat, { you: 0, result: res, vs: this.npcMeta!.name });
@@ -183,7 +225,7 @@ export class Room {
       const won = res.winner === 0;
       const text = reward(m, a, m.round, won);
       this.rewards.set(a.seat, (won ? "Victory! Reward: " : "Defeated. ") + text);
-      if (a.commander === "Joy") a.gold += 1;
+      trapReward(m, a, res.trapHit?.[0]);
       recordResult(a, won);
     }
     this.nextRound();
@@ -193,14 +235,23 @@ export class Room {
     const m = this.match;
     const dead: Player[] = [];
     for (const { a, b, res, ghost } of results) {
-      if (res.winner === -1) continue;
+      trapReward(m, a, res.trapHit?.[0]); if (!ghost) trapReward(m, b, res.trapHit?.[1]);
+      const D = RULES.damage, base = roundDamage(m.round);
+      if (res.winner === -1) { // draw: both commanders take the round's base damage + the other side's surviving stars
+        for (const [pl, foe] of [[a, 1], [b, 0]] as [Player, number][]) {
+          if (ghost && pl === b) continue;
+          const dm = base + res.stars[foe];
+          pl.hp -= absorb(pl, ghost ? Math.max(1, Math.round(dm * D.ghostMultiplier)) : dm);
+          if (pl.hp <= 0 && !dead.includes(pl)) dead.push(pl);
+        }
+        continue;
+      }
       const loser = res.winner === 0 ? b : a, winner = res.winner === 0 ? a : b;
       if (!(ghost && winner === b)) recordResult(winner, true);
       if (!(ghost && loser === b)) recordResult(loser, false);
       if (ghost && loser === b) continue;
-      const survivors = res.survivors[res.winner];
-      const D = RULES.damage, dmg = D.base + survivors * D.perSurvivor + Math.floor(m.round / D.roundDivisor);
-      loser.hp -= ghost ? Math.max(1, Math.round(dmg * D.ghostMultiplier)) : dmg;
+      const dmg = base + res.stars[res.winner]; // base by round + star levels of every surviving enemy unit
+      loser.hp -= absorb(loser, ghost ? Math.max(1, Math.round(dmg * D.ghostMultiplier)) : dmg); // Commander shield soaks damage first
       if (loser.hp <= 0) dead.push(loser);
     }
     // placement: those dying together share the order by remaining board strength (lowest first)
@@ -239,19 +290,37 @@ export class Room {
   snapshot(seat: number, message = "") {
     const m = this.match, p = m.players[seat];
     const counts = traitCounts(deployed(p));
-    const need = RULES.xpToLevel[String(p.level)] ?? 0;
+    const need = xpNeed(p);
     return {
       t: "state", round: m.round, phase: m.phase,
-      timeLeft: m.phase === "Preparation" ? Math.max(0, Math.round((this.prepEndsAt - Date.now()) * SPEED / 1000)) : 0,
-      message, seat, npc: this.npcMeta, ranked: this.ranked,
+      timeLeft: m.phase === "Preparation" ? Math.max(0, Math.round((this.prepEndsAt - Date.now()) * SPEED / 1000)) : m.phase === "Supply" && this.supply ? Math.max(0, Math.round((this.supply.endsAt - Date.now()) * SPEED / 1000)) : 0,
+      supply: m.phase === "Supply" && this.supply ? { stage: this.supply.stage, entries: this.supply.entries, order: this.supply.order, turn: this.supply.order[this.supply.idx] ?? null } : null,
+      message, seat, npc: this.npcMeta, ranked: this.ranked, pool: this.poolInfo(p),
       you: {
-        name: p.name, hp: p.hp, gold: p.gold, level: p.level, xp: p.xp, xpNeed: need, commander: p.commander,
+        name: p.name, hp: p.hp, gold: p.gold, level: p.level, xp: p.xp, xpNeed: need, commander: p.commander, cmd: p.cmd ?? { used: 0 },
         units: p.units, shop: p.shop, shopLocked: p.shopLocked, rerollCost: rerollCost(p), ready: p.ready,
         traits: counts, eliminated: p.eliminated, placement: p.placement ?? null,
-        items: p.items, reward: this.rewards.get(seat) ?? "",
+        items: p.items, card: p.card ? { rarity: p.card.rarity, rerolls: p.card.rerolls, options: p.card.options.map((id) => GOGO.cards.find((c) => c.id === id)) } : null, cardBuff: p.cardBuff ?? null, cardsTaken: (p.cardsTaken ?? []).map((id) => GOGO.cards.find((c) => c.id === id)).filter(Boolean), bless: p.bless?.[0] ? { uid: p.bless[0].uid, options: p.bless[0].options ?? null, left: p.bless.length } : null, picks: p.picks?.[0] ?? null, picksLeft: p.picks?.length ?? 0, reward: this.rewards.get(seat) ?? "",
       },
-      players: m.players.map((q) => ({ seat: q.seat, name: q.name, hp: Math.max(0, q.hp), eliminated: q.eliminated, level: q.level, commander: q.commander, human: q.human, rank: q.human ? rankInfo(getProfile(q.name).rp).label : "" })),
+      players: m.players.map((q) => ({ seat: q.seat, name: q.name, hp: Math.max(0, q.hp), shield: Math.round(pk(q).shield + pk(q).fortune), board: q.units.map((u) => ({ uid: u.uid, id: u.id, stars: u.stars, col: u.col, row: u.row, items: u.items, blessing: u.blessing })), traits: traitCounts(deployed(q)), eliminated: q.eliminated, level: q.level, commander: q.commander, human: q.human, rank: q.human ? rankInfo(getProfile(q.name).rp).label : "" })),
     };
+  }
+
+  // Trainer avatars: positions are relayed so visitors scouting an island can be seen by its owner (and other scouts).
+  avatars = new Map<number, { island: number; x: number; y: number; z: number; yaw: number; mv: number }>(); avatarTimer: ReturnType<typeof setTimeout> | null = null;
+  setAvatar(seat: number, d: any) {
+    const n = (v: any, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : 0);
+    const island = Number.isInteger(d.island) && d.island >= 0 && d.island < this.match.players.length ? d.island : seat;
+    this.avatars.set(seat, { island, x: n(d.x, -30, 30), y: n(d.y, -2, 8), z: n(d.z, -30, 30), yaw: n(d.yaw, -7, 7), mv: d.mv ? 1 : 0 });
+    if (!this.avatarTimer) this.avatarTimer = setTimeout(() => { this.avatarTimer = null; const list = [...this.avatars].map(([seat, a]) => ({ seat, ...a })); for (const c of this.conns.values()) c.send({ t: "avatars", list }); }, 80);
+  }
+
+  // Shared hero pool visibility: copies still available, total copies, and copies currently owned by all players.
+  poolInfo(me: Player) {
+    const m = this.match, owned: Record<string, number> = {}, out: Record<string, [number, number, number]> = {};
+    for (const q of m.players) for (const u of q.units) { const k = BY_ID[u.id].poolId ?? u.id; owned[k] = (owned[k] ?? 0) + 3 ** (u.stars - 1); }
+    for (const id of new Set([...me.shop, ...Object.keys(m.pool)])) { if (!id) continue; const d = BY_ID[id]; if (!d) continue; const total = RULES.poolCopies[d.tier - 1] ?? 0, mine = me.shop.filter((x) => x === id).length; out[id] = [(m.pool[id] ?? 0) + mine, total, owned[id] ?? 0]; }
+    return out;
   }
 
   push(seat: number, message = "") {

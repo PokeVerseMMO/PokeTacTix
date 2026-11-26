@@ -23,23 +23,23 @@
  "Commanders": [
   {
    "id": "Blue",
-   "text": "First reroll each round costs 1 less gold."
+   "text": "Copy Trap: during Preparation a movable trap sits on your half of the board. When an enemy Hero steps on it, obtain their 1-Star version (once per round) and gain 1 Gold. If no Hero was copied by the end of the round, gain 1 Gold."
   },
   {
    "id": "Joy",
-   "text": "Gain 1 extra gold after each NPC encounter."
+   "text": "Love's Protection: select an ally to protect. That Hero fires Love Energy every 3s, healing allies in its path for 5% of their Max HP and dealing 100 / 190 / 320 / 540 Magic DMG (by Stage) to enemies in its path."
   },
   {
    "id": "Misty",
-   "text": "Your highest-attack fighter gains 3% attack speed per basic attack, up to 24%."
+   "text": "Water Shield: during Preparation, select a Hero. When its HP first drops below 50% in battle it gains a Shield equal to 85% of its Max HP."
   },
   {
    "id": "Brock",
-   "text": "Fighters starting without adjacent allies gain 10% attack speed."
+   "text": "Stone Choice: choose Go Go Cards twice in Round II-3. Gain extra Commander EXP by card quality in II-3: 16 EXP for a Purple card, 26 EXP for a Blue card."
   },
   {
    "id": "Sabrina",
-   "text": "Once per fighter, below 30% HP restores 15% HP over 3 seconds."
+   "text": "Power of Chaos (1 use, after Stage I-2): select a Hero without a Blessing to give it a random Blessing, then gain 2 random Heroes from the Synergy it grants (by current Shop odds) and 2 Gold."
   }
  ],
  "FactionColors": {
@@ -1339,21 +1339,21 @@
  },
  "XPToLevel": {
   "1": 2,
-  "2": 4,
-  "3": 6,
+  "2": 3,
+  "3": 3,
   "4": 8,
-  "5": 12,
-  "6": 20,
-  "7": 28,
-  "8": 40,
-  "9": 52
+  "5": 20,
+  "6": 32,
+  "7": 40,
+  "8": 54,
+  "9": 74
  },
  "PoolCopies": [
-  29,
-  22,
+  25,
+  21,
   18,
-  12,
-  10
+  14,
+  9
  ],
  "ShopSize": 5,
  "Items": [
@@ -1681,26 +1681,14 @@
   "interestPer": 10,
   "interestMax": 5,
   "xpPerRound": 2,
-  "xpBuyGold": 4,
-  "xpBuyAmount": 4,
+  "xpBuyGold": 1,
+  "xpBuyAmount": 1,
   "streaks": [
-   [
-    2,
-    3,
-    1
-   ],
-   [
-    4,
-    5,
-    2
-   ],
-   [
-    6,
-    99,
-    3
-   ]
+   [1, 2, 1],
+   [3, 3, 2],
+   [4, 99, 3]
   ],
-  "startLevel": 1,
+  "startLevel": 3,
   "maxLegendaryDeployed": 1,
   "stonePerNpcWin": 1
  },
@@ -1708,7 +1696,8 @@
   "base": 3,
   "perSurvivor": 1,
   "roundDivisor": 5,
-  "ghostMultiplier": 0.5
+  "ghostMultiplier": 0.5,
+  "table": { "I": [3, 3, 3, 3, 3, 3], "II": [5, 5, 5, 5, 6, 6], "III": [7, 7, 7, 11, 11, 11], "IV": [13, 13, 13, 14, 14, 14], "V": [15, 15, 15, 15, 15, 15] }
  },
  "Stones": [
   {

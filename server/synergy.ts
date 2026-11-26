@@ -1,14 +1,19 @@
 // One synergy + type-effectiveness manager for the whole game. Everything is read from data/pokemon/*.json.
-import { BY_ID, TYPE_CHART, SYNERGIES } from "./data.ts";
+import { BY_ID, TYPE_CHART, SYNERGIES, ITEMS } from "./data.ts";
+
+// Types a Crystal grants (does not change real typing, only synergy membership).
+export const crystalTypes = (items: string[] | Set<string> | undefined): string[] => [...(items ?? [])].map((k) => (ITEMS as any)[k]?.crystal).filter(Boolean);
 
 // Count each distinct species once; a dual-type Pokémon contributes to both of its types. Roles count too.
-export function traitCounts(units: { id: string }[]) {
+export function traitCounts(units: { id: string; items?: string[]; blessing?: string }[]) {
   const seen = new Set<string>(), counts: Record<string, number> = {};
   for (const u of units) {
+    if (u.blessing) counts[u.blessing] = (counts[u.blessing] ?? 0) + 1; // Blessing: +1 even for a type it already has
     if (seen.has(u.id)) continue;
     seen.add(u.id);
     const d = BY_ID[u.id];
-    for (const t of d.types ?? [d.faction]) counts[t] = (counts[t] ?? 0) + 1;
+    const own = d.types ?? [d.faction];
+    for (const t of new Set([...own, ...crystalTypes(u.items)])) counts[t] = (counts[t] ?? 0) + 1;
     counts[d.role] = (counts[d.role] ?? 0) + 1;
   }
   return counts;

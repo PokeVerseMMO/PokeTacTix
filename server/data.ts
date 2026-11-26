@@ -41,10 +41,23 @@ export const SPECIAL_ITEMS: any[] = [
 export const RANKS = load("RankData");
 // Shop units only live in ROSTER; BY_ID also resolves NPC enemies for combat.
 export const BY_ID: Record<string, UnitDef> = { ...ENEMIES, ...Object.fromEntries(ROSTER_ALL.map((u) => [u.id, u])) };
+const ITEMDATA = load("pokemon/items");
 export const ITEMS: Record<string, { key: string; faction: string; id: string; text: string; rarity: string; attack?: number; speed?: number; power?: number; crit?: number; health?: number; armor?: number; mr?: number; healPower?: number }> = CONFIG.ItemsByKey;
 for (const it of SPECIAL_ITEMS) (ITEMS as any)[it.key] = it;
-export const ITEM_LIST: typeof ITEMS[string][] = CONFIG.Items;
+for (const it of ITEMDATA.extra) (ITEMS as any)[it.key] = it;
+for (const it of ITEMDATA.typeItems) (ITEMS as any)[it.key] = it;
+for (const it of ITEMDATA.transfer) (ITEMS as any)[it.key] = it;
+for (const it of ITEMDATA.crystals) (ITEMS as any)[it.key] = it;
+for (const [k, icon] of Object.entries(ITEMDATA.icons as Record<string, string>)) if ((ITEMS as any)[k]) (ITEMS as any)[k].icon = icon;
+export const ITEM_LIST: typeof ITEMS[string][] = [...CONFIG.Items, ...ITEMDATA.extra];
+export const TYPE_ITEMS: any[] = ITEMDATA.typeItems;
+export const GOGO: { rounds: number[]; odds: Record<string, number>; rerolls: number; rarityNames: Record<string, string>; cards: any[] } = load("pokemon/cards"); // Go Go Cards
+if (process.env.TEST_GOGO_CARDS) for (const r of Object.keys(GOGO.odds)) for (let i = 1; i <= 5; i++) GOGO.cards.push({ id: `test_${r}_${i}`, name: `Test ${r} ${i}`, rarity: r, text: `Placeholder card ${i} (test data only).`, icon: "art/ui/icons/gold.png", gold: i });
+export const TRANSFER_ITEMS: any[] = ITEMDATA.transfer;
+export const CRYSTALS: any[] = ITEMDATA.crystals; // Magic-Crystal style: count toward an extra type synergy
+for (const it of ITEM_LIST as any[]) if (ITEMDATA.icons[it.key]) it.icon = ITEMDATA.icons[it.key];
 export const STONES: { key: string; id: string; text: string; rarity: string; stone: true }[] = CONFIG.Stones;
+for (const st of STONES as any[]) if (ITEMDATA.icons[st.key]) st.icon = ITEMDATA.icons[st.key];
 export const CLIENT_ROSTER = ROSTER_ALL.map((u) => ({
   evolutionLine: u.evolutionLine, stoneEvolutions: u.stoneEvolutions, evolutionOnly: u.evolutionOnly,
   id: u.id, name: u.name, faction: u.faction, role: u.role, tier: u.tier,
@@ -78,6 +91,6 @@ export const RULES = {
   enemyBalance: CONFIG.EnemyBalance as any,
   economy: CONFIG.Economy as { baseIncome: number; winBonus: number; lossBonus: number; interestPer: number; interestMax: number; xpPerRound: number; xpBuyGold: number; xpBuyAmount: number; streaks: number[][]; startLevel: number; maxLegendaryDeployed: number; stonePerNpcWin: number },
   synergies: SYNERGIES,
-  damage: CONFIG.Damage as { base: number; perSurvivor: number; roundDivisor: number; ghostMultiplier: number },
+  damage: CONFIG.Damage as { base: number; perSurvivor: number; roundDivisor: number; ghostMultiplier: number; table: Record<string, number[]> },
 };
 export const ABILITIES: Record<string, any> = { ...BALANCE.Abilities, ...Object.fromEntries(SPECIES.map((s) => [s.id, s.abilityParams])) };

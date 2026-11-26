@@ -1,17 +1,17 @@
 // Deterministic auto-battle simulation on the 7x8 hex board. Produces a replay event log for clients.
 import { TRANSFORM, ABILITIES, BY_ID, ITEMS, RULES, STATUS_DATA, WEATHER_DATA } from "./data.ts";
 import { mulberry32 } from "./rules.ts";
-import { tierOf, traitCounts, typeBonuses, typeMultiplier } from "./synergy.ts";
+import { tierOf, traitCounts, typeBonuses, typeMultiplier, crystalTypes } from "./synergy.ts";
 import { ABILITY_FNS, ARCHETYPES, type Ctx } from "./abilities.ts";
 
-export interface Slot { id: string; stars: number; col: number; row: number; items?: string[]; hpMul?: number; adMul?: number; npc?: boolean; boss?: boolean }
+export interface Slot { id: string; stars: number; col: number; row: number; items?: string[]; blessing?: string; water?: boolean; love?: boolean; hpMul?: number; adMul?: number; npc?: boolean; boss?: boolean }
 export interface CombatEvent { t: number; k: string; u: number; tg?: number; v?: number; col?: number; row?: number; crit?: boolean; name?: string; x?: number; art?: string | null }
 export interface CombatResult {
-  winner: 0 | 1 | -1; survivors: [number, number]; duration: number;
+  winner: 0 | 1 | -1; survivors: [number, number]; stars: [number, number]; trapHit?: (string | undefined)[]; duration: number;
   start: { uid: number; id: string; side: number; stars: number; col: number; row: number; hp: number; items: string[]; mana: number; maxMana: number; art?: string; npc?: boolean; boss?: boolean }[];
   events: CombatEvent[]; traits: [Record<string, number>, Record<string, number>];
 }
-export interface SimOptions { commanders?: [string | undefined, string | undefined] }
+export interface SimOptions { commanders?: [string | undefined, string | undefined]; trap?: [{ col: number; row: number } | undefined, { col: number; row: number } | undefined]; stage?: number }
 
 interface Mod { until: number; k: Record<string, number> }
 interface Bleed { src: any; until: number; dps: number; tag: string }
@@ -56,7 +56,7 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
         shield: 0, shieldUntil: 0, mods: [] as Mod[], bleeds: [] as Bleed[], gen: 0, dmgMana: [] as { t: number; v: number }[],
         alive: true, role: d.role, faction: d.faction, boss: !!s.boss || (d as any).enemyClass === "boss", npc: !!s.npc,
         items: new Set<string>(s.items ?? []), transformed: false, itemHits: 0, cd: {} as Record<string, number>, used: {} as Record<string, boolean>,
-        kiritoStep: 0, immuneUntil: 0, mind: 0, antiHealUntil: 0,
+        water: !!s.water, love: !!s.love, kiritoStep: 0, immuneUntil: 0, mind: 0, antiHealUntil: 0,
       };
       if (d.role === "Fighter") u.ad *= 1 + pick([0.12, 0.24], T("Fighter"));
       if (d.role === "Caster") u.power += pick([0.15, 0.3], T("Caster"));
@@ -73,17 +73,17 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
       let hpPct = 0, adPct = 0, spd = 0;
       for (const key of u.items) {
         const it = ITEMS[key]; if (!it) continue;
-        adPct += it.attack ?? 0; spd += it.speed ?? 0; u.power += it.power ?? 0; u.crit += it.crit ?? 0;
+        adPct += it.attack ?? 0; if (it.family && d.evolutionFamily === it.family) { adPct += it.famAttack ?? 0; u.power += it.famPower ?? 0; } spd += it.speed ?? 0; u.power += it.power ?? 0; u.crit += it.crit ?? 0;
         hpPct += it.health ?? 0; u.armor += it.armor ?? 0; u.mr += it.mr ?? 0; u.healPower += it.healPower ?? 0;
       }
-      for (const key of u.items) { const it: any = ITEMS[key]; if (!it) continue; u.critDmg += it.critDmg ?? 0; u.itemDmg = (u.itemDmg ?? 0) + (it.dmgMul ?? 0); u.mana = Math.min(u.maxMana, u.mana + (it.startMana ?? 0)); }
-      u.regen = u.items.has("leftovers") ? 0.015 : 0; u.sash = u.items.has("focus_sash"); u.rocky = u.items.has("rocky_helmet"); u.claw = u.items.has("quick_claw"); u.kings = u.items.has("kings_rock"); u.herb = u.items.has("mental_herb"); u.lifeOrb = u.items.has("life_orb");
+      for (const key of u.items) { const it: any = ITEMS[key]; if (!it) continue; u.critDmg += it.critDmg ?? 0; u.lifesteal += it.lifesteal ?? 0; u.itemDmg = (u.itemDmg ?? 0) + (it.dmgMul ?? 0); u.mana = Math.min(u.maxMana, u.mana + (it.startMana ?? 0)); }
+      u.regen = u.items.has("leftovers") ? 0.015 : 0; u.sash = u.items.has("focus_sash"); u.rocky = u.items.has("rocky_helmet"); u.claw = u.items.has("quick_claw"); u.kings = u.items.has("kings_rock"); u.herb = u.items.has("mental_herb"); u.lifeOrb = u.items.has("life_orb"); u.sitrus = u.items.has("sitrus_berry"); if (u.items.has("black_sludge") && (d.types ?? []).includes("Poison")) u.regen = Math.max(u.regen, 0.02);
       { const line = d.evolutionLine ?? [u.id]; if (u.items.has("eviolite") && s.stars < line.length) { u.armor += 30; u.mr += 30; } }
       u.ad *= 1 + adPct; u.speed *= 1 + spd; u.maxHp *= 1 + hpPct; u.hp = u.maxHp;
       // type synergies (data/pokemon/synergies.json)
-      u.types = d.types ?? []; u.dmgMul = 1 + (u.itemDmg ?? 0); u.synTier = Object.fromEntries((d.types ?? []).map((ty: string) => [ty, s.npc ? 0 : tierOf(ty, tc[ty] ?? 0)]));
+      u.types = d.types ?? []; u.synTypes = [...new Set([...u.types, ...crystalTypes(u.items), ...(s.blessing ? [s.blessing] : [])])]; u.dmgMul = 1 + (u.itemDmg ?? 0); for (const key of u.items) { const it: any = ITEMS[key]; if (it?.typeBoost && u.types.includes(it.typeBoost)) u.dmgMul += it.typeDmg ?? 0.2; } u.synTier = Object.fromEntries((d.types ?? []).map((ty: string) => [ty, s.npc ? 0 : tierOf(ty, tc[ty] ?? 0)]));
       if (!s.npc) {
-        const b = typeBonuses(tc, u.types);
+        const b = typeBonuses(tc, u.synTypes);
         u.ad *= 1 + (b.atkPct ?? 0); u.maxHp *= 1 + (b.hpPct ?? 0); u.hp = u.maxHp; u.speed *= 1 + (b.speedPct ?? 0);
         u.armor += b.armor ?? 0; u.mr += b.mr ?? 0; u.crit += b.crit ?? 0; u.critDmg += b.critDmg ?? 0; u.power += b.power ?? 0;
         u.lifesteal += b.lifesteal ?? 0; u.pen += b.pen ?? 0; u.healPower += b.healPower ?? 0; u.dmgMul += b.dmgMul ?? 0;
@@ -113,12 +113,10 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
     }
     // commander passives
     const mine = units.filter((u) => u.side === side && !u.npc);
-    if (cmd === "Misty" && mine.length) { const best = mine.reduce((x, y) => (y.ad > x.ad ? y : x)); best.kiritoStep = 0.03; }
-    if (cmd === "Brock") for (const u of mine) if (!mine.some((v) => v !== u && hexDistance(u, v) === 1)) u.mods.push({ until: Infinity, k: { speed: 0.1 } });
-    if (cmd === "Sabrina") for (const u of mine) u.kanekiHeal = true;
   }
   const start = units.map((u) => ({ uid: u.uid, id: u.id, side: u.side, stars: u.stars, col: u.col, row: u.row, hp: u.maxHp, items: [...u.items], mana: Math.round(u.mana), maxMana: u.maxMana, art: u.mega, npc: u.npc || undefined, boss: u.boss || undefined }));
 
+  const trapHit: (string | undefined)[] = [undefined, undefined];
   const alive = (side: number) => units.filter((u) => u.alive && u.side === side);
   const foesOf = (u: any) => units.filter((v) => v.alive && v.cside !== u.cside);
   const friendsOf = (u: any) => units.filter((v) => v.alive && v.cside === u.cside);
@@ -295,6 +293,7 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
       tgt.alive = false; tgt.hp = 0; events.push({ t, k: "die", u: tgt.uid });
     } else {
       const frac = hpPct(tgt);
+      if (tgt.sitrus && !tgt.used.sitrus && frac < 0.5) { tgt.used.sitrus = true; heal(tgt, tgt, tgt.maxHp * 0.3); events.push({ t, k: "buff", u: tgt.uid, name: "sitrus_berry" }); }
       if (tgt.items.has("ixa") && !tgt.used.ixa && frac < 0.35) { tgt.used.ixa = true; shield(tgt, tgt, tgt.maxHp * 0.2, 4); tgt.counter = { until: t + 4, ad: 1 }; }
       if (tgt.items.has("arata") && !tgt.used.arata && frac < 0.5) { tgt.used.arata = true; addMod(tgt, { dr: 0.15 }, 4); }
       for (const h of friendsOf(tgt)) {
@@ -305,6 +304,7 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
           break;
         }
       }
+      if (tgt.water && !tgt.used.water && frac < 0.5) { tgt.used.water = true; tgt.shield = tgt.shieldUntil > t ? tgt.shield + tgt.maxHp * 0.85 : tgt.maxHp * 0.85; tgt.shieldUntil = Math.max(tgt.shieldUntil, t + 60); events.push({ t, k: "shield", u: tgt.uid, tg: tgt.uid, v: Math.round(tgt.maxHp * 0.85) }); } // Misty: Water Shield
       if (tgt.kanekiHeal && !tgt.used.kaneki && frac < 0.3) { tgt.used.kaneki = true; healOver(tgt, tgt, tgt.maxHp * 0.15, 3); }
     }
     return actual;
@@ -563,6 +563,24 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
       }
     }
     for (const u of units) if (u.alive) periodic(u);
+    // Joy: Love's Protection - the protected hero fires Love Energy every 3s along a line through its target
+    for (const u of units) if (u.alive && u.love && !(u.cd.love > t)) {
+      u.cd.love = t + 3; const tg = pickTarget(u, foesOf(u)); if (!tg) continue;
+      const ax = cx(u), ay = cy(u); let dx = cx(tg) - ax, dy = cy(tg) - ay; const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+      const dmg = ([100, 190, 320, 540][Math.min(3, Math.max(0, (opts.stage ?? 1) - 1))]);
+      events.push({ t, k: "cast", u: u.uid, tg: tg.uid, name: "love_energy" });
+      for (const v of units) {
+        if (!v.alive || v === u) continue; const px = cx(v) - ax, py = cy(v) - ay, along = px * dx + py * dy, off = Math.abs(px * dy - py * dx);
+        if (along < 0 || along > 12 || off > 0.7) continue;
+        if (v.cside === u.cside) heal(u, v, v.maxHp * 0.05); else deal(u, v, dmg * u.power, "magic", "ability", { area: true });
+      }
+    }
+    // Blue: Copy Trap - an enemy hero stepping onto the trap cell is copied (once per battle)
+    for (const sd of [0, 1] as const) {
+      const tr = opts.trap?.[sd]; if (!tr || trapHit[sd]) continue; const cell = sd === 0 ? tr : mirror(tr.col, tr.row);
+      const v = units.find((x) => x.alive && x.cside !== sd && !x.npc && x.col === cell.col && x.row === cell.row);
+      if (v) { trapHit[sd] = v.id; events.push({ t, k: "trap", u: v.uid, side: sd, col: cell.col, row: cell.row }); }
+    }
     for (const u of units) {
       if (!u.alive || u.lockUntil > t + 1e-9) continue;
       const foes = foesOf(u);
@@ -608,5 +626,5 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
     const r1 = s1.reduce((s, u) => s + u.hp, 0) / units.filter((u) => u.side === 1).reduce((s, u) => s + u.maxHp, 0);
     winner = r0 > r1 ? 0 : r1 > r0 ? 1 : -1;
   }
-  return { winner, survivors: [s0.length, s1.length], duration: t, start, events, traits };
+  return { winner, survivors: [s0.length, s1.length], stars: [s0.reduce((n, u) => n + u.stars, 0), s1.reduce((n, u) => n + u.stars, 0)], duration: t, start, events, traits, trapHit };
 }

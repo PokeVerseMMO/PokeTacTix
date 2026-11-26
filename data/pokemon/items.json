@@ -1,0 +1,396 @@
+{
+ "icons": {
+  "choice_band": "art/items/choice_band.png",
+  "choice_specs": "art/items/choice_specs.png",
+  "scope_lens": "art/items/scope_lens.png",
+  "leftovers": "art/items/leftovers.png",
+  "quick_claw": "art/items/quick_claw.png",
+  "kings_rock": "art/items/kings_rock.png",
+  "mental_herb": "art/items/mental_herb.png",
+  "life_orb": "art/items/life_orb.png",
+  "focus_sash": "art/items/focus_sash.png",
+  "assault_vest": "art/items/assault_vest.png",
+  "rocky_helmet": "art/items/rocky_helmet.png",
+  "eviolite": "art/items/eviolite.png",
+  "choice_scarf": "art/items/choice_scarf.png",
+  "muscle_band": "art/items/muscle_band.png",
+  "wise_glasses": "art/items/wise_glasses.png",
+  "shell_bell": "art/items/shell_bell.png",
+  "black_sludge": "art/items/black_sludge.png",
+  "zoom_lens": "art/items/zoom_lens.png",
+  "expert_belt": "art/items/expert_belt.png",
+  "light_ball": "art/items/light_ball.png",
+  "soul_dew": "art/items/soul_dew.png",
+  "silk_scarf": "art/items/silk_scarf.png",
+  "charcoal": "art/items/charcoal.png",
+  "mystic_water": "art/items/mystic_water.png",
+  "magnet": "art/items/magnet.png",
+  "miracle_seed": "art/items/miracle_seed.png",
+  "never_melt_ice": "art/items/never_melt_ice.png",
+  "black_belt": "art/items/black_belt.png",
+  "poison_barb": "art/items/poison_barb.png",
+  "soft_sand": "art/items/soft_sand.png",
+  "sharp_beak": "art/items/sharp_beak.png",
+  "twisted_spoon": "art/items/twisted_spoon.png",
+  "silver_powder": "art/items/silver_powder.png",
+  "hard_stone": "art/items/hard_stone.png",
+  "spell_tag": "art/items/spell_tag.png",
+  "dragon_fang": "art/items/dragon_fang.png",
+  "black_glasses": "art/items/black_glasses.png",
+  "metal_coat": "art/items/metal_coat.png",
+  "ability_capsule": "art/items/ability_capsule.png",
+  "dynamax_band": "art/items/dynamax_band.png",
+  "water_stone": "art/items/water_stone.png",
+  "thunder_stone": "art/items/thunder_stone.png",
+  "fire_stone": "art/items/fire_stone.png",
+  "sun_stone": "art/items/sun_stone.png",
+  "moon_stone": "art/items/moon_stone.png",
+  "leaf_stone": "art/items/leaf_stone.png",
+  "ice_stone": "art/items/ice_stone.png",
+  "shiny_stone": "art/items/shiny_stone.png",
+  "mega_abomasnow": "art/items/mega_abomasnow.png",
+  "mega_aerodactyl": "art/items/mega_aerodactyl.png",
+  "mega_alakazam": "art/items/mega_alakazam.png",
+  "mega_blastoise": "art/items/mega_blastoise.png",
+  "mega_charizard": "art/items/mega_charizard.png",
+  "mega_charizard_x": "art/items/mega_charizard_x.png",
+  "mega_dragonite": "art/items/mega_dragonite.png",
+  "mega_garchomp": "art/items/mega_garchomp.png",
+  "mega_garchomp_z": "art/items/mega_garchomp_z.png",
+  "mega_gardevoir": "art/items/mega_gardevoir.png",
+  "mega_gengar": "art/items/mega_gengar.png",
+  "mega_greninja_ash": "art/items/mega_greninja_ash.png",
+  "mega_greninja": "art/items/mega_greninja.png",
+  "mega_gyarados": "art/items/mega_gyarados.png",
+  "mega_lucario": "art/items/mega_lucario.png",
+  "mega_lucario_z": "art/items/mega_lucario_z.png",
+  "mega_metagross": "art/items/mega_metagross.png",
+  "mega_mewtwo_x": "art/items/mega_mewtwo_x.png",
+  "mega_mewtwo_y": "art/items/mega_mewtwo_y.png",
+  "mega_pidgeot": "art/items/mega_pidgeot.png",
+  "mega_raichu_x": "art/items/mega_raichu_x.png",
+  "mega_raichu_y": "art/items/mega_raichu_y.png",
+  "mega_salamence": "art/items/mega_salamence.png",
+  "mega_scizor": "art/items/mega_scizor.png",
+  "mega_starmie": "art/items/mega_starmie.png",
+  "mega_tyranitar": "art/items/mega_tyranitar.png",
+  "mega_venusaur": "art/items/mega_venusaur.png",
+  "sitrus_berry": "art/items/sitrus_berry.png",
+  "fire_crystal": "art/types/Fire.png",
+  "water_crystal": "art/types/Water.png",
+  "grass_crystal": "art/types/Grass.png",
+  "electric_crystal": "art/types/Electric.png",
+  "psychic_crystal": "art/types/Psychic.png",
+  "dragon_crystal": "art/types/Dragon.png",
+  "dark_crystal": "art/types/Dark.png",
+  "fairy_crystal": "art/types/Fairy.png",
+  "blessing_transfer": "art/types/Fairy.png"
+ },
+ "extra": [
+  {
+   "key": "muscle_band",
+   "id": "Muscle Band",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "+10% attack.",
+   "attack": 0.1
+  },
+  {
+   "key": "wise_glasses",
+   "id": "Wise Glasses",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "+12% ability power.",
+   "power": 0.12
+  },
+  {
+   "key": "shell_bell",
+   "id": "Shell Bell",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Heals 10% of the damage its basic attacks deal.",
+   "lifesteal": 0.1
+  },
+  {
+   "key": "zoom_lens",
+   "id": "Zoom Lens",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "+10% critical chance.",
+   "crit": 0.1
+  },
+  {
+   "key": "sitrus_berry",
+   "id": "Sitrus Berry",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Once, when it drops below 50% HP, heals 30% of its max HP."
+  },
+  {
+   "key": "black_sludge",
+   "id": "Black Sludge",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Poison-type holders recover 2% max HP every second."
+  },
+  {
+   "key": "expert_belt",
+   "id": "Expert Belt",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Deals 12% more damage.",
+   "dmgMul": 0.12
+  },
+  {
+   "key": "light_ball",
+   "id": "Light Ball",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Pikachu line only: attack and ability power x1.5.",
+   "family": "pikachu",
+   "famAttack": 0.5,
+   "famPower": 0.5
+  },
+  {
+   "key": "soul_dew",
+   "id": "Soul Dew",
+   "faction": "Item",
+   "rarity": "Legendary",
+   "text": "+25% ability power, +20 defence and magic resist.",
+   "power": 0.25,
+   "armor": 20,
+   "mr": 20
+  }
+ ],
+ "typeItems": [
+  {
+   "key": "silk_scarf",
+   "id": "Silk Scarf",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Normal-type Pokémon deal 20% more damage.",
+   "typeBoost": "Normal",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "charcoal",
+   "id": "Charcoal",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Fire-type Pokémon deal 20% more damage.",
+   "typeBoost": "Fire",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "mystic_water",
+   "id": "Mystic Water",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Water-type Pokémon deal 20% more damage.",
+   "typeBoost": "Water",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "magnet",
+   "id": "Magnet",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Electric-type Pokémon deal 20% more damage.",
+   "typeBoost": "Electric",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "miracle_seed",
+   "id": "Miracle Seed",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Grass-type Pokémon deal 20% more damage.",
+   "typeBoost": "Grass",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "never_melt_ice",
+   "id": "Never-Melt Ice",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Ice-type Pokémon deal 20% more damage.",
+   "typeBoost": "Ice",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "black_belt",
+   "id": "Black Belt",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Fighting-type Pokémon deal 20% more damage.",
+   "typeBoost": "Fighting",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "poison_barb",
+   "id": "Poison Barb",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Poison-type Pokémon deal 20% more damage.",
+   "typeBoost": "Poison",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "soft_sand",
+   "id": "Soft Sand",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Ground-type Pokémon deal 20% more damage.",
+   "typeBoost": "Ground",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "sharp_beak",
+   "id": "Sharp Beak",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Flying-type Pokémon deal 20% more damage.",
+   "typeBoost": "Flying",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "twisted_spoon",
+   "id": "Twisted Spoon",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Psychic-type Pokémon deal 20% more damage.",
+   "typeBoost": "Psychic",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "silver_powder",
+   "id": "Silver Powder",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Bug-type Pokémon deal 20% more damage.",
+   "typeBoost": "Bug",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "hard_stone",
+   "id": "Hard Stone",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Rock-type Pokémon deal 20% more damage.",
+   "typeBoost": "Rock",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "spell_tag",
+   "id": "Spell Tag",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Ghost-type Pokémon deal 20% more damage.",
+   "typeBoost": "Ghost",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "dragon_fang",
+   "id": "Dragon Fang",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Dragon-type Pokémon deal 20% more damage.",
+   "typeBoost": "Dragon",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "black_glasses",
+   "id": "Black Glasses",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Dark-type Pokémon deal 20% more damage.",
+   "typeBoost": "Dark",
+   "typeDmg": 0.2
+  },
+  {
+   "key": "metal_coat",
+   "id": "Metal Coat",
+   "faction": "Item",
+   "rarity": "Rare",
+   "text": "Holder's Steel-type Pokémon deal 20% more damage.",
+   "typeBoost": "Steel",
+   "typeDmg": 0.2
+  }
+ ],
+ "crystals": [
+  {
+   "key": "fire_crystal",
+   "id": "Fire Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Fire-type for synergies (its real typing is unchanged).",
+   "crystal": "Fire"
+  },
+  {
+   "key": "water_crystal",
+   "id": "Water Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Water-type for synergies (its real typing is unchanged).",
+   "crystal": "Water"
+  },
+  {
+   "key": "grass_crystal",
+   "id": "Grass Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Grass-type for synergies (its real typing is unchanged).",
+   "crystal": "Grass"
+  },
+  {
+   "key": "electric_crystal",
+   "id": "Electric Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Electric-type for synergies (its real typing is unchanged).",
+   "crystal": "Electric"
+  },
+  {
+   "key": "psychic_crystal",
+   "id": "Psychic Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Psychic-type for synergies (its real typing is unchanged).",
+   "crystal": "Psychic"
+  },
+  {
+   "key": "dragon_crystal",
+   "id": "Dragon Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Dragon-type for synergies (its real typing is unchanged).",
+   "crystal": "Dragon"
+  },
+  {
+   "key": "dark_crystal",
+   "id": "Dark Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Dark-type for synergies (its real typing is unchanged).",
+   "crystal": "Dark"
+  },
+  {
+   "key": "fairy_crystal",
+   "id": "Fairy Crystal",
+   "faction": "Item",
+   "rarity": "Epic",
+   "text": "Holder also counts as a Fairy-type for synergies (its real typing is unchanged).",
+   "crystal": "Fairy"
+  }
+ ],
+ "transfer": [
+  {
+   "key": "blessing_transfer",
+   "id": "Blessing Transfer",
+   "faction": "Item",
+   "rarity": "Legendary",
+   "text": "Move a Pokémon's Blessing to another Pokémon (select the blessed Pokémon, then use it in the Bag panel).",
+   "transfer": true
+  }
+ ]
+}

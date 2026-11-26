@@ -5,6 +5,7 @@ import { portrait, avatar, iconSvg, loadArtManifest, artPath, hash } from "./art
 import { Lobby3D } from "./lobby3d.js";
 const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(location.search);
+let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, roundTotal = 1, lastCombatRound = -1, lastCombat = null, dmgMode = "dealt", bagPick = null;
 let DATA = null, ws = null, state = null, combat = null, scene = null, lastMode = "solo";
 let timerBase = { left: 0, at: 0 }, selItem = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, shopSig: [], syn: {}, hp: {} };
 const TIER_COLORS = ["#9aa3b8", "#59c27a", "#4aa3ff", "#b36bff", "#ffb23e"];
@@ -117,11 +118,13 @@ function onMessage(m) {
     if ($("match").classList.contains("hidden")) { show("match"); }
     const phaseChanged = !state || state.phase !== m.phase; if (phaseChanged) phaseAt = performance.now();
     state = m;
-    timerBase = { left: m.timeLeft, at: performance.now() };
-    if (m.phase === "Preparation") { combat = null; Audio2.music("route101"); }
+    timerBase = { left: m.timeLeft, at: performance.now() }; if (m.timeLeft > roundTotal || m.round !== lastCombatRound) { roundTotal = Math.max(1, m.timeLeft); lastCombatRound = m.round; }
+    if (m.phase === "Preparation") { combat = null; Audio2.music("route101"); } else if (m.phase === "Supply") combat = null;
     setCommanderVisual(m.you.commander);
     refreshHud();
     if (m.phase === "Preparation" && m.round !== lastRound) { lastRound = m.round; banner(`Round ${m.round}`, m.npc ? (m.npc.boss ? `BOSS · ${m.npc.name}` : "Creep encounter") : "Preparation phase"); }
+  } else if (m.t === "avatars") {
+    avatars = new Map(m.list.map((a) => [a.seat, a]));
   } else if (m.t === "combat") {
     startCombat(m);
   } else if (m.t === "over") {
@@ -146,10 +149,12 @@ $("lock").onclick = () => send({ a: "lock" });
 $("ready").onclick = () => send({ a: "ready" });
 addEventListener("keydown", (e) => {
   if ($("match").classList.contains("hidden") || e.target.tagName === "INPUT") return;
-  if (e.key === "d" || e.key === "D") send({ a: "reroll" });
+  if (e.key === "r" || e.key === "R") send({ a: "reroll" }); // D is for walking (WASD)
   if (e.key === "f" || e.key === "F") send({ a: "xp" });
   if (e.key === "l" || e.key === "L") send({ a: "lock" });
   if (e.key === "Enter") send({ a: "ready" });
+  if (e.key === "Escape" && cmdTarget) { cmdTarget = null; refreshCmd(); return; }
+  if (e.key === "Escape" && scouting !== null) { scouting = null; refreshHud(); return; }
   if (e.key === "Escape") { selUid = null; selItem = null; renderInspector(); }
 });
 
@@ -180,7 +185,7 @@ function refreshHud() {
   if (!state) return;
   const y = state.you, prep = state.phase === "Preparation" && !y.eliminated;
   $("round").textContent = `Round ${state.round}` + (state.npc ? (state.npc.boss ? " · Boss" : " · Creeps") : "");
-  $("phase").textContent = state.phase === "Preparation" ? "Preparation" : "Combat";
+  $("phase").textContent = state.phase === "Preparation" ? "Preparation" : state.phase === "Supply" ? "Supply" : "Combat";
   $("level").textContent = y.level; $("fielded").textContent = `${y.units.filter((u) => u.col !== null).length}/${y.level}`;
   $("xpbar").style.width = y.level >= DATA.rules.maxLevel ? "100%" : `${(y.xp / Math.max(1, y.xpNeed)) * 100}%`;
   if (prev.gold !== null && prev.gold !== y.gold) { const g = $("goldChip"); g.classList.remove("pop"); void g.offsetWidth; g.classList.add("pop"); }
@@ -197,9 +202,11 @@ function refreshHud() {
     const d = id && defOf(id), el = document.createElement("div");
     if (!d) { el.className = "card empty"; shop.appendChild(el); prev.shopSig[slot] = null; return; }
     const same = prev.shopSig[slot] === id; prev.shopSig[slot] = id;
-    el.className = "card t" + d.tier + (y.gold < d.tier ? " poor" : "");
+    const pi = (state.pool || {})[id], left = pi ? pi[0] : null, ratio = pi && pi[1] ? pi[0] / pi[1] : 1, heat = ratio <= 0.15 ? " scarce" : ratio <= 0.35 ? " hot" : "";
+    el.className = "card t" + d.tier + (y.gold < d.tier ? " poor" : "") + heat;
+    if (pi) el.title = `${pi[0]} of ${pi[1]} copies left in the shared pool · ${pi[2]} owned by players${heat ? " — heavily contested!" : ""}`;
     if (same) el.style.animation = "none"; else el.style.animationDelay = slot * 0.05 + "s";
-    el.innerHTML = `<div class="pic" style="background-image:url(${artPath("portraits", id) || portrait(id, d, fRGB(d.faction))})"></div><div class="frame" style="background-image:url(${TIER_FRAME(d.tier)})"></div>${hasIcon(d.faction) ? emb(d.faction) : ""}${ric(d.role)}<div class="nm">${d.name.split(" ")[0]}</div><div class="cost">${COIN}${d.tier}</div>`;
+    el.innerHTML = `<div class="pic" style="background-image:url(${artPath("portraits", id) || portrait(id, d, fRGB(d.faction))})"></div><div class="frame" style="background-image:url(${TIER_FRAME(d.tier)})"></div>${hasIcon(d.faction) ? emb(d.faction) : ""}${ric(d.role)}${pi ? `<div class="left">${heat ? "⚠ " : ""}${pi[0]}<small>/${pi[1]}</small></div>` : ""}<div class="nm">${d.name.split(" ")[0]}</div><div class="cost">${COIN}${d.tier}</div>`;
     el.onclick = () => {
       if (!prep) return;
       if (y.gold < d.tier) { el.classList.remove("deny"); void el.offsetWidth; el.classList.add("deny"); $("goldChip").classList.add("nogold"); setTimeout(() => $("goldChip").classList.remove("nogold"), 320); return; }
@@ -215,22 +222,26 @@ function refreshHud() {
         const el = document.createElement("div"); el.className = "sc" + (tier > 0 ? " active" : "");
         el.innerHTML = `${icon(k)}<div><div class="nm">${roleName(k)}</div><div class="cnt"><b>${n}</b>/${next}</div></div>`;
         if (tier > (prev.syn[k] || 0)) { el.classList.add("flash"); } prev.syn[k] = tier;
-        el.onmouseenter = () => (hoverTip = { text: `<b style="color:#ffd678">${k}</b> — ${n} active (thresholds ${th.join(" / ")})<br>${DATA.rules.traitDescriptions[k] || ""}` }); el.onmouseleave = () => (hoverTip = null);
+        el.onclick = () => showSynDetail(k, icon); el.onmouseenter = () => (hoverTip = { text: `<b style="color:#ffd678">${k}</b> — ${n} active (thresholds ${th.join(" / ")})<br>${DATA.rules.traitDescriptions[k] || ""}` }); el.onmouseleave = () => (hoverTip = null);
         grid.appendChild(el);
       } };
-    const present = Object.keys(y.traits).filter((k) => DATA.rules.factions.includes(k)).sort((a, b) => y.traits[b] - y.traits[a]);
-    fill($("facGrid"), [...present, ...DATA.rules.factions.filter((k) => !present.includes(k))].slice(0, 6), emb); fill($("roleGrid"), ROLES, ric); }
+    const have = (k) => (y.traits[k] || 0) > 0, rank = (a, b) => { const ta = thOf(a).filter((t) => y.traits[a] >= t).length, tb = thOf(b).filter((t) => y.traits[b] >= t).length; return tb - ta || y.traits[b] - y.traits[a]; };
+    fill($("facGrid"), DATA.rules.factions.filter(have).sort(rank), emb); fill($("roleGrid"), ROLES.filter(have).sort(rank), ric);
+    $("synEmpty").classList.toggle("hidden", Object.values(y.traits || {}).some((n) => n > 0)); }
   // standings
   const st = $("standings2"); st.innerHTML = "";
   const order = [...state.players].sort((a, b) => (a.seat === state.seat ? -1 : b.seat === state.seat ? 1 : (a.eliminated - b.eliminated) || b.hp - a.hp));
   for (const p of order) {
     const el = document.createElement("div"), pct = Math.max(0, Math.min(100, (p.hp / DATA.rules.startHealth) * 100));
     el.className = "pl" + (p.seat === state.seat ? " me" : "") + (p.eliminated ? " dead" : "");
-    el.innerHTML = `<span class="av" style="background-image:url(${avatarUrl(p)})"></span><span class="nm">${p.name}</span><span class="hp">${Math.max(0, p.hp)}</span><div class="bar"><i style="width:${pct}%;background-size:${pct > 0 ? 10000 / pct : 100}% 100%"></i></div>`;
+    el.innerHTML = `<span class="av" style="background-image:url(${avatarUrl(p)})"></span><span class="nm">${p.name}</span><span class="hp">${Math.max(0, p.hp)}${p.shield ? `<small class="shd" title="Commander shield">🛡${p.shield}</small>` : ""}</span><div class="bar"><i style="width:${pct}%;background-size:${pct > 0 ? 10000 / pct : 100}% 100%"></i></div>`;
+    if (p.seat !== state.seat && !p.eliminated) { el.classList.add("scoutable"); el.title = "Click to scout this board"; el.onclick = () => { scouting = scouting === p.seat ? null : p.seat; selUid = null; renderInspector(); refreshHud(); }; }
+    if (scouting === p.seat) el.classList.add("scouted");
     if (prev.hp[p.seat] !== undefined && p.hp < prev.hp[p.seat]) { el.classList.add("hit"); }
     prev.hp[p.seat] = p.hp;
     st.appendChild(el);
   }
+  { const c = $("xpCost"); if (c) { c.textContent = DATA.rules.xpBuyGold ?? 1; $("xp").title = `Buy ${DATA.rules.xpBuyAmount ?? 1} XP (F)`; } }
   renderBag(); renderInspector();
   $("msg").textContent = state.message || (state.phase === "Preparation" && y.reward ? y.reward : "") || (y.eliminated ? "You were eliminated — waiting for the match to end." : "");
 }
@@ -241,7 +252,7 @@ function renderBag() {
   for (const key of y.items) {
     const it = DATA.itemBy[key]; if (!it) continue;
     const el = document.createElement("span");
-    el.className = "item" + (key === selItem ? " sel" : ""); el.style.borderColor = RARITY_COLORS[it.rarity] || "#888"; el.textContent = it.id;
+    el.className = "item" + (key === selItem ? " sel" : ""); el.style.borderColor = RARITY_COLORS[it.rarity] || "#888"; el.innerHTML = (it.icon ? `<img src="${it.icon}" alt="">` : "") + `<span>${it.id}</span>`;
     el.onclick = () => { if (it.stone) { const su = state.you.units.find((x) => x.uid === selUid); if (su && defOf(su.id).stoneEvolutions?.[key]) send({ a: "evolve", uid: su.uid, stone: key }); return; } selItem = selItem === key ? null : key; renderBag(); };
     el.onmouseenter = () => (hoverTip = { text: `<b style="color:${RARITY_COLORS[it.rarity]}">${it.id}</b> · ${it.rarity}<br>${it.text}<br><i>${it.stone ? "Select an Eevee, then click this stone." : "Click, then click a fighter."}</i>` }); el.onmouseleave = () => (hoverTip = null);
     bag.appendChild(el);
@@ -257,13 +268,14 @@ function renderInspector() {
   box.classList.remove("closed"); document.body.classList.add("inspecting"); hoverTip = null;
   box.style.setProperty("--rc", rc); box.style.setProperty("--fc", factionColor(d.faction));
   const stat = (img, lab, v) => `<span title="${lab}"><img src="${UI}icons/${img}.png" alt="${lab}"><b>${v}</b></span>`;
-  const slots = [0, 1, 2].map((i) => { const k = u.items[i], it = k && DATA.itemBy[k]; return it ? `<div class="slot fill" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}" title="${it.id}: ${it.text} (click to unequip)" data-i="${i}">${it.id.slice(0, 6)}</div>` : `<div class="slot" title="Empty equipment slot"></div>`; }).join("");
+  const slots = [0, 1, 2].map((i) => { const k = u.items[i], it = k && DATA.itemBy[k]; return it ? `<div class="slot fill" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}" title="${it.id}: ${it.text} (click to unequip)" data-i="${i}">${it.icon ? `<img src="${it.icon}" alt="${it.id}">` : it.id.slice(0, 6)}</div>` : `<div class="slot" title="Empty equipment slot"></div>`; }).join("");
   box.innerHTML = `<button class="x" title="Close">✕</button><div class="top"><div class="pt" style="background-image:url(${artPath("portraits", formId(u)) || artPath("portraits", u.id) || portrait(u.id, d, fRGB(d.faction))})"><div class="st">${"★".repeat(u.stars)}</div></div>
   <div><h4>${formId(u) === u.id ? d.name : prettyName(formId(u))}<small>${TIER_NAME[d.tier - 1]} · Tier ${d.tier}</small></h4>
   <div class="tags">${(d.types || [d.faction]).map((t) => `<span>${emb(t)}${t}</span>`).join("")}<span>${ric(d.role)}${roleName(d.role)}</span></div>
   <div class="stats">${stat("health", "Health", Math.round(d.health * S))}${stat("attack", "Attack", Math.round(d.attack * S))}${stat("defense", "Armor", d.armor)}${stat("mr", "Magic resist", d.mr)}${stat("mp", "Mana (start / max)", d.maxMana ? `${d.startMana || 0}/${d.maxMana}` : "–")}${stat("attack_speed", "Attack speed", d.speed.toFixed(2))}${stat("range", "Range", d.range)}</div></div></div>
   <div class="abil">${abilityImg(u.id, d, "ico")}<div><b>${d.ability}</b><br>${d.description}</div></div>
   ${d.stoneEvolutions ? `<div class="evo">${Object.entries(d.stoneEvolutions).filter(([k]) => y.items.includes(k)).map(([k, t]) => `<button class="wbtn" data-stone="${k}"><span>${DATA.itemBy[k]?.id || k} → ${prettyName(t)}</span></button>`).join("") || '<i>Eevee evolves with an Evolution Stone (dropped by creep/boss wins).</i>'}</div>` : ""}
+  ${u.blessing ? `<div class="bless">✦ Blessing: ${emb(u.blessing)} <b>+1 ${u.blessing}</b></div>` : ""}
   <div class="foot"><div class="slots">${slots}</div><button class="wbtn red sell"><span>Sell</span><em>${COIN}${sellValue(d, u)}</em></button></div>`;
   box.querySelector(".x").onclick = () => { selUid = null; renderInspector(); };
   box.querySelector(".sell").onclick = () => { send({ a: "sell", uid: u.uid }); selUid = null; renderInspector(); };
@@ -280,7 +292,7 @@ function startCombat(m) {
   Audio2.music(m.npc ? (/Mewtwo|Rayquaza/.test(m.vs || "") ? "vs_rayquaza" : "vs_wild") : "vs_trainer");
   const units = {};
   for (const u of m.start) { const d = defOf(u.id); units[u.uid] = { ...u, formArt: null, maxHp: u.hp, alive: true, tc: u.col, tr: u.row, mana: u.mana ?? 0, maxMana: u.maxMana ?? 0 }; }
-  combat = { m, units, idx: 0, t0: performance.now(), done: false, banner: false };
+  combat = { m, units, idx: 0, t0: performance.now(), done: false, banner: false, stats: {} }; lastCombat = combat;
   selUid = null; renderInspector(); phaseAt = performance.now();
 }
 function stepCombat(now) {
@@ -289,9 +301,9 @@ function stepCombat(now) {
     const e = c.m.events[c.idx++], u = c.units[e.u], tg = e.tg && c.units[e.tg], K = (id) => "c" + id;
     if (e.k === "move") { u.tc = e.col; u.tr = e.row; }
     else if (e.k === "atk") { if (u) Audio2.sfx("click", 0.25, 120); scene.fxEvent("atk", K(e.u), K(e.tg)); }
-    else if (e.k === "dmg") { Audio2.sfx(e.crit ? "super_effective" : "effective", e.crit ? 0.8 : 0.45, 90); tg.hp = Math.max(0, tg.hp - e.v); scene.fxEvent("dmg", K(e.u), K(e.tg), { v: e.v, crit: e.crit, magic: e.name === "magic" }); }
+    else if (e.k === "dmg") { const S = (id) => (c.stats[id] ||= { dealt: 0, taken: 0, heal: 0 }); S(e.u).dealt += e.v; S(e.tg).taken += e.v; Audio2.sfx(e.crit ? "super_effective" : "effective", e.crit ? 0.8 : 0.45, 90); tg.hp = Math.max(0, tg.hp - e.v); scene.fxEvent("dmg", K(e.u), K(e.tg), { v: e.v, crit: e.crit, magic: e.name === "magic" }); }
     else if (e.k === "mana") u.mana = e.v;
-    else if (e.k === "heal") { Audio2.sfx("eb_heal", 0.5, 200); tg.hp = Math.min(tg.maxHp, tg.hp + e.v); scene.fxEvent("heal", K(e.u), K(e.tg), { v: e.v }); }
+    else if (e.k === "heal") { (c.stats[e.u] ||= { dealt: 0, taken: 0, heal: 0 }).heal += e.v; Audio2.sfx("eb_heal", 0.5, 200); tg.hp = Math.min(tg.maxHp, tg.hp + e.v); scene.fxEvent("heal", K(e.u), K(e.tg), { v: e.v }); }
     else if (e.k === "shield") scene.fxEvent("shield", K(e.u), K(e.tg));
     else if (e.k === "die") { Audio2.sfx("faint", 0.7, 100); u.alive = false; scene.fxEvent("die", K(e.u)); }
     else if (e.k === "cast") { if (u) Audio2.cry(cryOf(u), 0.7); scene.fxEvent("cast", K(e.u), e.tg ? K(e.tg) : undefined, { name: e.name }); }
@@ -323,6 +335,10 @@ function buildList(now) {
     }
     return list;
   }
+  if (scouting !== null) { // view-only scouting of another player's board
+    const o = state.players.find((q) => q.seat === scouting), ob = o && o.board ? o.board : [], benchO = ob.filter((u) => u.col === null);
+    return ob.map((u) => ({ key: "u" + u.uid, id: u.id, art: formId(u), def: defOf(u.id), fcolor: fRGB(defOf(u.id).faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: false, spawnFx: false, noPop: true, cell: u.col !== null ? { col: u.col, row: u.row } : { bench: benchO.indexOf(u) } }));
+  }
   const y = state.you, bench = y.units.filter((u) => u.col === null);
   for (const u of y.units) {
     const d = defOf(u.id), isDrag = drag && drag.moved && drag.uid === u.uid;
@@ -333,17 +349,46 @@ function buildList(now) {
   }
   return list;
 }
+const typing = (e) => /^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || "");
+const KEYMAP = { ArrowLeft: "l", a: "l", A: "l", ArrowRight: "r", d: "r", D: "r", ArrowUp: "u", w: "u", W: "u", ArrowDown: "d", s: "d", S: "d" };
+addEventListener("keydown", (e) => { if (typing(e) || !state || $("match").classList.contains("hidden")) return; const k = KEYMAP[e.key]; if (k) { walkKeys[k] = 1; e.preventDefault(); } if (e.key === " " || e.code === "Space") { walkKeys.jump = true; e.preventDefault(); } });
+addEventListener("keyup", (e) => { const k = KEYMAP[e.key]; if (k) walkKeys[k] = 0; if (e.key === " " || e.code === "Space") walkKeys.jump = false; });
+addEventListener("blur", () => { walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }; });
+// viewed island: my own, or the opponent being scouted; trainers standing there are drawn (visitors included)
+function updateWalkers(now) {
+  const mySeat = state.seat, viewed = scouting !== null ? scouting : mySeat;
+  if (viewed !== lastViewed) { // entering / leaving another island moves my trainer there (and back home on return)
+    if (lastViewed === null || lastViewed === mySeat) homePose = scene.localPose() || homePose;
+    if (viewed === mySeat) { if (homePose) scene.teleportLocal(homePose.x, homePose.z, homePose.yaw); } else scene.teleportLocal(-9.2, 7.7 - 0.0, 1.25);
+    lastViewed = viewed;
+  }
+  let ix = (walkKeys.r - walkKeys.l) + joy.ix, iz = (walkKeys.d - walkKeys.u) + joy.iz; const l = Math.hypot(ix, iz); if (l > 1) { ix /= l; iz /= l; }
+  scene.setInput(ix, iz, walkKeys.jump || joy.jump);
+  const list = [];
+  for (const q of state.players) {
+    if (q.seat === mySeat || q.eliminated) continue; const a = avatars.get(q.seat);
+    if (a ? a.island === viewed : q.seat === viewed) list.push({ key: "p" + q.seat, cmd: (q.commander || "Blue").toLowerCase(), x: a ? a.x : -9.2, y: a ? a.y : 0.95, z: a ? a.z : 7.7, yaw: a ? a.yaw : 1.25, mv: a ? a.mv : 0 });
+  }
+  scene.setRemote(list);
+  const lp = scene.localPose();
+  if (lp && now - lastAvatarSent > 100 && ws && ws.readyState === 1) { lastAvatarSent = now; ws.send(JSON.stringify({ t: "avatar", island: viewed, x: lp.x, y: lp.y, z: lp.z, yaw: lp.yaw, mv: lp.mv })); }
+}
+let homePose = null;
 function loop(now) {
   requestAnimationFrame(loop);
   if (!scene) return;
   const inMatch = state && !$("match").classList.contains("hidden");
+  if (inMatch && state.players) updateWalkers(now);
   if (inMatch && combat && state.phase !== "Preparation") stepCombat(now);
   scene.sync(buildList(now));
   const dragging = drag && drag.moved;
-  scene.setGrid({ mode: inMatch && combat && state.phase !== "Preparation" ? "combat" : dragging ? "drag" : inMatch ? "prep" : "combat", hoverCell: dragging ? drag.hoverCell : null, hoverBench: dragging ? drag.hoverBench : null });
+  const placing = !dragging && inMatch && state.phase === "Preparation" && selUid != null && document.elementFromPoint(ptr.x, ptr.y) === view; // click-to-place preview
+  const hc = dragging ? drag.hoverCell : placing ? scene.pickCell(ptr.x, ptr.y, false) : null, hb = dragging ? drag.hoverBench : placing ? scene.pickBench(ptr.x, ptr.y) : null;
+  scene.setGrid({ mode: inMatch && combat && state.phase !== "Preparation" ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat", hoverCell: hc, hoverBench: hb });
   scene.frame();
+  if (inMatch) { renderDmg(); renderBagPanel(); renderRoundStrip(); renderPick(); renderBless(); renderSupply(); renderCards(); renderCardStack(); renderCmdSkill(); renderScout(); if (synOpen) renderSynDetail(); }
   if (inMatch) {
-    if (state.phase === "Preparation") { const left = Math.max(0, timerBase.left - (now - timerBase.at) / 1000); $("timer").textContent = Math.ceil(left); $("timerWrap").classList.toggle("urgent", left <= 5 && left > 0); }
+    if (state.phase === "Preparation" || state.phase === "Supply") { const left = Math.max(0, timerBase.left - (now - timerBase.at) / 1000); $("timer").textContent = Math.ceil(left); { const w = Math.min(100, (left / roundTotal) * 100) + "%"; $("tFill").style.width = w; $("tFill2").style.width = w; } $("timerWrap").classList.toggle("urgent", left <= 5 && left > 0); }
     else $("timer").textContent = combat ? (combat.done ? "✓" : "⚔") : "…";
     $("sellZone").classList.toggle("hidden", !dragging);
   }
@@ -355,12 +400,30 @@ const view = $("view");
 const uidOfVisual = (v) => (v && v.key.startsWith("u") ? Number(v.key.slice(1)) : null);
 view.addEventListener("pointerdown", (e) => {
   ptr = { x: e.clientX, y: e.clientY };
-  if (e.button !== 0 || !state || state.phase !== "Preparation" || state.you.eliminated) return;
+  if (e.button !== 0 || !state || state.phase !== "Preparation" || state.you.eliminated || scouting !== null) return;
   const uid = uidOfVisual(scene.pickUnit(e.clientX, e.clientY));
+  if (cmdTarget) { // commander skill targeting
+    if (cmdTarget === "unit" && uid != null) { send({ a: "cmd", uid }); cmdTarget = null; refreshCmd(); return; }
+    if (cmdTarget === "cell") { const cell = scene.pickCell(e.clientX, e.clientY, false); if (cell && cell.row < 4) { send({ a: "cmd", col: cell.col, row: cell.row }); cmdTarget = null; refreshCmd(); return; } }
+    if (uid == null) { cmdTarget = null; refreshCmd(); }
+    return;
+  }
   if (uid != null && selItem) { send({ a: "equip", uid, item: selItem }); selItem = null; return; }
+  if (uid != null && selUid != null && uid !== selUid && !selItem) { // click-to-place: a selected fighter swaps with the fighter you click on the board
+    const other = state.you.units.find((x) => x.uid === uid);
+    if (other && other.col !== null) { send({ a: "move", uid: selUid, col: other.col, row: other.row }); selUid = null; renderInspector(); return; }
+  }
   if (uid != null) drag = { uid, sx: e.clientX, sy: e.clientY, moved: false };
+  else if (selUid != null && placeSelected(e.clientX, e.clientY)) return;
   else { selUid = null; renderInspector(); }
 });
+// click-to-place: select a fighter (click it), then click a free hex or the bench instead of dragging
+function placeSelected(cx, cy) {
+  const cell = scene.pickCell(cx, cy, false);
+  if (cell && cell.row < 4) { send({ a: "move", uid: selUid, col: cell.col, row: cell.row }); selUid = null; renderInspector(); return true; }
+  if (scene.pickBench(cx, cy) !== null) { send({ a: "move", uid: selUid, col: null, row: null }); selUid = null; renderInspector(); return true; }
+  return false;
+}
 addEventListener("pointermove", (e) => {
   ptr = { x: e.clientX, y: e.clientY };
   if (drag) {
@@ -402,19 +465,189 @@ function updateTip() {
   tip.style.left = Math.max(8, Math.min(W - tw - 8, ptr.x / sc + 16)) + "px"; tip.style.top = Math.max(8, Math.min(H - th - 8, ptr.y / sc - th - 12)) + "px";
 }
 
-window.__ui = { send: (a) => send(a), info: () => ({ calls: scene.renderer.info.render.calls, tris: scene.renderer.info.render.triangles, geos: scene.renderer.info.memory.geometries, tex: scene.renderer.info.memory.textures }), banner, ids: () => DATA.roster.map((u) => u.id), refresh: () => refreshHud(), cell: (c, lift) => scene.cellScreen(c, lift), get state() { return state; }, get combat() { return combat; } };
+Object.defineProperty(window, "__scene", { get: () => scene });
+window.__ui = { send: (a) => send(a), info: () => ({ calls: scene.renderer.info.render.calls, tris: scene.renderer.info.render.triangles, geos: scene.renderer.info.memory.geometries, tex: scene.renderer.info.memory.textures }), banner, ids: () => DATA.roster.map((u) => u.id), refresh: () => refreshHud(), at: (uid) => { const v = scene.units.get("u" + uid); return v && scene.screenOf(v.worldPos(0.8)); }, cell: (c, lift) => scene.cellScreen(c, lift), get state() { return state; }, get combat() { return combat; } };
 loadData().then(fit).catch((e) => { console.error(e); $("menuMsg").textContent = "Cannot reach the game server."; });
 fit();
 
+
+// ---------------- left panels: damage meter and bag (heroes + their items) ----------------
+const portraitOf = (id, u) => { const d = defOf(id) || {}; return artPath("portraits", u ? formId(u) : id) || artPath("portraits", id) || portrait(id, d, fRGB(d.faction)); };
+function renderRoundStrip() {
+  if (!state || !DATA) return; const iv = DATA.rules.npcInterval || 3, r = state.round;
+  const sig = r + "|" + iv; const el = $("rIcons"); if (el._sig === sig) return; el._sig = sig;
+  { const L = DATA.rules.stageLen || 6, T = DATA.rules.dmgTable || {}, R = ["I", "II", "III", "IV", "V"], row = T[R[Math.min(4, Math.floor((Math.max(1, r) - 1) / L))]] || [3], base = row[Math.min(5, (Math.max(1, r) - 1) % L)] ?? row[row.length - 1], st = R[Math.min(4, Math.floor((Math.max(1, r) - 1) / L))] + "-" + (((Math.max(1, r) - 1) % L) + 1);
+    $("rDmg").innerHTML = `<b>${st}</b> · lose = <i>${base}</i> + enemy ★`; $("rDmg").title = `If you lose this round your commander takes ${base} base damage plus the star levels of every enemy unit still standing (a 2★ counts 2). A draw damages both players.`; }
+  el.innerHTML = [0, 1, 2, 3, 4].map((k) => { const n = r + k, npc = n > 0 && n % iv === 0, boss = npc && Math.floor(n / iv) % 2 === 0;
+    return `<div class="ri ${k === 0 ? "cur " : ""}${boss ? "boss" : npc ? "creep" : ""}" title="${boss ? "Boss" : npc ? "Creep encounter" : "Player battle"} · round ${n}">${boss ? `<img src="art/ui/toolbar/equipment.png" alt="">` : npc ? "<span>🐾</span>" : `<img src="art/ui/toolbar/combat.png" alt="">`}<small>${n}</small></div>`; }).join("");
+}
+let synOpen = null;
+function showSynDetail(k, icon) {
+  const el = $("synDetail"); if (synOpen === k) { synOpen = null; el.classList.add("hidden"); return; } synOpen = k; el._icon = icon; renderSynDetail();
+}
+function renderSynDetail() {
+  const el = $("synDetail"), k = synOpen; if (!k || !state) return; const y = state.you, n = y.traits[k] || 0, th = thOf(k), isRole = ROLES.includes(k);
+  const members = DATA.roster.filter((d) => (isRole ? d.role === k : d.faction === k)).sort((a, b) => a.tier - b.tier);
+  const owned = new Set(y.units.map((u) => (defOf(u.id)?.evolutionLine || [u.id])[0]));
+  el.classList.remove("hidden");
+  el.innerHTML = `<div class="hd">${isRole ? ric(k) : emb(k)}<span>${roleName(k)}</span><button title="Close">✕</button></div><div class="ds">${DATA.rules.traitDescriptions[k] || ""}</div>`
+    + `<div class="th">${th.map((t) => `<div class="${n >= t ? "on" : ""}">[${t}] ${n >= t ? "✓ active" : n + "/" + t}</div>`).join("")}</div>`
+    + `<div class="mem">${members.map((d) => `<div class="${owned.has((d.evolutionLine || [d.id])[0]) ? "own" : ""}" title="${d.name}" style="background-image:url(${artPath("portraits", d.id) || portrait(d.id, d, fRGB(d.faction))})"><b>${d.tier}</b></div>`).join("")}</div>`;
+  el.querySelector("button").onclick = () => { synOpen = null; el.classList.add("hidden"); };
+}
+function renderPick() {
+  const el = $("pickPanel"), o = state && state.phase === "Preparation" ? state.you.picks : null;
+  if (!o) { if (!el.classList.contains("hidden")) { el.classList.add("hidden"); el._sig = ""; } return; }
+  const sig = o.join(",") + state.you.picksLeft; if (el._sig === sig) return; el._sig = sig; el.classList.remove("hidden");
+  el.innerHTML = `<div class="cap">Please select</div>${state.you.picksLeft > 1 ? `<span class="more">${state.you.picksLeft - 1} more to choose after this</span>` : ""}` + o.map((k) => { const it = DATA.itemBy[k]; if (!it) return ""; const c = RARITY_COLORS[it.rarity] || "#e9c46a"; return `<div class="opt" data-k="${k}"><div class="ic" style="--rc:${c}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}</div><div><b>${it.id}</b><span>${it.text}</span></div></div>`; }).join("");
+  for (const b of el.querySelectorAll(".opt")) b.onclick = () => { send({ a: "pick", item: b.dataset.k }); };
+}
+function renderBless() {
+  const el = $("blessPanel"), q = state && state.phase === "Preparation" ? state.you.bless : null;
+  document.body.classList.toggle("modalpick", !!q || !!(state && state.phase === "Preparation" && state.you.picks));
+  if (!q) { if (!el.classList.contains("hidden")) { el.classList.add("hidden"); el._sig = ""; } return; }
+  const sig = JSON.stringify([q, state.you.units.map((u) => [u.uid, u.blessing])]); if (el._sig === sig) return; el._sig = sig; el.classList.remove("hidden");
+  if (q.uid === null) {
+    const cand = state.you.units.filter((u) => !u.blessing).sort((a, b) => b.stars - a.stars);
+    el.innerHTML = `<div class="cap">Blessing Crystal</div><div class="sub">Choose a Pokémon to bless (+1 synergy count)</div>` + cand.map((u) => { const d = defOf(u.id); return `<div class="opt" data-u="${u.uid}"><div class="ic" style="background-image:url(${portraitOf(u.id, u)});background-size:cover;background-position:center top"></div><div><b>${d.name} ${"★".repeat(u.stars)}</b><span>${(d.types || [d.faction]).join(" / ")} · ${u.col === null ? "bench" : "deployed"}</span></div></div>`; }).join("");
+    for (const b of el.querySelectorAll(".opt")) b.onclick = () => send({ a: "bless", uid: Number(b.dataset.u) });
+  } else {
+    const u = state.you.units.find((x) => x.uid === q.uid), d = u && defOf(u.id), own = d ? d.types || [d.faction] : [];
+    el.innerHTML = `<div class="cap">${d ? d.name : "Pokémon"}'s Blessing</div><div class="sub">Choose a synergy to gain +1 count${q.left > 1 ? ` · ${q.left - 1} more blessing(s) waiting` : ""}</div>` + (q.options || []).map((t, i) => `<div class="opt" data-t="${t}"><div class="ic">${emb(t)}</div><div><b>${t}${own.includes(t) ? " (original type)" : ""}</b><span>${i < own.length ? "One of its own types counts one extra time." : "Random extra synergy."} ${DATA.rules.traitDescriptions[t] || ""}</span></div></div>`).join("");
+    for (const b of el.querySelectorAll(".opt")) b.onclick = () => send({ a: "blesspick", type: b.dataset.t });
+  }
+}
+function renderSupply() {
+  const el = $("supplyPanel"), S = state && state.phase === "Supply" ? state.supply : null;
+  document.body.classList.toggle("supplying", !!S);
+  if (!S) { if (!el.classList.contains("hidden")) { el.classList.add("hidden"); el._sig = ""; } return; }
+  const mine = S.turn === state.seat, who = (seat) => state.players.find((p) => p.seat === seat);
+  const sig = JSON.stringify([S.entries.map((e) => e.by), S.turn, state.seat]); if (el._sig === sig) { return; } el._sig = sig; el.classList.remove("hidden");
+  const stageName = ["", "I", "II", "III", "IV"][Math.min(S.stage, 4)] || S.stage;
+  const card = (e) => { const taker = e.by !== null ? who(e.by) : null, c = RARITY_COLORS[e.rarity] || (e.kind === "bless" ? "#ff9de2" : e.kind === "unit" ? "#7be0a0" : "#e9c46a");
+    const pic = e.kind === "unit" ? `<div class="ic big" style="background-image:url(${portraitOf(e.unitId)})"></div>` : e.icon ? `<div class="ic"><img src="${e.icon}" alt=""></div>` : `<div class="ic"></div>`;
+    return `<div class="sc2${taker ? " taken" : mine ? " can" : ""}" data-id="${e.id}" style="--rc:${c}">${pic}<b>${e.label}</b><span>${e.text}</span>${taker ? `<div class="by"><i style="background-image:url(${avatarUrl(taker)})"></i>${taker.name}</div>` : ""}</div>`; };
+  el.innerHTML = `<div class="hd"><b>Stage ${stageName} Supply</b><span>${mine ? "Your turn — choose one reward!" : `Waiting for ${who(S.turn)?.name || "…"}`}</span></div>`
+    + `<div class="order">${S.order.map((seat) => { const p = who(seat), done = S.entries.some((e) => e.by === seat); return `<i class="${seat === S.turn ? "cur" : ""}${done ? " done" : ""}${seat === state.seat ? " me" : ""}" title="${p?.name} · ${p?.hp} HP" style="background-image:url(${avatarUrl(p)})"></i>`; }).join("")}</div>`
+    + `<div class="cards">${S.entries.map(card).join("")}</div><div class="foot">Lowest HP chooses first · one reward each</div>`;
+  if (mine) for (const c of el.querySelectorAll(".sc2.can")) c.onclick = () => send({ a: "supplypick", id: Number(c.dataset.id) });
+}
+function renderCards() {
+  const el = $("cardPanel"), c = state && state.phase === "Preparation" ? state.you.card : null;
+  document.body.classList.toggle("carding", !!c);
+  if (!c) { if (!el.classList.contains("hidden")) { el.classList.add("hidden"); el._sig = ""; } return; }
+  const sig = JSON.stringify(c); if (el._sig === sig) return; el._sig = sig; el.classList.remove("hidden");
+  el.dataset.r = c.rarity;
+  el.innerHTML = `<div class="ttl">Please select a Pokémon Card</div><div class="row">` + c.options.map((o, i) => `<div class="col"><div class="gcard ${c.rarity}" data-id="${o.id}"><div class="art">${o.icon ? `<img src="${o.icon}" alt="">` : ""}</div><div class="nm">${o.name}</div><div class="tx">${o.text}</div></div><button class="rf" data-i="${i}" ${c.rerolls[i] > 0 ? "" : "disabled"}><span class="dice">🎲</span><b>×${c.rerolls[i]}</b><em>Refresh</em></button></div>`).join("") + `</div>`;
+  for (const g of el.querySelectorAll(".gcard")) g.onclick = () => send({ a: "cardpick", id: g.dataset.id });
+  for (const b of el.querySelectorAll(".rf")) b.onclick = () => send({ a: "cardreroll", slot: Number(b.dataset.i) });
+}
+let cardsOpen = false, cmdOpen = false, cmdTarget = null;
+const CMD_ACT = { Sabrina: ["Use Power of Chaos", "unit"], Misty: ["Select Hero", "unit"], Joy: ["Select ally", "unit"], Blue: ["Move trap", "cell"] };
+function refreshCmd() { $("cmdSkill")._sig = null; renderCmdSkill(); }
+function renderCmdSkill() {
+  const b = $("cmdSkill"), d = $("cmdDetails"), id = state && state.you.commander; if (!id) return;
+  const c = state.you.cmd || { used: 0 }, prep = state.phase === "Preparation";
+  const unit = (uid) => state.you.units.find((x) => x.uid === uid), nm = (u) => { const r = u && DATA.roster.find((q) => q.id === u.id); return r ? r.name : ""; };
+  const sig = JSON.stringify([id, cmdOpen, cmdTarget, c, prep, state.round, state.you.units.map((u) => [u.uid, u.col, u.row]), scouting]); if (b._sig === sig) return; b._sig = sig;
+  const cm = (DATA.rules.commanders || []).find((x) => x.id === id), act = CMD_ACT[id];
+  b.style.backgroundImage = `url(${avatarUrl({ commander: id, human: true })})`; b.classList.toggle("ready", id === "Sabrina" && prep && state.round >= 2 && !c.used); d.classList.toggle("hidden", !cmdOpen);
+  let status = "", dis = !prep;
+  if (id === "Sabrina") { status = state.round < 2 ? "Unlocks after Stage I-2" : c.used ? "Used (0/1)" : "1 use left"; dis = dis || state.round < 2 || !!c.used; }
+  else if (id === "Misty") status = c.water !== undefined && unit(c.water) ? "Shielded: " + nm(unit(c.water)) : "No Hero selected";
+  else if (id === "Joy") status = c.love !== undefined && unit(c.love) ? "Protecting: " + nm(unit(c.love)) : "No ally selected";
+  else if (id === "Blue") status = c.trap ? `Trap at column ${c.trap.col + 1}, row ${c.trap.row + 1}` : "Trap not placed yet";
+  else if (id === "Brock") status = state.round === 9 ? "Pick two Go Go Cards now" : "Active in Round II-3";
+  if (cmdOpen) { d.innerHTML = `<div class="ttl">Details</div><div class="it"><div class="gi" style="background-image:url(${avatarUrl({ commander: id, human: true })});background-size:cover;border-radius:50%;width:52px;height:52px"></div><div><b>${id} · Commander skill</b><span>${cm ? cm.text : ""}</span><span class="cstat">${status}</span>${act ? `<button class="cact${cmdTarget ? " on" : ""}"${dis ? " disabled" : ""}>${cmdTarget ? "Click a " + (cmdTarget === "cell" ? "tile" : "Hero") + "… (Esc)" : act[0]}</button>` : ""}</div></div>`;
+    const bt = d.querySelector(".cact"); if (bt) bt.onclick = () => { cmdTarget = cmdTarget ? null : act[1]; refreshCmd(); }; }
+  // markers on the board
+  const marks = []; if (prep && scouting === null) {
+    if (c.water !== undefined && unit(c.water) && id === "Misty") { const u = unit(c.water); marks.push({ key: "water", cell: u.col === null ? { bench: benchIndex(u) } : { col: u.col, row: u.row }, color: 0x5ab4ff }); }
+    if (c.love !== undefined && unit(c.love) && id === "Joy") { const u = unit(c.love); marks.push({ key: "love", cell: u.col === null ? { bench: benchIndex(u) } : { col: u.col, row: u.row }, color: 0xff7ab8 }); }
+    if (id === "Blue" && c.trap) marks.push({ key: "trap", cell: { col: c.trap.col, row: c.trap.row }, color: 0xffa23a });
+  }
+  scene && scene.setMarks(marks);
+}
+function benchIndex(u) { const bn = state.you.units.filter((x) => x.col === null); return Math.max(0, bn.indexOf(u)); }
+
+function renderCardStack() {
+  const st = $("cardStack"), det = $("cardDetails"), taken = state ? state.you.cardsTaken || [] : [];
+  const sig = JSON.stringify([taken.map((c) => c.id), cardsOpen, state && state.phase]); if (st._sig === sig) return; st._sig = sig;
+  const slots = (DATA.rules.gogoRounds || [2, 9, 15]).map((_, i) => taken[i]);
+  st.innerHTML = slots.map((c, i) => `<i class="gc ${c ? c.rarity : ""}" style="--i:${i}">${c ? "" : "?"}</i>`).join("");
+  det.classList.toggle("hidden", !cardsOpen);
+  if (cardsOpen) det.innerHTML = `<div class="ttl">Details</div>` + (taken.length ? taken.map((c) => `<div class="it"><div class="gi ${c.rarity}">${c.icon ? `<img src="${c.icon}" alt="">` : ""}</div><div><b>${c.name}</b><span>${c.text}</span></div></div>`).join("") : `<div class="none">No Pokémon Cards selected yet.<br>You choose one at I-2, II-3 and III-3.</div>`);
+}
+function renderScout() {
+  const bar = $("scoutBar"), panel = $("scoutPanel");
+  if (scouting !== null && (!state || state.phase !== "Preparation" || !state.players.find((q) => q.seat === scouting && !q.eliminated))) scouting = null;
+  document.body.classList.toggle("scouting", scouting !== null);
+  if (scouting === null) { if (!bar.classList.contains("hidden")) { bar.classList.add("hidden"); panel.classList.add("hidden"); bar._sig = ""; } return; }
+  const o = state.players.find((q) => q.seat === scouting), sig = JSON.stringify([o.board, o.hp, scouting]); if (bar._sig === sig) return; bar._sig = sig;
+  bar.classList.remove("hidden"); panel.classList.remove("hidden");
+  bar.innerHTML = `<span>🔍 Scouting <b>${o.name}</b> · ${o.hp} HP · Lv ${o.level}</span><button>Return to my board</button>`;
+  bar.querySelector("button").onclick = () => { scouting = null; refreshHud(); };
+  const dep = o.board.filter((u) => u.col !== null), ben = o.board.filter((u) => u.col === null);
+  const rows = (arr) => arr.length ? arr.map((u) => { const d = defOf(u.id); return `<div class="so"><i style="background-image:url(${portraitOf(u.id, u)})"></i><div><b>${d.name} <em>${"★".repeat(u.stars)}</em></b><span>${(d.types || [d.faction]).join(" / ")} · ${d.role}${u.blessing ? ` · ✦${u.blessing}` : ""}</span></div><div class="it">${u.items.map((k) => { const it = DATA.itemBy[k]; return it && it.icon ? `<img src="${it.icon}" title="${it.id}: ${it.text}" alt="">` : `<u title="${k}"></u>`; }).join("")}</div></div>`; }).join("") : `<div class="none">None</div>`;
+  const syn = Object.entries(o.traits || {}).filter(([k, n]) => n > 0).sort((a, b) => b[1] - a[1]).map(([k, n]) => { const th = thOf(k), tier = th.filter((t) => n >= t).length; return `<div class="sy${tier ? " on" : ""}" title="${k} ${n}/${th.join("/")}">${ROLES.includes(k) ? ric(k) : emb(k)}<b>${n}</b></div>`; }).join("");
+  panel.innerHTML = `<div class="hd">${o.name}'s team</div><div class="sys">${syn || '<span class="none">No synergies</span>'}</div><h5>Deployed (${dep.length})</h5>${rows(dep)}<h5>Bench (${ben.length})</h5>${rows(ben)}`;
+}
+function renderDmg() {
+  const el = $("dmgPanel"); if (el.classList.contains("hidden") || !DATA) return;
+  const c = combat || lastCombat, side = c ? (c.m.you ?? 0) : 0;
+  const rows = c ? Object.values(c.units).filter((u) => u.side === side).map((u) => ({ u, v: Math.round(c.stats[u.uid]?.[dmgMode] || 0) })).sort((a, b) => b.v - a.v) : [];
+  const sig = dmgMode + "|" + rows.map((r) => r.u.uid + ":" + r.v).join(",");
+  if (el._sig === sig) return; el._sig = sig;
+  const max = Math.max(1, ...rows.map((r) => r.v)), titles = { dealt: "Ally DMG Dealt", taken: "Ally DMG Taken", heal: "Ally Healing" };
+  el.dataset.m = dmgMode;
+  el.innerHTML = `<h4>${titles[dmgMode]}</h4>` + (rows.length ? rows.map((r) => { const d = defOf(r.u.id); return `<div class="row"><img src="${portraitOf(r.u.id, r.u)}" alt=""><div class="col"><div class="nm" style="color:${r.u.stars > 1 ? "#7be0a0" : "#fff"}">${d?.name || r.u.id}</div><div class="bar"><i style="width:${(r.v / max) * 100}%"></i></div></div><div class="val">${r.v}</div></div>`; }).join("") : `<div class="none">Fight a round to see damage numbers.</div>`)
+    + `<div class="tabs">${[["dealt", "⚔"], ["taken", "🛡"], ["heal", "✚"]].map(([m, g]) => `<button data-m="${m}" class="${m === dmgMode ? "on" : ""}" title="${titles[m]}">${g}</button>`).join("")}</div>`;
+  for (const b of el.querySelectorAll(".tabs button")) b.onclick = () => { dmgMode = b.dataset.m; el._sig = null; renderDmg(); };
+}
+function renderBagPanel() {
+  const el = $("bagPanel"); if (el.classList.contains("hidden") || !state) return;
+  const y = state.you, prep = state.phase === "Preparation" && !y.eliminated;
+  const all = y.items.filter((k) => DATA.itemBy[k]), items = all.filter((k) => !DATA.itemBy[k].stone && !DATA.itemBy[k].transfer), stones = [...new Set(all.filter((k) => DATA.itemBy[k].stone))];
+  const sig = JSON.stringify([y.units.map((u) => [u.uid, u.col === null, u.stars, u.items, u.blessing]), y.items.includes("blessing_transfer"), xferFrom, items, stones, bagPick, selItem, selUid, prep]);
+  if (el._sig === sig) return; el._sig = sig;
+  const row = (u) => { const d = defOf(u.id); const slots = [0, 1, 2].map((i) => { const k = u.items[i], it = k && DATA.itemBy[k]; return it ? `<button class="sl fill" data-u="${u.uid}" data-i="${i}" title="${it.id}: ${it.text} (click to unequip)">${it.icon ? `<img src="${it.icon}" alt="">` : it.id.slice(0, 2)}</button>` : `<button class="sl" data-u="${u.uid}" data-add="1" title="Equip an item">+</button>`; }).join("");
+    return `<div class="hr${u.blessing ? " blessed" : ""}${xferFrom === u.uid ? " xfer" : ""}" data-u="${u.uid}"><div class="pt" style="background-image:url(${portraitOf(u.id, u)})"></div><div class="nm" style="color:${u.stars > 1 ? "#7be0a0" : "#fff"}">${d?.name || u.id}<br><small>${"★".repeat(u.stars)}${u.blessing ? ` · ✦${u.blessing}` : ""}</small></div>${slots}</div>`; };
+  const dep = y.units.filter((u) => u.col !== null), und = y.units.filter((u) => u.col === null);
+  const pick = bagPick != null || selItem
+    ? `<div class="pick"><span>${items.length ? "Choose an item:" : "No equipment in your bag."}</span>${[...new Set(items)].map((k) => { const it = DATA.itemBy[k], n = items.filter((x) => x === k).length; return `<button data-k="${k}" class="${k === selItem ? "sel" : ""}" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}${it.id}${n > 1 ? " ×" + n : ""}</button>`; }).join("")}</div>`
+    : `<div class="pick"><span>${items.length ? "Click a + slot, or pick an item below then a slot:" : "Equipment drops from creep and boss rounds."}</span>${[...new Set(items)].map((k) => { const it = DATA.itemBy[k]; return `<button data-k="${k}" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}${it.id}</button>`; }).join("")}</div>`;
+  const hasXfer = y.items.includes("blessing_transfer");
+  const xferHtml = hasXfer ? `<div class="pick"><span>Blessing Transfer: ${xferFrom != null ? "now click the Pokémon to receive it" : "select a blessed Pokémon first, then press"}</span><button data-xfer="1" class="${xferFrom != null ? "sel" : ""}">✦ Transfer Blessing</button></div>` : "";
+  const stoneHtml = stones.length ? `<div class="pick"><span>Stones (select an Eevee, then click):</span>${stones.map((k) => { const it = DATA.itemBy[k]; return `<button data-stone="${k}" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}${it.id}</button>`; }).join("")}</div>` : "";
+  el.innerHTML = `<div class="cols"><div class="col"><h4>Deployed Heroes</h4><div class="list">${dep.length ? dep.map(row).join("") : `<div class="empty">No Pokémon on the field</div>`}</div></div><div class="col"><h4>Undeployed Heroes</h4><div class="list">${und.length ? und.map(row).join("") : `<div class="empty">Bench is empty</div>`}</div></div></div>${pick}${stoneHtml}${xferHtml}`;
+  for (const b of el.querySelectorAll(".sl[data-add]")) b.onclick = () => { if (!prep) return; const uid = Number(b.dataset.u); if (selItem) { send({ a: "equip", uid, item: selItem }); selItem = null; bagPick = null; } else { bagPick = bagPick === uid ? null : uid; } el._sig = null; renderBagPanel(); renderBag(); };
+  for (const b of el.querySelectorAll(".sl.fill")) b.onclick = () => { if (prep) send({ a: "unequip", uid: Number(b.dataset.u), index: Number(b.dataset.i) }); };
+  for (const b of el.querySelectorAll("[data-xfer]")) b.onclick = () => { const su = y.units.find((x) => x.uid === selUid); if (xferFrom != null) xferFrom = null; else if (su && su.blessing) xferFrom = su.uid; el._sig = null; renderBagPanel(); };
+  for (const r of el.querySelectorAll(".hr")) r.onclick = (e) => { if (e.target.closest(".sl")) return; const uid = Number(r.dataset.u); if (xferFrom != null && uid !== xferFrom) { send({ a: "transfer", from: xferFrom, to: uid }); xferFrom = null; } else { selUid = uid; renderInspector(); } el._sig = null; };
+  for (const b of el.querySelectorAll("[data-stone]")) b.onclick = () => { const su = y.units.find((x) => x.uid === selUid); if (su && defOf(su.id).stoneEvolutions?.[b.dataset.stone]) send({ a: "evolve", uid: su.uid, stone: b.dataset.stone }); };
+  for (const b of el.querySelectorAll(".pick button[data-k]")) b.onclick = () => { if (!prep) return; const k = b.dataset.k; if (bagPick != null) { send({ a: "equip", uid: bagPick, item: k }); bagPick = null; selItem = null; } else selItem = selItem === k ? null : k; el._sig = null; renderBagPanel(); renderBag(); };
+}
+
 // ---- left toolbar ----
 { const tool = (n) => document.querySelector(`[data-tool="${n}"]`), toggle = (n, el, off) => { const on = tool(n).classList.toggle("on"); el.classList.toggle(off, !on); };
-  tool("synergies").onclick = () => toggle("synergies", $("synergies"), "off");
-  tool("equipment").onclick = () => toggle("equipment", $("bag"), "hidden");
+  const TABS = { synergies: ["synergies", "off"], damage: ["dmgPanel", "hidden"], equipment: ["bagPanel", "hidden"] }; // one left panel at a time
+  const openTab = (n) => { for (const [k, [id, cls]] of Object.entries(TABS)) { const on = k === n && !tool(k).classList.contains("on"); tool(k).classList.toggle("on", on); $(id).classList.toggle(cls, !on); } if (n === "damage") { $("dmgPanel")._sig = null; renderDmg(); } if (n === "equipment") { $("bagPanel")._sig = null; renderBagPanel(); } };
+  $("cardStack").onclick = () => { cardsOpen = !cardsOpen; cmdOpen = false; $("cardStack")._sig = null; $("cmdSkill")._sig = null; renderCardStack(); renderCmdSkill(); };
+  $("cmdSkill").onclick = () => { cmdOpen = !cmdOpen; cardsOpen = false; $("cmdSkill")._sig = null; $("cardStack")._sig = null; renderCmdSkill(); renderCardStack(); };
+  tool("synergies").onclick = () => openTab("synergies"); tool("damage").onclick = () => openTab("damage"); tool("equipment").onclick = () => openTab("equipment");
   tool("statistics").onclick = () => toggle("statistics", $("standings2"), "hidden");
-  tool("combat").onclick = () => { if (!$("ready").disabled) $("ready").click(); };
   tool("emotes").onclick = () => { $("emoteMenu").classList.toggle("hidden"); tool("emotes").classList.toggle("on"); };
   for (const b of $("emoteMenu").querySelectorAll("button")) b.onclick = () => { // local-only reaction bubble above the commander (no server emote channel exists)
     const bub = $("emoteBubble"), cv = scene && scene.commanderVisual; if (!cv) return; const p = scene.screenOf(cv.worldPos(3.4));
     bub.textContent = b.textContent; bub.style.left = p.x / stageScale + "px"; bub.style.top = p.y / stageScale + "px"; bub.classList.remove("hidden"); bub.style.animation = "none"; void bub.offsetWidth; bub.style.animation = ""; setTimeout(() => bub.classList.add("hidden"), 2400);
     $("emoteMenu").classList.add("hidden"); tool("emotes").classList.remove("on"); };
 }
+
+// on-screen joystick + jump button for walking the trainer
+{ const base = $("joy"), knob = $("joyKnob"); let id = null;
+  const upd = (e) => { const r = base.getBoundingClientRect(), R = r.width / 2, cx = r.left + R, cy = r.top + R; let dx = e.clientX - cx, dy = e.clientY - cy; const d = Math.hypot(dx, dy), m = Math.min(1, d / R); if (d > 0) { dx = dx / d * m; dy = dy / d * m; } joy.ix = dx; joy.iz = dy; knob.style.transform = `translate(${dx * R * 0.55}px,${dy * R * 0.55}px)`; };
+  base.addEventListener("pointerdown", (e) => { id = e.pointerId; base.setPointerCapture(id); upd(e); e.preventDefault(); });
+  base.addEventListener("pointermove", (e) => { if (e.pointerId === id) upd(e); });
+  const end = (e) => { if (e.pointerId !== id) return; id = null; joy.ix = joy.iz = 0; knob.style.transform = ""; };
+  base.addEventListener("pointerup", end); base.addEventListener("pointercancel", end);
+  const jb = $("jumpBtn"); jb.addEventListener("pointerdown", (e) => { joy.jump = true; e.preventDefault(); }); const jend = () => { joy.jump = false; }; jb.addEventListener("pointerup", jend); jb.addEventListener("pointerleave", jend); jb.addEventListener("pointercancel", jend); }

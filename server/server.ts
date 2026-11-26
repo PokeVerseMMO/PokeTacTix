@@ -1,10 +1,11 @@
+import { STAGE_LEN } from "./supply.ts";
 // HTTP (serves the client) + WebSocket matchmaking and game traffic.
 import { createServer } from "node:http";
 import { readFile, readdir } from "node:fs/promises";
 import { readdirSync } from "node:fs";
 import { join, extname, normalize } from "node:path";
 import { WebSocketServer, type WebSocket } from "ws";
-import { CLIENT_ROSTER, ENEMIES, ITEM_LIST, SPECIAL_ITEMS, STONES, RULES, ROOT } from "./data.ts";
+import { CLIENT_ROSTER, ENEMIES, ITEM_LIST, TYPE_ITEMS, CRYSTALS, TRANSFER_ITEMS, SPECIAL_ITEMS, STONES, RULES, ROOT, GOGO } from "./data.ts";
 import { Room } from "./room.ts";
 import { getProfile, rankInfo } from "./profiles.ts";
 
@@ -18,7 +19,7 @@ export function startServer(port = Number(process.env.PORT ?? 8080)) {
     let path = url.pathname === "/" ? "/index.html" : decodeURIComponent(url.pathname);
     if (path === "/data.json") {
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ abilityIcons: (() => { try { return readdirSync(join(ROOT, "client/art/ui/abilities")).map((f) => f.replace(/\.png$/, "")); } catch { return []; } })(), roster: CLIENT_ROSTER, items: [...ITEM_LIST, ...STONES, ...SPECIAL_ITEMS], synergies: RULES.synergies, enemies: Object.values(ENEMIES).map((u: any) => ({ id: u.id, name: u.name, faction: u.faction, role: u.role, tier: u.tier, health: u.health, attack: u.attack, range: u.range, ability: u.ability, description: u.description, armor: u.armor, mr: u.mr, speed: u.speed, crit: u.crit, maxMana: u.maxMana, startMana: u.startMana, npc: true, boss: u.enemyClass === "boss" })), rules: { factions: RULES.factions, cols: RULES.cols, factionNames: RULES.factionNames, factionColors: RULES.factionColors, traitDescriptions: RULES.traitDescriptions, commanders: RULES.commanders, maxLevel: RULES.maxLevel, shopSize: RULES.shopSize, benchSize: RULES.benchSize } }));
+      res.end(JSON.stringify({ abilityIcons: (() => { try { return readdirSync(join(ROOT, "client/art/ui/abilities")).map((f) => f.replace(/\.png$/, "")); } catch { return []; } })(), roster: CLIENT_ROSTER, items: [...ITEM_LIST, ...TYPE_ITEMS, ...CRYSTALS, ...TRANSFER_ITEMS, ...STONES, ...SPECIAL_ITEMS], synergies: RULES.synergies, enemies: Object.values(ENEMIES).map((u: any) => ({ id: u.id, name: u.name, faction: u.faction, role: u.role, tier: u.tier, health: u.health, attack: u.attack, range: u.range, ability: u.ability, description: u.description, armor: u.armor, mr: u.mr, speed: u.speed, crit: u.crit, maxMana: u.maxMana, startMana: u.startMana, npc: true, boss: u.enemyClass === "boss" })), rules: { gogoNames: GOGO.rarityNames, gogoRounds: GOGO.rounds, npcInterval: RULES.npcInterval, dmgTable: RULES.damage.table, stageLen: STAGE_LEN, xpBuyGold: RULES.economy.xpBuyGold, xpBuyAmount: RULES.economy.xpBuyAmount, factions: RULES.factions, cols: RULES.cols, factionNames: RULES.factionNames, factionColors: RULES.factionColors, traitDescriptions: RULES.traitDescriptions, commanders: RULES.commanders, maxLevel: RULES.maxLevel, shopSize: RULES.shopSize, benchSize: RULES.benchSize } }));
       return;
     }
     if (path === "/api/art") {
@@ -89,6 +90,8 @@ export function startServer(port = Number(process.env.PORT ?? 8080)) {
           if (room.match.players.length >= 8) startWaiting();
           else if (!waitTimer) waitTimer = setTimeout(startWaiting, FILL_SECONDS * 1000);
         }
+      } else if (msg.t === "avatar" && room && room.started && me) {
+        room.setAvatar(room.match.players.indexOf(me), msg);
       } else if (msg.t === "act" && room && room.started) {
         room.handle(room.match.players.indexOf(me), msg.action);
       }

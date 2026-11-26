@@ -8,10 +8,10 @@ const { Room } = await import("../server/room.ts");
 
 const mk = () => { const m = rules.newMatch(7); const p = rules.addPlayer(m, "T", true, "Brock"); return { m, p }; };
 
-test("brief constants: HP 100, bench 10, 5 shop slots, start level 1, gold 10, reroll 2", () => {
+test("brief constants: HP 100, bench 10, 5 shop slots, start level 3, gold 10, reroll 2", () => {
   const { p } = mk();
   assert.strictEqual(p.hp, 100); assert.strictEqual(RULES.benchSize, 10); assert.strictEqual(RULES.shopSize, 5);
-  assert.strictEqual(p.level, 1); assert.strictEqual(p.gold, 10); assert.strictEqual(RULES.rerollCost, 2); assert.strictEqual(RULES.maxLevel, 10);
+  assert.strictEqual(p.level, 3); assert.strictEqual(p.gold, 10); assert.strictEqual(RULES.rerollCost, 2); assert.strictEqual(RULES.maxLevel, 10);
   assert.strictEqual(RULES.cols, 8);
 });
 
@@ -21,7 +21,7 @@ test("shop odds table: levels 1-10 each sum to 100 and match the brief", () => {
 });
 
 test("shop rolls respect level odds (level 1 sells only tier 1)", () => {
-  const { m, p } = mk(); rules.prepare(m);
+  const { m, p } = mk(); rules.prepare(m); p.level = 1;
   for (let i = 0; i < 40; i++) { rules.rollShop(m, p); for (const id of p.shop) if (id) assert.strictEqual(BY_ID[id].tier, 1); }
 });
 
@@ -33,13 +33,13 @@ test("empirical odds at level 10 land near the table", () => {
   assert.ok(Math.abs(pct[0] - 5) < 4, "T1 ~5%");
 });
 
-test("buy deducts exact cost, reroll costs 2, XP costs 4 for 4", () => {
+test("buy deducts exact cost, reroll costs 2, 1 gold buys 1 XP", () => {
   const { m, p } = mk(); rules.prepare(m); p.gold = 20;
   const slot = p.shop.findIndex(Boolean), tier = BY_ID[p.shop[slot]!].tier;
   assert.ok(rules.act(m, p, { a: "buy", slot }).ok); assert.strictEqual(p.gold, 20 - tier);
   const g = p.gold; assert.ok(rules.act(m, p, { a: "reroll" }).ok); assert.strictEqual(p.gold, g - 2);
-  const g2 = p.gold, xp = p.xp; assert.ok(rules.act(m, p, { a: "xp" }).ok); assert.strictEqual(p.gold, g2 - 4);
-  assert.ok(p.level > 1 || p.xp === xp + 4);
+  const g2 = p.gold, xp = p.xp; assert.ok(rules.act(m, p, { a: "xp" }).ok); assert.strictEqual(p.gold, g2 - 1);
+  assert.ok(p.level > 3 || p.xp === xp + 1);
   p.gold = 1; assert.ok(!rules.act(m, p, { a: "buy", slot: 0 }).ok || true);
   p.gold = 0; assert.ok(!rules.act(m, p, { a: "reroll" }).ok, "cannot reroll without gold");
 });
@@ -84,10 +84,13 @@ test("only one Legendary may be deployed", () => {
 
 test("economy: base + win/loss + interest (cap 5) + streak bonuses", () => {
   const { p } = mk();
-  p.gold = 0; p.lastResult = "win"; p.streak = 1; assert.strictEqual(rules.income(p), 5 + 2);
-  p.gold = 30; p.lastResult = "loss"; p.streak = -1; assert.strictEqual(rules.income(p), 5 + 1 + 3);
+  p.gold = 0; p.lastResult = "win"; p.streak = 1; assert.strictEqual(rules.income(p), 5 + 2 + 1);
+  p.gold = 30; p.lastResult = "loss"; p.streak = -1; assert.strictEqual(rules.income(p), 5 + 1 + 3 + 1);
   p.gold = 99; p.streak = 2; p.lastResult = "win"; assert.strictEqual(rules.income(p), 5 + 2 + 5 + 1);
-  p.streak = 4; assert.strictEqual(rules.income(p), 5 + 2 + 5 + 2);
+  p.streak = 3; assert.strictEqual(rules.income(p), 5 + 2 + 5 + 2);
+  p.gold = 0; p.streak = 0; p.lastResult = null; for (const [r, b] of [[1, 0], [12, 0], [13, 1], [18, 1], [19, 2], [24, 2], [25, 3], [40, 3]]) assert.strictEqual(rules.income(p, r), 5 + b, "stage bonus round " + r);
+  p.gold = 99; p.lastResult = "win";
+  p.streak = 4; assert.strictEqual(rules.income(p), 5 + 2 + 5 + 3);
   p.streak = -6; p.lastResult = "loss"; assert.strictEqual(rules.income(p), 5 + 1 + 5 + 3);
   rules.recordResult(p, true); assert.strictEqual(p.streak, 1); rules.recordResult(p, false); assert.strictEqual(p.streak, -1);
 });

@@ -37,3 +37,9 @@ mouse raycasting, drag highlights, unit animations, pooled effects) with a mocku
 avatars are placeholders generated in code. To get the painted look, drop your own art into `client/art/` (see
 `client/art/README.md`, check progress with `node tools/check-art.mjs`). Graphics: Settings > Low / Medium / High.
 Regression test: start a server with `PORT=8096 PREP_SECONDS=60 TEST_START_ITEMS=cloud,odm node server/server.ts`, then `node test/ui3d.mjs`.
+
+## Live updates
+The Windows app checks the `updates` branch of this repo every time it starts and downloads only the changed files (server, client, data), so you install the zip once.
+- Publish a new version: `tools/publish-update.sh` (builds the bundle and force-pushes the `updates` branch).
+- Private repo: put a read-only fine-grained token (Contents: read) in `update-token.txt` next to `PokeTactix.exe`. Not needed if the repo is public.
+- `electron/main.cjs` itself is part of the zip; changing it needs a new `./build.sh` zip.

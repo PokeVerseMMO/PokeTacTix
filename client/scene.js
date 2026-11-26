@@ -3,6 +3,34 @@ import * as THREE from "./vendor/three.module.min.js";
 import { buildArena, boardXZ, benchXZ, BENCH_TOP, COLS, ROWS, BENCH, R } from "./arena.js";
 import { UnitVisual, Effects, uiTex } from "./units.js";
 import { styleOf, artPath, ART } from "./art.js";
+import { GLTFLoader } from "./vendor/GLTFLoader.js";
+const TRAINER_LOADER = new GLTFLoader(), MOTION_CACHE = new Map();
+// Loads a fresh trainer model (own skeleton per instance) plus its stand/walk motions.
+async function loadTrainer(id) {
+  try {
+    const base = `art/models/${id}/`, g = await TRAINER_LOADER.loadAsync(base + "model.glb");
+    if (!MOTION_CACHE.has(id)) MOTION_CACHE.set(id, fetch(base + "anim.json").then((r) => r.json()).then((j) => j.motions).catch(() => ({})));
+    const motions = await MOTION_CACHE.get(id), bones = {};
+    g.scene.traverse((o) => { if (o.isBone) bones[o.name] = o; if (o.isMesh) { o.castShadow = true; if (o.material && o.material.name && o.material.name.endsWith("_eye") && o.material.map) { o.material.map.wrapS = o.material.map.wrapT = THREE.RepeatWrapping; o.material.map.needsUpdate = true; } } });
+    return { root: g.scene, motions, bones };
+  } catch (e) { return null; }
+}
+// A walking trainer: a pivot group at the feet, the model offset inside it, stand/walk pose playback.
+class Walker {
+  constructor(scene, m, height = 1.7) {
+    this.group = new THREE.Group(); const root = m.root; root.scale.setScalar(height / ((new THREE.Box3().setFromObject(root)).getSize(new THREE.Vector3()).y || 1));
+    const bb = new THREE.Box3().setFromObject(root); root.position.set(-(bb.max.x + bb.min.x) / 2, -bb.min.y, -(bb.max.z + bb.min.z) / 2);
+    this.group.add(root); scene.add(this.group); this.scene = scene; this.motions = m.motions; this.bones = m.bones; this.t = 0; this.cur = "stand"; this.x = 0; this.y = 0; this.z = 0; this.yaw = 0;
+  }
+  place(x, y, z, yaw) { this.x = x; this.y = y; this.z = z; this.yaw = yaw; this.group.position.set(x, y, z); this.group.rotation.y = yaw; }
+  pose(dt, walking) {
+    const want = walking && this.motions.walk ? "walk" : "stand"; if (want !== this.cur) { this.cur = want; this.t = 0; }
+    const mo = this.motions[this.cur]; if (!mo) return; this.t += dt; const i = Math.floor(this.t * 30) % mo.frames;
+    for (const [name, k] of Object.entries(mo.bones)) { const b = this.bones[name]; if (!b) continue; if (k.q) b.quaternion.fromArray(k.q[Math.min(i, k.q.length - 1)]); if (k.t) b.position.fromArray(k.t[Math.min(i, k.t.length - 1)]); }
+  }
+  dispose() { this.scene.remove(this.group); }
+}
+const angLerp = (a, b, t) => { let d = ((b - a + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI; return a + d * Math.min(1, t); };
 
 const MARK = 2.15;
 export const QUALITY = {
@@ -180,6 +208,16 @@ export class Scene3D {
     }
     return best;
   }
+  // commander-skill markers: [{key, cell:{col,row}|{bench:i}, color}] rings drawn under heroes / on the trap cell
+  setMarks(list) {
+    this.marks ||= new Map(); const want = new Set(list.map((m) => m.key));
+    for (const [k, m] of this.marks) if (!want.has(k)) { this.scene.remove(m); this.marks.delete(k); }
+    for (const it of list) {
+      let m = this.marks.get(it.key);
+      if (!m) { m = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.07, 8, 32), new THREE.MeshBasicMaterial({ color: it.color, transparent: true, opacity: 0.9, depthWrite: false })); m.rotation.x = Math.PI / 2; this.scene.add(m); this.marks.set(it.key, m); }
+      m.material.color.set(it.color); const w = this.worldOf(it.cell, false); m.position.set(w.x, w.y + 0.08, w.z); m.userData.pulse = it.key.startsWith("trap");
+    }
+  }
   pickBench(cx, cy) {
     const p = this.groundPoint(cx, cy, BENCH_TOP); if (!p) return null;
     for (let i = 0; i < BENCH; i++) { const b = benchXZ(i); if (Math.abs(p.x - b.x) < 0.8 && Math.abs(p.z - b.z) < 0.78) return i; }
@@ -200,16 +238,46 @@ export class Scene3D {
   screenOf(v3) { const r = this.canvas.getBoundingClientRect(), p = v3.clone().project(this.camera); return { x: r.left + (p.x * 0.5 + 0.5) * r.width, y: r.top + (-p.y * 0.5 + 0.5) * r.height }; }
   // ---- commander on the podium ----
   setCommander(id, def, fcolor) {
-    if (this.commanderVisual && this.commanderVisual.id === id) return;
-    if (this.commanderVisual) this.commanderVisual.dispose();
-    const v = new UnitVisual("commander", id, def, styleOf(id, def, fcolor), this.fx, this.spriteFor(id)); v.ui.visible = false; if (v.icons) v.icons.visible = false; v.shadow.visible = false;
-    v.place(this.arena.podium.position.x, this.arena.podium.position.z, 0.95, true); this.scene.add(v.root); this.commanderVisual = v;
+    if (this.commanderId === id) return; this.commanderId = id;
+    if (this.commanderVisual) { this.commanderVisual.dispose(); this.commanderVisual = null; }
+    const keep = this.me ? { x: this.me.x, z: this.me.z, yaw: this.me.yaw } : null;
+    if (this.me) { this.me.dispose(); this.me = null; }
+    loadTrainer(id).then((m) => { // the real 3D trainer walks the island; fall back to a flat sprite figure if the model can't load
+      if (this.commanderId !== id) return;
+      if (!m) { const v = new UnitVisual("commander", id, def, styleOf(id, def, fcolor), this.fx, this.spriteFor(id)); v.ui.visible = false; if (v.icons) v.icons.visible = false; v.shadow.visible = false; v.place(this.arena.podium.position.x, this.arena.podium.position.z, 0.95, true); this.scene.add(v.root); this.commanderVisual = v; return; }
+      const pp = this.arena.podium.position; this.me = new Walker(this.scene, m); this.meV = { vy: 0, lift: 0, mv: false };
+      const st = keep || { x: pp.x, z: pp.z, yaw: 1.25 }; this.me.place(st.x, this.groundY(st.x, st.z), st.z, st.yaw);
+    });
+  }
+  // ---- walking trainers (local player + visitors) ----
+  groundY(x, z) { const P = this.arena.podium.position, d = Math.hypot(x - P.x, z - P.z); const base = this.arena.terrainY ? this.arena.terrainY(x, z) : 0; if (d < 1.9) return 0.95; if (d < 2.8) return base + (0.95 - base) * (1 - (d - 1.9) / 0.9); return base; }
+  clampWalk(x, z) { const cx = -0.2, cz = 0.6, rx = 11.4, rz = 9.4, nx = (x - cx) / rx, nz = (z - cz) / rz, r = Math.hypot(nx, nz); return r > 1 ? { x: cx + nx / r * rx, z: cz + nz / r * rz } : { x, z }; }
+  setInput(ix, iz, jump) { this.input = { ix, iz, jump }; }
+  localPose() { const w = this.me; return w ? { x: w.x, y: w.y, z: w.z, yaw: w.yaw, mv: !!this.meV.mv } : null; }
+  teleportLocal(x, z, yaw) { if (this.me) { this.meV.vy = 0; this.meV.lift = 0; this.me.place(x, this.groundY(x, z), z, yaw ?? this.me.yaw); } }
+  setRemote(list) { // [{key, cmd, x, z, y, yaw, mv}] trainers visible on the island being viewed
+    this.remote ||= new Map(); const want = new Set(list.map((r) => r.key));
+    for (const [k, w] of this.remote) if (!want.has(k)) { if (w.walker) w.walker.dispose(); this.remote.delete(k); }
+    for (const r of list) {
+      let w = this.remote.get(r.key); if (w && w.cmd !== r.cmd) { if (w.walker) w.walker.dispose(); this.remote.delete(r.key); w = null; }
+      if (!w) { w = { cmd: r.cmd, walker: null, loading: true, tgt: r }; this.remote.set(r.key, w); loadTrainer(r.cmd).then((m) => { if (this.remote.get(r.key) !== w || !m) return; w.walker = new Walker(this.scene, m); w.loading = false; w.walker.place(w.tgt.x, w.tgt.y, w.tgt.z, w.tgt.yaw); }); }
+      w.tgt = r;
+    }
   }
   frame() {
     const dt = Math.min(0.05, this.clock.getDelta()); this.t += dt;
     this.arena.update(this.t, dt); this.fx.update(dt);
     for (const v of this.units.values()) v.update(dt, this.t);
     if (this.commanderVisual) this.commanderVisual.update(dt, this.t);
+    if (this.me) { // local trainer: walk with the joystick/keys, jump with space
+      const w = this.me, V = this.meV, inp = this.input || { ix: 0, iz: 0, jump: false }, len = Math.hypot(inp.ix, inp.iz), sp = 4.4;
+      let moving = false;
+      if (len > 0.08) { const k = Math.min(1, len) / len; const c = this.clampWalk(w.x + inp.ix * k * sp * dt, w.z + inp.iz * k * sp * dt); w.x = c.x; w.z = c.z; w.yaw = angLerp(w.yaw, Math.atan2(inp.ix, inp.iz), dt * 12); moving = true; }
+      if (inp.jump && V.lift <= 0.001 && V.vy === 0) V.vy = 6.4;
+      V.vy -= 18 * dt; V.lift += V.vy * dt; if (V.lift <= 0) { V.lift = 0; V.vy = 0; }
+      V.mv = moving; w.y = this.groundY(w.x, w.z) + V.lift; w.group.position.set(w.x, w.y, w.z); w.group.rotation.y = w.yaw; w.pose(dt, moving && V.lift < 0.05);
+    }
+    if (this.remote) for (const r of this.remote.values()) { const w = r.walker; if (!w) continue; const t = r.tgt, k = Math.min(1, dt * 10); w.x += (t.x - w.x) * k; w.z += (t.z - w.z) * k; w.y += (t.y - w.y) * k; w.yaw = angLerp(w.yaw, t.yaw, dt * 12); w.group.position.set(w.x, w.y, w.z); w.group.rotation.y = w.yaw; w.pose(dt, !!t.mv); }
     // billboard-ish: sprites handle themselves; damage numbers follow world points
     for (const n of this.nums) if (n.life > 0) {
       n.life -= dt; n.pos.y += n.vy * dt; n.vy *= 0.96;
