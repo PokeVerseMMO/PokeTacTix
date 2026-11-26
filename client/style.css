@@ -488,3 +488,9 @@ body.supplying #joy,body.supplying #jumpBtn,body.carding #joy,body.carding #jump
 /* play block sits above the nav bar */
 .lm-modebtn{top:588px}.lm-play{top:628px;height:80px}.lm-ranked{top:640px;left:786px}.lm-modepanel{top:448px}
 .lm-plate{left:385px;width:400px}.lm-ranked{left:800px;width:92px}
+
+#camBtn{position:absolute;left:150px;top:612px;width:38px;height:38px;border-radius:50%;border:2px solid #9fd2ffaa;background:rgba(10,16,40,.7);font-size:18px;cursor:pointer;z-index:5;padding:0}
+#camBtn:hover{background:rgba(30,50,100,.85)}
+#camName{position:absolute;left:150px;top:590px;width:90px;color:#cfe6ff;font-size:12px;font-weight:700;text-shadow:0 1px 3px #000;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}
+#camName.on{opacity:1}
+body.supplying #camBtn,body.carding #camBtn{visibility:hidden}

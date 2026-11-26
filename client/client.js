@@ -638,6 +638,9 @@ function updateTip() {
 }
 
 Object.defineProperty(window, "__scene", { get: () => scene });
+{ let camT = 0; const camCycle = () => { if (!scene) return; const n = scene.cycleCam(); const el = $("camName"); el.textContent = "Camera: " + n; el.classList.add("on"); clearTimeout(camT); camT = setTimeout(() => el.classList.remove("on"), 1400); };
+  $("camBtn").addEventListener("click", camCycle);
+  addEventListener("keydown", (e) => { if ((e.key === "c" || e.key === "C") && !e.ctrlKey && !e.metaKey && !typing(e) && state && !$("match").classList.contains("hidden")) camCycle(); }); }
 window.__ui = { send: (a) => send(a), info: () => ({ calls: scene.renderer.info.render.calls, tris: scene.renderer.info.render.triangles, geos: scene.renderer.info.memory.geometries, tex: scene.renderer.info.memory.textures }), banner, ids: () => DATA.roster.map((u) => u.id), refresh: () => refreshHud(), at: (uid) => { const v = scene.units.get("u" + uid); return v && scene.screenOf(v.worldPos(0.8)); }, cell: (c, lift) => scene.cellScreen(c, lift), get state() { return state; }, get combat() { return combat; } };
 loadData().then(fit).catch((e) => { console.error(e); $("menuMsg").textContent = "Cannot reach the game server."; });
 fit();

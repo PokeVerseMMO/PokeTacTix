@@ -193,8 +193,13 @@ export class Scene3D {
     this.renderer.setSize(w, h, false); this.camera.aspect = w / h;
     // keep the whole battlefield + bench framed on any aspect ratio
     const base = 29.5, need = 16 / 9; this.camera.fov = w / h >= need ? base : (Math.atan(Math.tan((base * Math.PI) / 360) * need / (w / h)) * 360) / Math.PI;
-    this.camera.position.set(0.4, 13.4, 29.4); this.camera.lookAt(0.4, 0.2, 0.9); this.camera.setViewOffset(w, h, 0, h * 0.02, w, h); this.camera.updateProjectionMatrix(); this.basePos = this.camera.position.clone();
+    this.camera.setViewOffset(w, h, 0, h * 0.02, w, h); this.camera.updateProjectionMatrix(); this.applyCamView();
   }
+  // camera angle presets (toggle with the camera button or C)
+  static CAMS = [{ name: "Classic", pos: [0.4, 13.4, 29.4], look: [0.2, 0, 1.0] }, { name: "High", pos: [0.4, 33, 15.5], look: [0.2, 0, 3.2] }, { name: "Close", pos: [0.4, 9.5, 22.5], look: [0.2, 0, 1.6] }, { name: "Left", pos: [-17, 15, 21], look: [0.4, 0, 1.0] }, { name: "Right", pos: [17.8, 15, 21], look: [0, 0, 1.0] }];
+  camIndex = (() => { try { return Math.max(0, Math.min(Scene3D.CAMS.length - 1, Number(localStorage.getItem("ptx.cam")) || 0)); } catch { return 0; } })();
+  applyCamView() { const c = Scene3D.CAMS[this.camIndex]; this.camera.position.set(...c.pos); this.basePos = this.camera.position.clone(); this.camLook = new THREE.Vector3(...c.look); this.camera.lookAt(this.camLook); }
+  cycleCam() { this.camIndex = (this.camIndex + 1) % Scene3D.CAMS.length; try { localStorage.setItem("ptx.cam", this.camIndex); } catch {} this.applyCamView(); return Scene3D.CAMS[this.camIndex].name; }
   // ---- picking ----
   ndc(cx, cy) { const r = this.canvas.getBoundingClientRect(); return new THREE.Vector2(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1); }
   groundPoint(cx, cy, y = 0) {
@@ -291,7 +296,7 @@ export class Scene3D {
       n.el.style.transform = `translate(${s.x - r.left}px,${s.y - r.top}px) translate(-50%,-50%)`; n.el.style.opacity = Math.min(1, n.life * 2.2);
     }
     if (this.shakeT > 0) { this.shakeT -= dt; const a = this.shakeT; this.camera.position.set(this.basePos.x + (Math.random() - 0.5) * a, this.basePos.y + (Math.random() - 0.5) * a, this.basePos.z); } else if (this.basePos) this.camera.position.copy(this.basePos);
-    this.camera.lookAt(0.2, 0, 1.0);
+    if (this.camLook) this.camera.lookAt(this.camLook);
     this.renderer.render(this.scene, this.camera);
     return dt;
   }
