@@ -1,14 +1,17 @@
 // Animated landscape behind the existing lobby UI and commander viewport.
+import { sceneryMotion } from "./scenery-motion.js";
+
 (() => {
   const canvas = document.getElementById("blossomBackdrop");
   const menu = document.getElementById("menu");
   const playMotion = document.getElementById("playBackgroundMotion");
   const motionSelect = document.getElementById("backgroundMotion");
+  const reflectSetting = () => { motionSelect.value = sceneryMotion.mode; };
+  reflectSetting();
+  motionSelect.addEventListener("change", () => sceneryMotion.setMode(motionSelect.value));
+  sceneryMotion.onChange(reflectSetting);
   const context = canvas.getContext("2d", { alpha: false });
-  if (!context) {
-    motionSelect.disabled = true;
-    return;
-  }
+  if (!context) return;
 
   const presets = {
     Low: { width: 768, fps: 20, petals: 34, streams: 23, spray: 14, bannerStep: 9, branchStep: 24 },
@@ -22,10 +25,6 @@
   canvas.width = SCENE_WIDTH;
   canvas.height = SCENE_HEIGHT;
 
-  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  const savedMotion = localStorage.getItem("backgroundMotion");
-  let motionMode = savedMotion === "on" || savedMotion === "off" ? savedMotion : "system";
-  motionSelect.value = motionMode;
   const artwork = new Image();
 
   const clamp = (v, lo=0, hi=1) => Math.max(lo,Math.min(hi,v));
@@ -303,9 +302,9 @@
   }
 
   function syncPlayback() {
-    const allowMotion = ready && (motionMode === "on" || (motionMode === "system" && !reduceMotion.matches));
+    const allowMotion = ready && sceneryMotion.enabled;
     const visible = !menu.classList.contains("hidden") && !document.hidden;
-    menu.dataset.motion = motionMode === "system" ? (reduceMotion.matches ? "off" : "on") : motionMode;
+    menu.dataset.motion = sceneryMotion.enabled ? "on" : "off";
     canvas.classList.toggle("is-animated", allowMotion);
     playMotion.classList.toggle("hidden", allowMotion || !ready);
     if (allowMotion && visible) {
@@ -320,18 +319,10 @@
     }
   }
 
-  function changeMotion(mode) {
-    motionMode = mode;
-    localStorage.setItem("backgroundMotion", mode);
-    motionSelect.value = mode;
-    syncPlayback();
-  }
-
-  motionSelect.addEventListener("change", () => changeMotion(motionSelect.value));
-  playMotion.addEventListener("click", () => changeMotion("on"));
+  playMotion.addEventListener("click", () => sceneryMotion.setMode("on"));
+  sceneryMotion.onChange(syncPlayback);
   new MutationObserver(syncPlayback).observe(menu, { attributes: true, attributeFilter: ["class"] });
   document.addEventListener("visibilitychange", syncPlayback);
-  reduceMotion.addEventListener("change", syncPlayback);
   syncPlayback();
 
   artwork.src = new URL("./art/environment/blossom-overlook.webp", import.meta.url).href;

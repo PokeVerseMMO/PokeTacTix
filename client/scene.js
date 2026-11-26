@@ -1,6 +1,7 @@
 // 3D battlefield: renderer, fixed camera, hex tiles, unit visuals, picking and effects. No gameplay logic lives here.
 import * as THREE from "./vendor/three.module.min.js";
 import { buildArena, boardXZ, benchXZ, BENCH_TOP, COLS, ROWS, BENCH, R } from "./arena.js";
+import { buildVerdantTerrace, frameTerrace, loadTerraceArt, terraceTarget } from "./verdant-terrace.js";
 import { UnitVisual, Effects, uiTex } from "./units.js";
 import { styleOf, artPath, ART } from "./art.js";
 import { GLTFLoader } from "./vendor/GLTFLoader.js";
@@ -40,7 +41,10 @@ export const QUALITY = {
 };
 
 export class Scene3D {
-  constructor(canvas, qualityName = "High") {
+  static async create(canvas, qualityName) {
+    return new Scene3D(canvas, qualityName, await loadTerraceArt());
+  }
+  constructor(canvas, qualityName = "High", terraceArt = null) {
     this.canvas = canvas; this.qname = QUALITY[qualityName] ? qualityName : "High"; const q = QUALITY[this.qname];
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: q.antialias, powerPreference: "high-performance", preserveDrawingBuffer: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.dpr));
@@ -48,7 +52,10 @@ export class Scene3D {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.05; this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(32, 16 / 9, 0.5, 400);
-    this.arena = buildArena(this.scene, q);
+    this.arena = terraceArt ? buildVerdantTerrace(this.scene, q, terraceArt) : buildArena(this.scene, q);
+    this.benchXZ = this.arena.benchXZ || benchXZ;
+    this.cameraTarget = terraceArt ? terraceTarget : new THREE.Vector3(0.2, 0, 1.0);
+    this.useTerraceCamera = !!terraceArt;
     this.fx = new Effects(this.scene);
     this.units = new Map(); this.clock = new THREE.Clock(); this.t = 0;
     this.hover = null; this.dragging = false; this.showGrid = true; this.nums = []; this.numCursor = 0;
@@ -74,7 +81,7 @@ export class Scene3D {
       this.tileGroup.add(fill, line, mark); this.tiles.push({ col, row, fill, line, mark });
     }
     this.benchHi = []; for (let i = 0; i < BENCH; i++) {
-      const p = benchXZ(i); const m = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.35), new THREE.MeshBasicMaterial({ color: 0x9fffd0, transparent: true, opacity: 0, depthWrite: false }));
+      const p = this.benchXZ(i); const m = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.35), new THREE.MeshBasicMaterial({ color: 0x9fffd0, transparent: true, opacity: 0, depthWrite: false }));
       m.rotation.x = -Math.PI / 2; m.position.set(p.x, BENCH_TOP + 0.08, p.z); this.scene.add(m); this.benchHi.push(m);
     }
   }
@@ -94,9 +101,13 @@ export class Scene3D {
     void flip;
   }
   worldOf(cell, flip) { // cell: {col,row} board | {bench:i}
-    if (cell.bench !== undefined) { const p = benchXZ(cell.bench); return { x: p.x, z: p.z, y: BENCH_TOP + 0.03 }; }
+    if (cell.bench !== undefined) { const p = this.benchXZ(cell.bench); return { x: p.x, z: p.z, y: BENCH_TOP + 0.03 }; }
     let { col, row } = cell; if (flip) { col = COLS - 1 - col; row = ROWS - 1 - row; }
     const p = boardXZ(col, row); return { x: p.x, z: p.z, y: 0.02 };
+  }
+  opponentBenchPosition(index) {
+    const p = this.benchXZ(index);
+    return { x: 1.2 - p.x, z: 0.5 - p.z, y: (this.arena.opponentBenchTop ?? BENCH_TOP) + 0.03 };
   }
   // ---- unit sync ----
   // list: [{key,id,def,fcolor,stars,items:[{color}],cell|world,hp,mana,showMana,selected,flip,instant}]
@@ -105,7 +116,16 @@ export class Scene3D {
     for (const u of list) {
       seen.add(u.key);
       let v = this.units.get(u.key);
-      if (!v) { v = new UnitVisual(u.key, u.id, u.def, styleOf(u.id, u.def, u.fcolor), this.fx, this.spriteFor(u.art ?? u.id)); this.units.set(u.key, v); this.scene.add(v.root); v.pop = 0.0001; const w = u.world || this.worldOf(u.cell, u.flip); v.place(w.x, w.z, w.y, true); if (u.noPop) v.pop = 0; if (u.spawnFx) this.fx.burst(v.worldPos(0.8), 0xfff0a0, 14, 1.8); }
+      if (!v) {
+        v = new UnitVisual(u.key, u.id, u.def, styleOf(u.id, u.def, u.fcolor), this.fx, this.spriteFor(u.art ?? u.id));
+        if (u.opponentReserve) v.root.scale.setScalar(this.arena.opponentReserveScale ?? 1);
+        this.units.set(u.key, v);
+        this.scene.add(v.root);
+        const w = u.world || this.worldOf(u.cell, u.flip);
+        v.place(w.x, w.z, w.y, true);
+        v.pop = u.noPop ? 0 : 0.0001;
+        if (u.spawnFx) this.fx.burst(v.worldPos(0.8), 0xfff0a0, 14, 1.8);
+      }
       v.away = !!u.mine; if (u.big) v.giantT = u.big; // far-side units are drawn larger so they read like the near side
       {
         const artKey = u.art ?? u.id, want = this.spriteFor(artKey, v.away);
@@ -191,6 +211,11 @@ export class Scene3D {
   resize() {
     const w = this.canvas.clientWidth || innerWidth, h = this.canvas.clientHeight || innerHeight;
     this.renderer.setSize(w, h, false); this.camera.aspect = w / h;
+    if (this.useTerraceCamera) {
+      frameTerrace(this.camera, w/h);
+      this.basePos = this.camera.position.clone();
+      return;
+    }
     // keep the whole battlefield + bench framed on any aspect ratio
     const base = 29.5, need = 16 / 9; this.camera.fov = w / h >= need ? base : (Math.atan(Math.tan((base * Math.PI) / 360) * need / (w / h)) * 360) / Math.PI;
     this.camera.position.set(0.4, 13.4, 29.4); this.camera.lookAt(0.4, 0.2, 0.9); this.camera.setViewOffset(w, h, 0, h * 0.02, w, h); this.camera.updateProjectionMatrix(); this.basePos = this.camera.position.clone();
@@ -220,7 +245,7 @@ export class Scene3D {
   }
   pickBench(cx, cy) {
     const p = this.groundPoint(cx, cy, BENCH_TOP); if (!p) return null;
-    for (let i = 0; i < BENCH; i++) { const b = benchXZ(i); if (Math.abs(p.x - b.x) < 0.8 && Math.abs(p.z - b.z) < 0.78) return i; }
+    for (let i = 0; i < BENCH; i++) { const b = this.benchXZ(i); if (Math.abs(p.x - b.x) < 0.8 && Math.abs(p.z - b.z) < 0.78) return i; }
     return null;
   }
   pickUnit(cx, cy, maxPx = 46) {
@@ -228,7 +253,7 @@ export class Scene3D {
     const v3 = new THREE.Vector3();
     for (const v of this.units.values()) {
       if (!v.root.visible || v.dead) continue;
-      v3.set(v.x, v.y + 0.9 * v.baseScale, v.z).project(this.camera);
+      v3.set(v.x, v.y + 0.9 * v.baseScale * v.root.scale.y, v.z).project(this.camera);
       const sx = r.left + (v3.x * 0.5 + 0.5) * r.width, sy = r.top + (-v3.y * 0.5 + 0.5) * r.height, d = Math.hypot(sx - cx, sy - cy);
       if (d < bd) { bd = d; best = v; }
     }
@@ -270,8 +295,9 @@ export class Scene3D {
     }
   }
   frame() {
-    const dt = Math.min(0.05, this.clock.getDelta()); this.t += dt;
-    this.arena.update(this.t, dt); this.fx.update(dt);
+    const elapsed = this.clock.getDelta();
+    const dt = Math.min(0.05, elapsed); this.t += dt;
+    this.arena.update(this.t, this.useTerraceCamera ? Math.min(elapsed, 1) : dt); this.fx.update(dt);
     for (const v of this.units.values()) v.update(dt, this.t);
     if (this.commanderVisual) this.commanderVisual.update(dt, this.t);
     if (this.me) { // local trainer: walk with the joystick/keys, jump with space
@@ -291,7 +317,7 @@ export class Scene3D {
       n.el.style.transform = `translate(${s.x - r.left}px,${s.y - r.top}px) translate(-50%,-50%)`; n.el.style.opacity = Math.min(1, n.life * 2.2);
     }
     if (this.shakeT > 0) { this.shakeT -= dt; const a = this.shakeT; this.camera.position.set(this.basePos.x + (Math.random() - 0.5) * a, this.basePos.y + (Math.random() - 0.5) * a, this.basePos.z); } else if (this.basePos) this.camera.position.copy(this.basePos);
-    this.camera.lookAt(0.2, 0, 1.0);
+    this.camera.lookAt(this.cameraTarget);
     this.renderer.render(this.scene, this.camera);
     return dt;
   }

@@ -75,7 +75,7 @@ async function loadData() {
   }
   initGallery({ DATA, show, defOf, emb, ric, portraitOf, roleName, prettyName, TIER_COLORS, TIER_NAME, RARITY_COLORS });
   if (!scene) {
-    scene = new Scene3D($("view"), localStorage.quality || "High"); scene.setNumberContainer($("numbers")); scene.onEvolve = (v) => { Audio2.sfx("egg_hatch", 0.9); setTimeout(() => { Audio2.jingle("evolved", 0.9); Audio2.cry(v.cryKey || v.id, 1); }, 1100); }; $("quality").value = scene.qname; fit();
+    scene = await Scene3D.create($("view"), localStorage.quality || "High"); scene.setNumberContainer($("numbers")); scene.onEvolve = (v) => { Audio2.sfx("egg_hatch", 0.9); setTimeout(() => { Audio2.jingle("evolved", 0.9); Audio2.cry(v.cryKey || v.id, 1); }, 1100); }; $("quality").value = scene.qname; fit();
     requestAnimationFrame(loop);
   }
   setCommanderVisual(localStorage.cmd || "Blue");
@@ -446,8 +446,8 @@ function buildList(now) {
   const y = state.you, bench = y.units.filter((u) => u.col === null);
   if (state.phase === "Preparation" && state.opponent != null) { // next opponent's backrow (bench) along the far edge
     const o = state.players.find((q) => q.seat === state.opponent && !q.eliminated), ob = o && o.board ? o.board.filter((u) => u.col === null) : [];
-    ob.forEach((u, i) => { const w = scene.worldOf({ bench: i }, false), d = defOf(u.id); if (!d) return;
-      list.push({ key: "o" + u.uid + "_" + o.seat, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: false, spawnFx: false, noPop: true, world: { x: 1.2 - w.x, z: -w.z + 0.5, y: w.y } }); });
+    ob.forEach((u, i) => { const d = defOf(u.id); if (!d) return;
+      list.push({ key: "o" + u.uid + "_" + o.seat, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: false, spawnFx: false, noPop: true, opponentReserve: true, world: scene.opponentBenchPosition(i) }); });
   }
   for (const u of y.units) {
     const d = defOf(u.id), isDrag = drag && drag.moved && drag.uid === u.uid;
