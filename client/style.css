@@ -183,7 +183,7 @@ body.inspecting #tip{display:none!important}
 .lm-help-panel{left:210px;top:154px;width:290px;height:220px;padding:14px 18px;text-align:left;font-size:15px;z-index:3}.lm-help-panel b{color:var(--gold);font-size:18px}
 .lm-stage{left:300px;top:90px;width:600px;height:450px;display:flex;align-items:flex-end;justify-content:center}
 .lm-stage img{height:420px;width:auto;max-width:420px;image-rendering:pixelated;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 18px 14px rgba(0,0,0,.45))}
-.lm-passive{left:916px;top:367px;width:260px;height:142px;padding:10px 12px;text-align:left}.lm-passive small{color:var(--gold);font-size:12px;font-weight:700}#cmdInfo{font-size:16px;margin-top:8px}
+.lm-passive{left:900px;top:330px;width:290px;height:auto;min-height:142px;padding:10px 14px 12px;text-align:left}.lm-passive small{color:var(--gold);font-size:12px;font-weight:700}#cmdInfo{font-size:13.5px;line-height:1.35;margin-top:6px}
 .lm-heroname{left:370px;top:550px;width:460px;height:44px;font-size:29px;text-align:center}
 .lm-choose{left:380px;top:591px;width:440px;text-align:center;color:var(--gold);font-family:Georgia,serif;font-size:17px}
 #commanders{left:310px;top:623px;width:600px;height:44px}
