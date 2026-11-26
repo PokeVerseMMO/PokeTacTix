@@ -253,7 +253,7 @@ export class Scene3D {
   // opponent's podium (mirror of mine, far corner) shown while their commander is on display
   showOppPodium(on) {
     if (!this.oppPod) { this.oppPod = this.arena.podium.clone(true); const P = this.arena.podium.position; this.oppPod.position.set(-P.x, P.y, -P.z); this.oppPod.rotation.y = Math.PI; this.scene.add(this.oppPod); }
-    this.oppPod.visible = !!on;
+    this.oppPod.visible = !!on; if (this.arena.oppBench) this.arena.oppBench.visible = !!on;
   }
   groundY(x, z) { const P = this.arena.podium.position, d = Math.hypot(x - P.x, z - P.z); const base = this.arena.terrainY ? this.arena.terrainY(x, z) : 0; if (d < 1.9) return 0.95; if (d < 2.8) return base + (0.95 - base) * (1 - (d - 1.9) / 0.9); return base; }
   clampWalk(x, z) { const cx = -0.2, cz = 0.6, rx = 11.4, rz = 9.4, nx = (x - cx) / rx, nz = (z - cz) / rz, r = Math.hypot(nx, nz); return r > 1 ? { x: cx + nx / r * rx, z: cz + nz / r * rz } : { x, z }; }

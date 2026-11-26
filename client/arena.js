@@ -190,11 +190,12 @@ export function buildArena(scene, q) {
     const curb = new THREE.Mesh(mergeGeos(merged), mats); curb.castShadow = shadows; curb.receiveShadow = shadows; root.add(curb); }
 
   // ---------- bench stones: nine individually sculpted, weathered platforms ----------
-  const slabs = [];
+  const slabs = [], oppBench = new THREE.Group(); oppBench.visible = false; root.add(oppBench); // mirrored stones across the board for the next opponent's bench
   { const bm = new THREE.MeshStandardMaterial({ map: carvedStoneTexture(3), vertexColors: true, roughness: 0.95 });
     for (let i = 0; i < BENCH; i++) {
       const p = benchXZ(i), w = 1.46 + (r() - 0.5) * 0.14, d = 1.4 + (r() - 0.5) * 0.1, g = slabGeometry(w, d, BENCH_TOP, 400 + i * 7, 0.07), m = new THREE.Mesh(g, bm);
-      m.position.set(p.x, 0, p.z); m.rotation.y = (r() - 0.5) * 0.05; m.castShadow = shadows; m.receiveShadow = shadows; root.add(m); slabs.push(m); aoBlob(p.x, p.z + 0.1, 1.15, 0.3);
+      m.position.set(p.x, 0, p.z); m.rotation.y = (r() - 0.5) * 0.05; m.castShadow = shadows; m.receiveShadow = shadows; root.add(m); slabs.push(m);
+      { const o = new THREE.Mesh(g, bm); o.position.set(1.2 - p.x, 0, -p.z + 0.5); o.rotation.y = Math.PI + (r() - 0.5) * 0.05; o.castShadow = shadows; o.receiveShadow = shadows; oppBench.add(o); } aoBlob(p.x, p.z + 0.1, 1.15, 0.3);
       if (r() < 0.55) { const gs = slabGeometry(0.5 + r() * 0.3, 0.3, 0.12, 600 + i, 0.03); const c = new THREE.Mesh(gs, bm); c.position.set(p.x + (r() - 0.5) * 0.8, 0, p.z + 0.85 + r() * 0.15); c.rotation.y = r() * 3; c.receiveShadow = shadows; root.add(c); } // loose paving at the front
     }
   }
@@ -348,7 +349,7 @@ export function buildArena(scene, q) {
   const petals2 = petalSystem(q.petals, new THREE.Vector3(10, 8, -8), new THREE.Vector3(8, 0, 6), 9, 0xffc9df); root.add(petals2);
   const motes = moteSystem(q.motes || 40, new THREE.Vector3(28, 7, 22), 0xfff0c0); motes.position.set(0, 0.6, 0); root.add(motes);
 
-  return { root, anim, slabs, podium: pod, sunLight: sunL, terrainY, update(t, dt) {
+  return { root, anim, slabs, oppBench, podium: pod, sunLight: sunL, terrainY, update(t, dt) {
     WIND.value = t;
     for (const c of anim.clouds) { if (c.userData.wobble) { c.position.y = c.userData.base + Math.sin(t * 0.6 + c.userData.bob) * 0.15; continue; } c.position.x += c.userData.speed * dt; if (c.position.x > 100) c.position.x = -100; }
     for (const g of anim.islets) { g.position.y += Math.sin(t * 0.4 + g.userData.bob) * dt * 0.25; g.rotation.y += dt * 0.004; }

@@ -358,7 +358,7 @@ function buildList(now) {
   if (state.phase === "Preparation" && state.opponent != null) { // next opponent's backrow (bench) along the far edge
     const o = state.players.find((q) => q.seat === state.opponent && !q.eliminated), ob = o && o.board ? o.board.filter((u) => u.col === null) : [];
     ob.forEach((u, i) => { const w = scene.worldOf({ bench: i }, false), d = defOf(u.id); if (!d) return;
-      list.push({ key: "o" + u.uid + "_" + o.seat, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: false, spawnFx: false, noPop: true, world: { x: 1.2 - w.x, z: -w.z + 0.5, y: 0.03 }, big: 1.45 }); });
+      list.push({ key: "o" + u.uid + "_" + o.seat, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: false, spawnFx: false, noPop: true, world: { x: 1.2 - w.x, z: -w.z + 0.5, y: w.y } }); });
   }
   for (const u of y.units) {
     const d = defOf(u.id), isDrag = drag && drag.moved && drag.uid === u.uid;
