@@ -1,0 +1,125 @@
+{
+ "Version": 1,
+ "ById": {
+  "illfang": {
+   "frontDot": 0.5,
+   "id": "illfang",
+   "phaseHP": 0.4,
+   "identity": "Frontline breaker",
+   "windup": 1,
+   "stun": 0.6,
+   "abilities": [
+    {
+     "icon": "illfang_guarded",
+     "kind": "PASSIVE",
+     "description": "Takes 25% less direct damage from the front (a 120° arc). Side and rear hits deal normal damage; damage over time is unaffected.",
+     "name": "Guarded Stance"
+    },
+    {
+     "icon": "illfang_cleaver",
+     "kind": "SKILL",
+     "description": "After a 1-second wind-up, deals 160% attack physical damage to his target and 80% to other enemies within 1 hex of that target. Stuns the primary target for 0.6 seconds.",
+     "name": "Bone Cleaver"
+    },
+    {
+     "icon": "illfang_last_stand",
+     "kind": "PHASE · 40% HP",
+     "description": "At 40% HP, permanently abandons Guarded Stance and gains 40% attack speed for the rest of the fight.",
+     "name": "Last Stand"
+    }
+   ],
+   "splash": 0.8,
+   "speed": 0.4,
+   "primary": 1.6,
+   "guard": 0.25,
+   "name": "Illfang the Kobold Lord"
+  },
+  "gleam_eyes": {
+   "fireDuration": 2,
+   "auraRange": 1,
+   "cleave": 1.7,
+   "id": "gleam_eyes",
+   "phaseHP": 0.4,
+   "identity": "Formation punisher",
+   "auraInterval": 3,
+   "auraDamage": 0.15,
+   "coneRange": 2,
+   "abilities": [
+    {
+     "icon": "gleam_presence",
+     "kind": "PASSIVE",
+     "description": "Every 3 seconds, enemies within 1 hex take 15% attack magic damage.",
+     "name": "Demonic Presence"
+    },
+    {
+     "icon": "gleam_cleave",
+     "kind": "SKILL",
+     "description": "After a 1-second wind-up, slashes a 120° forward cone up to 2 hexes deep for 170% attack physical damage. Direction locks at the start of the wind-up.",
+     "name": "Demonic Cleave"
+    },
+    {
+     "icon": "gleam_infernal",
+     "kind": "PHASE · 40% HP",
+     "description": "At 40% HP, cleaves also ignite up to 3 hit hexes for 2 seconds. Enemies standing on a burning hex take 20% attack magic damage each second. Overlapping fire refreshes its duration without stacking damage.",
+     "name": "Infernal Ground"
+    }
+   ],
+   "windup": 1,
+   "coneDot": 0.5,
+   "fireHexes": 3,
+   "name": "The Gleam Eyes",
+   "fireDamage": 0.2
+  },
+  "skull_reaper": {
+   "bleedDamage": 0.1,
+   "stormTargets": 3,
+   "id": "skull_reaper",
+   "phaseHP": 0.4,
+   "identity": "Backline hunter",
+   "bleedDuration": 3,
+   "bleedStacks": 2,
+   "name": "The Skull Reaper",
+   "stormDamage": 0.35,
+   "stormSlashes": 4,
+   "pounce": 1.5,
+   "stormDuration": 2,
+   "abilities": [
+    {
+     "icon": "reaper_claws",
+     "kind": "PASSIVE",
+     "description": "Normal attacks apply a 3-second bleed dealing 10% attack physical damage per second. Maximum 2 stacks; a new hit at the cap refreshes the oldest stack.",
+     "name": "Rending Claws"
+    },
+    {
+     "icon": "reaper_pounce",
+     "kind": "SKILL",
+     "description": "Locks onto an enemy with no adjacent allies, preferring the farthest eligible unit; otherwise chooses the farthest enemy. After a 0.6-second wind-up, lunges to a free adjacent hex and deals 150% attack physical damage.",
+     "name": "Reaper Pounce"
+    },
+    {
+     "icon": "reaper_storm",
+     "kind": "PHASE · 40% HP",
+     "description": "At 40% HP, alternates Pounce with an interruptible 2-second channel: 4 slashes each deal 35% attack physical damage to the 3 closest enemies. Stun or death cancels remaining slashes.",
+     "name": "Scythe Storm"
+    }
+   ],
+   "windup": 0.6
+  }
+ },
+ "IconKeys": [
+  "illfang_guarded",
+  "illfang_cleaver",
+  "illfang_last_stand",
+  "gleam_presence",
+  "gleam_cleave",
+  "gleam_infernal",
+  "reaper_claws",
+  "reaper_pounce",
+  "reaper_storm"
+ ],
+ "Ids": [
+  "illfang",
+  "gleam_eyes",
+  "skull_reaper"
+ ]
+}

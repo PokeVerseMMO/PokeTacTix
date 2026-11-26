@@ -1,0 +1,2698 @@
+{
+ "Bundles": {
+  "List": [
+   {
+    "name": "Reaction collection",
+    "robux": 199,
+    "id": "five_reactions",
+    "mode": "emotes",
+    "desc": "Choose any five unowned standard emotes. Permanent unlocks."
+   },
+   {
+    "items": [
+     [
+      "emote",
+      "levi_tea_break"
+     ],
+     [
+      "emote",
+      "nanami_clocking_out"
+     ],
+     [
+      "emote",
+      "silica_pina_cuddle"
+     ],
+     [
+      "emote",
+      "makima_slow_clap"
+     ]
+    ],
+    "name": "Animated quartet",
+    "robux": 499,
+    "id": "animated_reactions",
+    "mode": "fixed",
+    "desc": "Brock, Nanami, Silica and Blue animated reactions."
+   },
+   {
+    "name": "Your signature stage",
+    "robux": 399,
+    "id": "lobby_pair",
+    "mode": "pair",
+    "desc": "Choose one lobby pose and one pedestal. Own the pose’s commander first."
+   },
+   {
+    "items": [
+     [
+      "skin",
+      "Kaneki_King"
+     ],
+     [
+      "lobbyPose",
+      "restrained_hunger"
+     ],
+     [
+      "commanderPedestal",
+      "crimson"
+     ]
+    ],
+    "commander": "Sabrina",
+    "name": "One-Eyed King collection",
+    "robux": 1099,
+    "id": "kaneki_collection",
+    "mode": "fixed",
+    "desc": "One-Eyed King, Restrained Hunger and Crimson Reliquary. Sabrina required."
+   }
+  ]
+ },
+ "Commanders": [
+  {
+   "price": 0,
+   "id": "Red",
+   "desc": "First reroll each round costs 1 less gold."
+  },
+  {
+   "price": 1000,
+   "id": "Brock",
+   "desc": "Fighters starting without adjacent allies gain 10% attack speed."
+  },
+  {
+   "price": 1500,
+   "id": "Misty",
+   "desc": "Your highest-attack fighter gains 3% attack speed per basic attack, up to 24%."
+  },
+  {
+   "price": 2200,
+   "id": "Blue",
+   "desc": "Gain 1 extra gold after each NPC encounter."
+  },
+  {
+   "price": 3000,
+   "id": "Sabrina",
+   "desc": "Once per fighter, below 30% HP restores 15% HP over 3 seconds."
+  }
+ ],
+ "RobuxProducts": {
+  "499": 3722619818,
+  "149": 3722619484,
+  "1099": 3722620096,
+  "599": 3722619959,
+  "299": 3722621841,
+  "199": 3722621780,
+  "49": 3722266683,
+  "99": 3722619379,
+  "799": 3722620040,
+  "399": 3722621913
+ },
+ "PracticeFactor": {
+  "Hard": 0.35,
+  "Tutorial": 0,
+  "Intermediate": 0.25,
+  "Beginner": 0.15
+ },
+ "PlacementGold": [
+  300,
+  240,
+  190,
+  150,
+  110,
+  80,
+  55,
+  40
+ ],
+ "Lists": {
+  "emote": [
+   {
+    "reaction": "laugh",
+    "currency": "Event",
+    "name": "Red · Laugh",
+    "free": true,
+    "id": "gojo_laugh",
+    "character": "gojo",
+    "event": "starter",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "reaction": "cry",
+    "currency": "Event",
+    "name": "Red · Cry",
+    "free": true,
+    "id": "gojo_cry",
+    "character": "gojo",
+    "event": "starter",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "reaction": "smug",
+    "currency": "Event",
+    "name": "Red · Smug",
+    "free": true,
+    "id": "gojo_smug",
+    "character": "gojo",
+    "event": "starter",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "reaction": "shocked",
+    "currency": "Event",
+    "name": "Red · Shocked",
+    "free": true,
+    "id": "gojo_shocked",
+    "character": "gojo",
+    "event": "starter",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "laugh",
+    "free": false,
+    "id": "makima_laugh",
+    "name": "Blue · Laugh",
+    "character": "makima",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "cry",
+    "free": false,
+    "id": "makima_cry",
+    "name": "Blue · Cry",
+    "character": "makima",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "smug",
+    "free": false,
+    "id": "makima_smug",
+    "name": "Blue · Smug",
+    "character": "makima",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "shocked",
+    "free": false,
+    "id": "makima_shocked",
+    "name": "Blue · Shocked",
+    "character": "makima",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "laugh",
+    "free": false,
+    "id": "kirito_laugh",
+    "name": "Misty · Laugh",
+    "character": "kirito",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "cry",
+    "free": false,
+    "id": "kirito_cry",
+    "name": "Misty · Cry",
+    "character": "kirito",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "smug",
+    "free": false,
+    "id": "kirito_smug",
+    "name": "Misty · Smug",
+    "character": "kirito",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "shocked",
+    "free": false,
+    "id": "kirito_shocked",
+    "name": "Misty · Shocked",
+    "character": "kirito",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "laugh",
+    "free": false,
+    "id": "levi_laugh",
+    "name": "Brock · Laugh",
+    "character": "levi",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "cry",
+    "free": false,
+    "id": "levi_cry",
+    "name": "Brock · Cry",
+    "character": "levi",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "smug",
+    "free": false,
+    "id": "levi_smug",
+    "name": "Brock · Smug",
+    "character": "levi",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "shocked",
+    "free": false,
+    "id": "levi_shocked",
+    "name": "Brock · Shocked",
+    "character": "levi",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "laugh",
+    "free": false,
+    "id": "kaneki_laugh",
+    "name": "Sabrina · Laugh",
+    "character": "kaneki",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "cry",
+    "free": false,
+    "id": "kaneki_cry",
+    "name": "Sabrina · Cry",
+    "character": "kaneki",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "smug",
+    "free": false,
+    "id": "kaneki_smug",
+    "name": "Sabrina · Smug",
+    "character": "kaneki",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "robux": 49,
+    "currency": "Robux",
+    "reaction": "shocked",
+    "free": false,
+    "id": "kaneki_shocked",
+    "name": "Sabrina · Shocked",
+    "character": "kaneki",
+    "desc": "Permanent reaction for your eight-slot emote wheel."
+   },
+   {
+    "expansion": true,
+    "description": "Friendly fist bump and a warm grin.",
+    "robux": 49,
+    "price": 500,
+    "name": "Yuji · GG",
+    "group": "Good Sports",
+    "desc": "Friendly fist bump and a warm grin.",
+    "characterName": "Yuji",
+    "currency": "Diamonds / Robux",
+    "reaction": "gg",
+    "animated": false,
+    "diamonds": 500,
+    "label": "GG",
+    "character": "yuji",
+    "id": "yuji_gg"
+   },
+   {
+    "expansion": true,
+    "description": "A sincere sword salute and a slight respectful bow.",
+    "robux": 49,
+    "price": 500,
+    "name": "Misty · Well Played",
+    "group": "Good Sports",
+    "desc": "A sincere sword salute and a slight respectful bow.",
+    "characterName": "Misty",
+    "currency": "Diamonds / Robux",
+    "reaction": "well_played",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Well Played",
+    "character": "kirito",
+    "id": "kirito_well_played"
+   },
+   {
+    "expansion": true,
+    "description": "A firm salute over his heart, with an approving expression.",
+    "robux": 49,
+    "price": 500,
+    "name": "Erwin · Respect",
+    "group": "Good Sports",
+    "desc": "A firm salute over his heart, with an approving expression.",
+    "characterName": "Erwin",
+    "currency": "Diamonds / Robux",
+    "reaction": "respect",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Respect",
+    "character": "erwin",
+    "id": "erwin_respect"
+   },
+   {
+    "expansion": true,
+    "description": "A relieved smile, hand to chest, after a narrow duel.",
+    "robux": 49,
+    "price": 500,
+    "name": "Asuna · Close One",
+    "group": "Good Sports",
+    "desc": "A relieved smile, hand to chest, after a narrow duel.",
+    "characterName": "Asuna",
+    "currency": "Diamonds / Robux",
+    "reaction": "close_one",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Close One",
+    "character": "asuna",
+    "id": "asuna_close_one"
+   },
+   {
+    "expansion": true,
+    "description": "A shy smile and a heart made with both hands.",
+    "robux": 49,
+    "price": 500,
+    "name": "Hinami · Thank You",
+    "group": "Good Sports",
+    "desc": "A shy smile and a heart made with both hands.",
+    "characterName": "Hinami",
+    "currency": "Diamonds / Robux",
+    "reaction": "thank_you",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Thank You",
+    "character": "hinami",
+    "id": "hinami_thank_you"
+   },
+   {
+    "expansion": true,
+    "description": "An apologetic head dip, pressed palms and one sweat drop.",
+    "robux": 49,
+    "price": 500,
+    "name": "Kobeni · My Bad",
+    "group": "Good Sports",
+    "desc": "An apologetic head dip, pressed palms and one sweat drop.",
+    "characterName": "Kobeni",
+    "currency": "Diamonds / Robux",
+    "reaction": "my_bad",
+    "animated": false,
+    "diamonds": 500,
+    "label": "My Bad",
+    "character": "kobeni",
+    "id": "kobeni_my_bad"
+   },
+   {
+    "expansion": true,
+    "description": "Key pose for one unhurried sip, followed by a deadpan stare.",
+    "robux": 149,
+    "id": "levi_tea_break",
+    "desc": "Key pose for one unhurried sip, followed by a deadpan stare.",
+    "characterName": "Brock",
+    "currency": "Robux",
+    "reaction": "tea_break",
+    "name": "Brock · Tea Break",
+    "group": "Character Signatures",
+    "animated": true,
+    "label": "Tea Break",
+    "character": "levi"
+   },
+   {
+    "expansion": true,
+    "description": "Two fingers lift his glasses to reveal one bright blue eye.",
+    "robux": 49,
+    "price": 500,
+    "name": "Red · Glasses Up",
+    "group": "Character Signatures",
+    "desc": "Two fingers lift his glasses to reveal one bright blue eye.",
+    "characterName": "Red",
+    "currency": "Diamonds / Robux",
+    "reaction": "glasses_up",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Glasses Up",
+    "character": "gojo",
+    "id": "gojo_glasses_up"
+   },
+   {
+    "expansion": true,
+    "description": "Key pose for a watch glance, then a tired unimpressed stare.",
+    "robux": 149,
+    "id": "nanami_clocking_out",
+    "desc": "Key pose for a watch glance, then a tired unimpressed stare.",
+    "characterName": "Nanami",
+    "currency": "Robux",
+    "reaction": "clocking_out",
+    "name": "Nanami · Clocking Out",
+    "group": "Character Signatures",
+    "animated": true,
+    "label": "Clocking Out",
+    "character": "nanami"
+   },
+   {
+    "expansion": true,
+    "description": "Full cheeks and a treasured half-eaten potato.",
+    "robux": 49,
+    "price": 500,
+    "name": "Sasha · One More Bite",
+    "group": "Character Signatures",
+    "desc": "Full cheeks and a treasured half-eaten potato.",
+    "characterName": "Sasha",
+    "currency": "Diamonds / Robux",
+    "reaction": "one_more_bite",
+    "animated": false,
+    "diamonds": 500,
+    "label": "One More Bite",
+    "character": "sasha",
+    "id": "sasha_one_more_bite"
+   },
+   {
+    "expansion": true,
+    "description": "A controlled, determined mask adjustment with one red eye.",
+    "robux": 49,
+    "price": 500,
+    "name": "Sabrina · Mask Up",
+    "group": "Character Signatures",
+    "desc": "A controlled, determined mask adjustment with one red eye.",
+    "characterName": "Sabrina",
+    "currency": "Diamonds / Robux",
+    "reaction": "mask_up",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Mask Up",
+    "character": "kaneki",
+    "id": "kaneki_mask_up"
+   },
+   {
+    "expansion": true,
+    "description": "Offering a warm coffee with a subtle welcoming smile.",
+    "robux": 49,
+    "price": 500,
+    "name": "Touka · Coffee’s Ready",
+    "group": "Character Signatures",
+    "desc": "Offering a warm coffee with a subtle welcoming smile.",
+    "characterName": "Touka",
+    "currency": "Diamonds / Robux",
+    "reaction": "coffees_ready",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Coffee’s Ready",
+    "character": "touka",
+    "id": "touka_coffees_ready"
+   },
+   {
+    "expansion": true,
+    "description": "Key pose for Pina landing and giving a gentle cheek nuzzle.",
+    "robux": 149,
+    "id": "silica_pina_cuddle",
+    "desc": "Key pose for Pina landing and giving a gentle cheek nuzzle.",
+    "characterName": "Silica",
+    "currency": "Robux",
+    "reaction": "pina_cuddle",
+    "name": "Silica · Pina Cuddle",
+    "group": "Character Signatures",
+    "animated": true,
+    "label": "Pina Cuddle",
+    "character": "silica"
+   },
+   {
+    "expansion": true,
+    "description": "A starter-cord grip and an enormous excited grin.",
+    "robux": 49,
+    "price": 500,
+    "name": "Denji · Revved Up",
+    "group": "Character Signatures",
+    "desc": "A starter-cord grip and an enormous excited grin.",
+    "characterName": "Denji",
+    "currency": "Diamonds / Robux",
+    "reaction": "revved_up",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Revved Up",
+    "character": "denji",
+    "id": "denji_revved_up"
+   },
+   {
+    "expansion": true,
+    "description": "Key pose for two deliberately slow, sarcastic claps.",
+    "robux": 149,
+    "id": "makima_slow_clap",
+    "desc": "Key pose for two deliberately slow, sarcastic claps.",
+    "characterName": "Blue",
+    "currency": "Robux",
+    "reaction": "slow_clap",
+    "name": "Blue · Slow Clap",
+    "group": "Bad Manners",
+    "animated": true,
+    "label": "Slow Clap",
+    "character": "makima"
+   },
+   {
+    "expansion": true,
+    "description": "Examining her manicure with exaggerated indifference.",
+    "robux": 49,
+    "price": 500,
+    "name": "Nobara · Bored Already",
+    "group": "Bad Manners",
+    "desc": "Examining her manicure with exaggerated indifference.",
+    "characterName": "Nobara",
+    "currency": "Diamonds / Robux",
+    "reaction": "bored_already",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Bored Already",
+    "character": "nobara",
+    "id": "nobara_bored_already"
+   },
+   {
+    "expansion": true,
+    "description": "A boastful grin, hands on hips and a crooked crown.",
+    "robux": 49,
+    "price": 500,
+    "name": "Power · Too Easy",
+    "group": "Bad Manners",
+    "desc": "A boastful grin, hands on hips and a crooked crown.",
+    "characterName": "Power",
+    "currency": "Diamonds / Robux",
+    "reaction": "too_easy",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Too Easy",
+    "character": "power",
+    "id": "power_too_easy"
+   },
+   {
+    "expansion": true,
+    "description": "A knowing smirk and a casual invitation to try once more.",
+    "robux": 49,
+    "price": 500,
+    "name": "Sinon · Try Again",
+    "group": "Bad Manners",
+    "desc": "A knowing smirk and a casual invitation to try once more.",
+    "characterName": "Sinon",
+    "currency": "Diamonds / Robux",
+    "reaction": "try_again",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Try Again",
+    "character": "sinon",
+    "id": "sinon_try_again"
+   },
+   {
+    "expansion": true,
+    "description": "A palm-up beckoning finger and a sharp challenging grin.",
+    "robux": 49,
+    "price": 500,
+    "name": "Ayato · Come On, Then",
+    "group": "Bad Manners",
+    "desc": "A palm-up beckoning finger and a sharp challenging grin.",
+    "characterName": "Ayato",
+    "currency": "Diamonds / Robux",
+    "reaction": "come_on_then",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Come On, Then",
+    "character": "ayato",
+    "id": "ayato_come_on_then"
+   },
+   {
+    "expansion": true,
+    "description": "Armored Reiner dismissively brushes a scuff from his shoulder.",
+    "robux": 49,
+    "price": 500,
+    "name": "Reiner · Barely Felt It",
+    "group": "Bad Manners",
+    "desc": "Armored Reiner dismissively brushes a scuff from his shoulder.",
+    "characterName": "Reiner",
+    "currency": "Diamonds / Robux",
+    "reaction": "barely_felt_it",
+    "animated": false,
+    "diamonds": 500,
+    "label": "Barely Felt It",
+    "character": "reiner",
+    "id": "reiner_barely_felt_it"
+   }
+  ],
+  "board": [
+   {
+    "rarity": "Common",
+    "id": "moonlit",
+    "border": [
+     155,
+     123,
+     71
+    ],
+    "desc": "The classic courtyard under a night sky.",
+    "name": "Moonlit Shrine",
+    "price": 0,
+    "petal": [
+     224,
+     152,
+     174
+    ],
+    "default": true,
+    "tiles": [
+     [
+      52,
+      61,
+      77
+     ],
+     [
+      52,
+      61,
+      77
+     ]
+    ],
+    "inlay": [
+     155,
+     123,
+     71
+    ]
+   },
+   {
+    "price": 2000,
+    "glow": [
+     255,
+     110,
+     40
+    ],
+    "rarity": "Epic",
+    "robux": 399,
+    "id": "ember",
+    "fx": "ember",
+    "border": [
+     255,
+     150,
+     70
+    ],
+    "desc": "Black basalt tiles split by glowing lava seams, with embers drifting up from the board.",
+    "duplicatePrice": 2000,
+    "diamonds": 2000,
+    "name": "Ember Forge",
+    "inlay": [
+     255,
+     196,
+     110
+    ],
+    "petal": [
+     255,
+     140,
+     70
+    ],
+    "material": "Basalt",
+    "reflect": 0,
+    "tiles": [
+     [
+      58,
+      36,
+      30
+     ],
+     [
+      92,
+      52,
+      38
+     ]
+    ]
+   },
+   {
+    "price": 2000,
+    "glow": [
+     150,
+     225,
+     255
+    ],
+    "rarity": "Epic",
+    "robux": 399,
+    "id": "frost",
+    "fx": "snow",
+    "border": [
+     170,
+     220,
+     255
+    ],
+    "desc": "Polished ice flagstones with frozen light in the seams and snow falling over the field.",
+    "duplicatePrice": 2000,
+    "diamonds": 2000,
+    "name": "Frost Citadel",
+    "inlay": [
+     214,
+     242,
+     255
+    ],
+    "petal": [
+     205,
+     236,
+     255
+    ],
+    "material": "Ice",
+    "reflect": 0.12,
+    "tiles": [
+     [
+      70,
+      110,
+      150
+     ],
+     [
+      110,
+      160,
+      205
+     ]
+    ]
+   },
+   {
+    "price": 2000,
+    "glow": [
+     170,
+     255,
+     150
+    ],
+    "rarity": "Epic",
+    "robux": 399,
+    "id": "verdant",
+    "fx": "firefly",
+    "border": [
+     196,
+     230,
+     120
+    ],
+    "desc": "Mossy stone and jade trim, with fireflies drifting through the grass-green glow.",
+    "duplicatePrice": 2000,
+    "diamonds": 2000,
+    "name": "Verdant Garden",
+    "inlay": [
+     232,
+     250,
+     170
+    ],
+    "petal": [
+     250,
+     250,
+     200
+    ],
+    "material": "Grass",
+    "reflect": 0,
+    "tiles": [
+     [
+      38,
+      86,
+      58
+     ],
+     [
+      62,
+      124,
+      80
+     ]
+    ]
+   },
+   {
+    "glow": [
+     165,
+     95,
+     255
+    ],
+    "rarity": "Legendary",
+    "price": 3500,
+    "id": "void",
+    "fx": "void",
+    "border": [
+     150,
+     90,
+     255
+    ],
+    "desc": "Mirror-black obsidian over a violet rift. Light pulses through the seams as shadows rise. Can be acquired from the Monthly Pass (Tier 1 Premium reward).",
+    "duplicatePrice": 3500,
+    "material": "SmoothPlastic",
+    "name": "Midnight Void",
+    "inlay": [
+     196,
+     146,
+     255
+    ],
+    "petal": [
+     130,
+     86,
+     255
+    ],
+    "passOnly": true,
+    "reflect": 0.35,
+    "tiles": [
+     [
+      20,
+      16,
+      40
+     ],
+     [
+      44,
+      30,
+      82
+     ]
+    ]
+   },
+   {
+    "glow": [
+     255,
+     180,
+     120
+    ],
+    "rarity": "Legendary",
+    "robux": 599,
+    "id": "sakura",
+    "price": 7500,
+    "border": [
+     255,
+     205,
+     120
+    ],
+    "desc": "Pink marble at dusk with lantern-gold seams and a constant fall of blossoms.",
+    "duplicatePrice": 3500,
+    "fx": "petal",
+    "name": "Sakura Sunset",
+    "inlay": [
+     255,
+     236,
+     190
+    ],
+    "petal": [
+     255,
+     196,
+     214
+    ],
+    "material": "Marble",
+    "reflect": 0.05,
+    "tiles": [
+     [
+      150,
+      100,
+      128
+     ],
+     [
+      205,
+      150,
+      172
+     ]
+    ]
+   }
+  ],
+  "bubbleFrame": [
+   {
+    "collection": "Classic",
+    "name": "Classic",
+    "category": "bubbleFrame",
+    "id": "none",
+    "price": 0,
+    "default": true,
+    "color": [
+     225,
+     191,
+     123
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "gilded",
+    "asset": "Identity_BubbleFrames",
+    "desc": "Gilded Crest emote bubble frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     0,
+     0,
+     256,
+     288
+    ],
+    "name": "Royal seal",
+    "category": "bubbleFrame",
+    "collection": "Gilded Crest",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     214,
+     183,
+     120
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "sakura",
+    "asset": "Identity_BubbleFrames",
+    "desc": "Sakura Silk emote bubble frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     256,
+     0,
+     256,
+     288
+    ],
+    "name": "Silk blossom",
+    "category": "bubbleFrame",
+    "collection": "Sakura Silk",
+    "previewOnly": false,
+    "shape": "square",
+    "color": [
+     212,
+     165,
+     178
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "void",
+    "asset": "Identity_BubbleFrames",
+    "desc": "Midnight Orbit emote bubble frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     512,
+     0,
+     256,
+     288
+    ],
+    "name": "Void prism",
+    "category": "bubbleFrame",
+    "collection": "Midnight Orbit",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     170,
+     143,
+     233
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "ember",
+    "asset": "Identity_BubbleFrames",
+    "desc": "Ember Sigil emote bubble frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     768,
+     0,
+     256,
+     288
+    ],
+    "name": "Cinder forge",
+    "category": "bubbleFrame",
+    "collection": "Ember Sigil",
+    "previewOnly": false,
+    "shape": "hex",
+    "color": [
+     221,
+     152,
+     84
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "frost",
+    "asset": "Identity_BubbleFrames",
+    "desc": "Frostglass emote bubble frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     0,
+     288,
+     256,
+     288
+    ],
+    "name": "Icebound glass",
+    "category": "bubbleFrame",
+    "collection": "Frostglass",
+    "previewOnly": false,
+    "shape": "hex",
+    "color": [
+     182,
+     225,
+     231
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "verdant",
+    "asset": "Identity_BubbleFrames",
+    "desc": "Verdant Relic emote bubble frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     256,
+     288,
+     256,
+     288
+    ],
+    "name": "Woodland charm",
+    "category": "bubbleFrame",
+    "collection": "Verdant Relic",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     172,
+     133,
+     88
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "crimson",
+    "asset": "Identity_BubbleFrames",
+    "desc": "Crimson Pact emote bubble frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     512,
+     288,
+     256,
+     288
+    ],
+    "name": "Thorned lacquer",
+    "category": "bubbleFrame",
+    "collection": "Crimson Pact",
+    "previewOnly": false,
+    "shape": "shard",
+    "color": [
+     203,
+     98,
+     126
+    ]
+   }
+  ],
+  "commander": [
+   {
+    "price": 0,
+    "id": "Red",
+    "desc": "First reroll each round costs 1 less gold."
+   },
+   {
+    "price": 1000,
+    "id": "Brock",
+    "desc": "Fighters starting without adjacent allies gain 10% attack speed."
+   },
+   {
+    "price": 1500,
+    "id": "Misty",
+    "desc": "Your highest-attack fighter gains 3% attack speed per basic attack, up to 24%."
+   },
+   {
+    "price": 2200,
+    "id": "Blue",
+    "desc": "Gain 1 extra gold after each NPC encounter."
+   },
+   {
+    "price": 3000,
+    "id": "Sabrina",
+    "desc": "Once per fighter, below 30% HP restores 15% HP over 3 seconds."
+   }
+  ],
+  "commanderPedestal": [
+   {
+    "name": "Atrium dais",
+    "category": "commanderPedestal",
+    "price": 0,
+    "id": "atrium",
+    "default": true,
+    "desc": "The classic violet and brass display dais."
+   },
+   {
+    "pairedCommander": "Red",
+    "diamonds": 1500,
+    "name": "Infinity Lens",
+    "category": "commanderPedestal",
+    "id": "infinity",
+    "price": 1500,
+    "robux": 299,
+    "desc": "The approved Infinity Lens pedestal. Mix with any commander and lobby pose."
+   },
+   {
+    "pairedCommander": "Brock",
+    "diamonds": 1500,
+    "name": "Survey Bastion",
+    "category": "commanderPedestal",
+    "id": "survey",
+    "price": 1500,
+    "robux": 299,
+    "desc": "The approved Survey Bastion pedestal. Mix with any commander and lobby pose."
+   },
+   {
+    "pairedCommander": "Misty",
+    "diamonds": 1500,
+    "name": "Obsidian Circuit",
+    "category": "commanderPedestal",
+    "id": "circuit",
+    "price": 1500,
+    "robux": 299,
+    "desc": "The approved Obsidian Circuit pedestal. Mix with any commander and lobby pose."
+   },
+   {
+    "pairedCommander": "Blue",
+    "diamonds": 1500,
+    "name": "Dominion Seal",
+    "category": "commanderPedestal",
+    "id": "dominion",
+    "price": 1500,
+    "robux": 299,
+    "desc": "The approved Dominion Seal pedestal. Mix with any commander and lobby pose."
+   },
+   {
+    "pairedCommander": "Sabrina",
+    "diamonds": 1500,
+    "name": "Crimson Reliquary",
+    "category": "commanderPedestal",
+    "id": "crimson",
+    "price": 1500,
+    "robux": 299,
+    "desc": "The approved Crimson Reliquary pedestal. Mix with any commander and lobby pose."
+   }
+  ],
+  "skin": [
+   {
+    "rarity": "Legendary",
+    "robux": 599,
+    "color": [
+     176,
+     84,
+     255
+    ],
+    "desc": "Violet-black uniform and glowing eyes. Wins by forging Hollow Purple; shatters into violet light when eliminated.",
+    "duplicatePrice": 5000,
+    "commander": "Red",
+    "name": "Hollow Purple",
+    "id": "Gojo_Purple",
+    "price": 7500
+   },
+   {
+    "rarity": "Epic",
+    "robux": 399,
+    "price": 3000,
+    "desc": "Steel-grey jacket, crimson cape and cyan blades. Wins with a blade spin; falls apart in steel shards.",
+    "duplicatePrice": 3000,
+    "diamonds": 3000,
+    "name": "Ackerman Steel",
+    "id": "Levi_Steel",
+    "color": [
+     120,
+     232,
+     255
+    ],
+    "commander": "Brock"
+   },
+   {
+    "rarity": "Epic",
+    "robux": 399,
+    "price": 3000,
+    "desc": "Crimson coat and a burning blade. Wins with a flame pillar; burns out into embers when eliminated.",
+    "duplicatePrice": 3000,
+    "diamonds": 3000,
+    "name": "Elucidator Ember",
+    "id": "Kirito_Ember",
+    "color": [
+     255,
+     122,
+     26
+    ],
+    "commander": "Misty"
+   },
+   {
+    "rarity": "Legendary",
+    "robux": 599,
+    "color": [
+     255,
+     206,
+     96
+    ],
+    "desc": "Golden suit and a halo of control. Wins by binding the arena in golden threads; threads snap when eliminated.",
+    "duplicatePrice": 5000,
+    "commander": "Blue",
+    "name": "Dominion Gold",
+    "id": "Makima_Gold",
+    "price": 7500
+   },
+   {
+    "rarity": "Legendary",
+    "robux": 799,
+    "color": [
+     232,
+     24,
+     42
+    ],
+    "desc": "Bone-white coat with a blazing kagune. Wins with spread kagune; crumbles into crimson ash when eliminated.",
+    "duplicatePrice": 5000,
+    "commander": "Sabrina",
+    "name": "One-Eyed King",
+    "id": "Kaneki_King",
+    "price": 10000
+   }
+  ],
+  "profileFrame": [
+   {
+    "collection": "Classic",
+    "name": "Classic",
+    "category": "profileFrame",
+    "id": "none",
+    "price": 0,
+    "default": true,
+    "color": [
+     225,
+     191,
+     123
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "gilded",
+    "asset": "Identity_ProfileFrames",
+    "desc": "Gilded Crest portrait frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     0,
+     0,
+     256,
+     256
+    ],
+    "name": "Laurel crest",
+    "category": "profileFrame",
+    "collection": "Gilded Crest",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     214,
+     183,
+     120
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "sakura",
+    "asset": "Identity_ProfileFrames",
+    "desc": "Sakura Silk portrait frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     256,
+     0,
+     256,
+     256
+    ],
+    "name": "Blossom branches",
+    "category": "profileFrame",
+    "collection": "Sakura Silk",
+    "previewOnly": false,
+    "shape": "square",
+    "color": [
+     212,
+     165,
+     178
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "void",
+    "asset": "Identity_ProfileFrames",
+    "desc": "Midnight Orbit portrait frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     512,
+     0,
+     256,
+     256
+    ],
+    "name": "Orbital halo",
+    "category": "profileFrame",
+    "collection": "Midnight Orbit",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     170,
+     143,
+     233
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "ember",
+    "asset": "Identity_ProfileFrames",
+    "desc": "Ember Sigil portrait frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     768,
+     0,
+     256,
+     256
+    ],
+    "name": "Forged obsidian",
+    "category": "profileFrame",
+    "collection": "Ember Sigil",
+    "previewOnly": false,
+    "shape": "hex",
+    "color": [
+     221,
+     152,
+     84
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "frost",
+    "asset": "Identity_ProfileFrames",
+    "desc": "Frostglass portrait frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     0,
+     256,
+     256,
+     256
+    ],
+    "name": "Crystal facets",
+    "category": "profileFrame",
+    "collection": "Frostglass",
+    "previewOnly": false,
+    "shape": "hex",
+    "color": [
+     182,
+     225,
+     231
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "verdant",
+    "asset": "Identity_ProfileFrames",
+    "desc": "Verdant Relic portrait frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     256,
+     256,
+     256,
+     256
+    ],
+    "name": "Living heartwood",
+    "category": "profileFrame",
+    "collection": "Verdant Relic",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     172,
+     133,
+     88
+    ]
+   },
+   {
+    "robux": 99,
+    "id": "crimson",
+    "asset": "Identity_ProfileFrames",
+    "desc": "Crimson Pact portrait frame. Cosmetic only.",
+    "price": 750,
+    "rect": [
+     512,
+     256,
+     256,
+     256
+    ],
+    "name": "Crimson talons",
+    "category": "profileFrame",
+    "collection": "Crimson Pact",
+    "previewOnly": false,
+    "shape": "shard",
+    "color": [
+     203,
+     98,
+     126
+    ]
+   }
+  ],
+  "playerBanner": [
+   {
+    "collection": "Classic",
+    "name": "Classic",
+    "category": "playerBanner",
+    "id": "none",
+    "price": 0,
+    "default": true,
+    "color": [
+     225,
+     191,
+     123
+    ]
+   },
+   {
+    "robux": 149,
+    "id": "gilded",
+    "asset": "Identity_Banner_gilded",
+    "desc": "Gilded Crest player-card banner. Cosmetic only.",
+    "price": 1000,
+    "rect": [
+     0,
+     0,
+     1024,
+     324
+    ],
+    "name": "Golden standard",
+    "category": "playerBanner",
+    "collection": "Gilded Crest",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     214,
+     183,
+     120
+    ]
+   },
+   {
+    "robux": 149,
+    "id": "sakura",
+    "asset": "Identity_Banner_sakura",
+    "desc": "Sakura Silk player-card banner. Cosmetic only.",
+    "price": 1000,
+    "rect": [
+     0,
+     0,
+     1024,
+     324
+    ],
+    "name": "Petal dusk",
+    "category": "playerBanner",
+    "collection": "Sakura Silk",
+    "previewOnly": false,
+    "shape": "square",
+    "color": [
+     212,
+     165,
+     178
+    ]
+   },
+   {
+    "robux": 149,
+    "id": "void",
+    "asset": "Identity_Banner_void",
+    "desc": "Midnight Orbit player-card banner. Cosmetic only.",
+    "price": 1000,
+    "rect": [
+     0,
+     0,
+     1024,
+     324
+    ],
+    "name": "Event horizon",
+    "category": "playerBanner",
+    "collection": "Midnight Orbit",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     170,
+     143,
+     233
+    ]
+   },
+   {
+    "robux": 149,
+    "id": "ember",
+    "asset": "Identity_Banner_ember",
+    "desc": "Ember Sigil player-card banner. Cosmetic only.",
+    "price": 1000,
+    "rect": [
+     0,
+     0,
+     1024,
+     324
+    ],
+    "name": "Molten seams",
+    "category": "playerBanner",
+    "collection": "Ember Sigil",
+    "previewOnly": false,
+    "shape": "hex",
+    "color": [
+     221,
+     152,
+     84
+    ]
+   },
+   {
+    "robux": 149,
+    "id": "frost",
+    "asset": "Identity_Banner_frost",
+    "desc": "Frostglass player-card banner. Cosmetic only.",
+    "price": 1000,
+    "rect": [
+     0,
+     0,
+     1024,
+     324
+    ],
+    "name": "Frozen citadel",
+    "category": "playerBanner",
+    "collection": "Frostglass",
+    "previewOnly": false,
+    "shape": "hex",
+    "color": [
+     182,
+     225,
+     231
+    ]
+   },
+   {
+    "robux": 149,
+    "id": "verdant",
+    "asset": "Identity_Banner_verdant",
+    "desc": "Verdant Relic player-card banner. Cosmetic only.",
+    "price": 1000,
+    "rect": [
+     0,
+     0,
+     1024,
+     324
+    ],
+    "name": "Quiet sanctuary",
+    "category": "playerBanner",
+    "collection": "Verdant Relic",
+    "previewOnly": false,
+    "shape": "circle",
+    "color": [
+     172,
+     133,
+     88
+    ]
+   },
+   {
+    "robux": 149,
+    "id": "crimson",
+    "asset": "Identity_Banner_crimson",
+    "desc": "Crimson Pact player-card banner. Cosmetic only.",
+    "price": 1000,
+    "rect": [
+     0,
+     0,
+     1024,
+     324
+    ],
+    "name": "Scarlet awakening",
+    "category": "playerBanner",
+    "collection": "Crimson Pact",
+    "previewOnly": false,
+    "shape": "shard",
+    "color": [
+     203,
+     98,
+     126
+    ]
+   }
+  ],
+  "effect": [
+   {
+    "name": "Radiant Burst",
+    "price": 0,
+    "id": "radiant",
+    "rarity": "Common",
+    "color": [
+     255,
+     214,
+     96
+    ],
+    "desc": "A pillar of golden light and expanding rings. Three-star merges add a second wave."
+   },
+   {
+    "duplicatePrice": 1500,
+    "id": "sakura",
+    "name": "Sakura Storm",
+    "robux": 399,
+    "color": [
+     255,
+     168,
+     196
+    ],
+    "rarity": "Epic",
+    "price": 5000,
+    "desc": "Blossoms spiral up around the hero and scatter into a star."
+   },
+   {
+    "rarity": "Epic",
+    "robux": 199,
+    "color": [
+     140,
+     208,
+     255
+    ],
+    "desc": "Lightning crashes down and a shockwave rolls across the board.",
+    "duplicatePrice": 1500,
+    "diamonds": 1500,
+    "name": "Thunder Ascend",
+    "id": "thunder",
+    "price": 1500
+   },
+   {
+    "rarity": "Legendary",
+    "robux": 199,
+    "color": [
+     255,
+     122,
+     70
+    ],
+    "desc": "A spirit dragon coils the hero and roars out in a burst of stars.",
+    "duplicatePrice": 2500,
+    "diamonds": 1500,
+    "name": "Dragon Spirit",
+    "id": "dragon",
+    "price": 1500
+   }
+  ],
+  "lobbyPose": [
+   {
+    "name": "Classic stance",
+    "category": "lobbyPose",
+    "price": 0,
+    "id": "none",
+    "default": true,
+    "desc": "The original standing idle for this commander."
+   },
+   {
+    "poseKey": "gojo",
+    "robux": 199,
+    "id": "limitless_ease",
+    "pairedBase": "infinity",
+    "desc": "Levitation and a two-finger gesture, with measured breathing. Lobby display only.",
+    "commander": "Red",
+    "name": "Limitless Ease",
+    "category": "lobbyPose",
+    "diamonds": 750,
+    "price": 750
+   },
+   {
+    "poseKey": "levi",
+    "robux": 199,
+    "id": "captains_appraisal",
+    "pairedBase": "survey",
+    "desc": "Folded arms, quiet breathing and a restrained sideways glance. Lobby display only.",
+    "commander": "Brock",
+    "name": "Captain’s Appraisal",
+    "category": "lobbyPose",
+    "diamonds": 750,
+    "price": 750
+   },
+   {
+    "poseKey": "kirito",
+    "robux": 199,
+    "id": "duelists_rest",
+    "pairedBase": "circuit",
+    "desc": "A composed resting stance with an upright sword. Lobby display only.",
+    "commander": "Misty",
+    "name": "Duelist’s Rest",
+    "category": "lobbyPose",
+    "diamonds": 750,
+    "price": 750
+   },
+   {
+    "poseKey": "makima",
+    "robux": 199,
+    "id": "seated_authority",
+    "pairedBase": "dominion",
+    "desc": "Seated authority, crossed ankles and hands resting in the lap. Lobby display only.",
+    "commander": "Blue",
+    "name": "Seated Authority",
+    "category": "lobbyPose",
+    "diamonds": 750,
+    "price": 750
+   },
+   {
+    "poseKey": "kaneki",
+    "robux": 199,
+    "id": "restrained_hunger",
+    "pairedBase": "crimson",
+    "desc": "A supported crouch with a planted palm and restrained kagune motion. Lobby display only.",
+    "commander": "Sabrina",
+    "name": "Restrained Hunger",
+    "category": "lobbyPose",
+    "diamonds": 750,
+    "price": 750
+   }
+  ]
+ },
+ "Featured": [
+  [
+   "commander",
+   "Sabrina"
+  ],
+  [
+   "board",
+   "ember"
+  ],
+  [
+   "skin",
+   "Gojo_Purple"
+  ],
+  [
+   "commander",
+   "Blue"
+  ],
+  [
+   "board",
+   "void"
+  ],
+  [
+   "skin",
+   "Kaneki_King"
+  ]
+ ],
+ "Emotes": [
+  {
+   "reaction": "laugh",
+   "currency": "Event",
+   "name": "Red · Laugh",
+   "free": true,
+   "id": "gojo_laugh",
+   "character": "gojo",
+   "event": "starter",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "reaction": "cry",
+   "currency": "Event",
+   "name": "Red · Cry",
+   "free": true,
+   "id": "gojo_cry",
+   "character": "gojo",
+   "event": "starter",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "reaction": "smug",
+   "currency": "Event",
+   "name": "Red · Smug",
+   "free": true,
+   "id": "gojo_smug",
+   "character": "gojo",
+   "event": "starter",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "reaction": "shocked",
+   "currency": "Event",
+   "name": "Red · Shocked",
+   "free": true,
+   "id": "gojo_shocked",
+   "character": "gojo",
+   "event": "starter",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "laugh",
+   "free": false,
+   "id": "makima_laugh",
+   "name": "Blue · Laugh",
+   "character": "makima",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "cry",
+   "free": false,
+   "id": "makima_cry",
+   "name": "Blue · Cry",
+   "character": "makima",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "smug",
+   "free": false,
+   "id": "makima_smug",
+   "name": "Blue · Smug",
+   "character": "makima",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "shocked",
+   "free": false,
+   "id": "makima_shocked",
+   "name": "Blue · Shocked",
+   "character": "makima",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "laugh",
+   "free": false,
+   "id": "kirito_laugh",
+   "name": "Misty · Laugh",
+   "character": "kirito",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "cry",
+   "free": false,
+   "id": "kirito_cry",
+   "name": "Misty · Cry",
+   "character": "kirito",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "smug",
+   "free": false,
+   "id": "kirito_smug",
+   "name": "Misty · Smug",
+   "character": "kirito",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "shocked",
+   "free": false,
+   "id": "kirito_shocked",
+   "name": "Misty · Shocked",
+   "character": "kirito",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "laugh",
+   "free": false,
+   "id": "levi_laugh",
+   "name": "Brock · Laugh",
+   "character": "levi",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "cry",
+   "free": false,
+   "id": "levi_cry",
+   "name": "Brock · Cry",
+   "character": "levi",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "smug",
+   "free": false,
+   "id": "levi_smug",
+   "name": "Brock · Smug",
+   "character": "levi",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "shocked",
+   "free": false,
+   "id": "levi_shocked",
+   "name": "Brock · Shocked",
+   "character": "levi",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "laugh",
+   "free": false,
+   "id": "kaneki_laugh",
+   "name": "Sabrina · Laugh",
+   "character": "kaneki",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "cry",
+   "free": false,
+   "id": "kaneki_cry",
+   "name": "Sabrina · Cry",
+   "character": "kaneki",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "smug",
+   "free": false,
+   "id": "kaneki_smug",
+   "name": "Sabrina · Smug",
+   "character": "kaneki",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "robux": 49,
+   "currency": "Robux",
+   "reaction": "shocked",
+   "free": false,
+   "id": "kaneki_shocked",
+   "name": "Sabrina · Shocked",
+   "character": "kaneki",
+   "desc": "Permanent reaction for your eight-slot emote wheel."
+  },
+  {
+   "expansion": true,
+   "description": "Friendly fist bump and a warm grin.",
+   "robux": 49,
+   "price": 500,
+   "name": "Yuji · GG",
+   "group": "Good Sports",
+   "desc": "Friendly fist bump and a warm grin.",
+   "characterName": "Yuji",
+   "currency": "Diamonds / Robux",
+   "reaction": "gg",
+   "animated": false,
+   "diamonds": 500,
+   "label": "GG",
+   "character": "yuji",
+   "id": "yuji_gg"
+  },
+  {
+   "expansion": true,
+   "description": "A sincere sword salute and a slight respectful bow.",
+   "robux": 49,
+   "price": 500,
+   "name": "Misty · Well Played",
+   "group": "Good Sports",
+   "desc": "A sincere sword salute and a slight respectful bow.",
+   "characterName": "Misty",
+   "currency": "Diamonds / Robux",
+   "reaction": "well_played",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Well Played",
+   "character": "kirito",
+   "id": "kirito_well_played"
+  },
+  {
+   "expansion": true,
+   "description": "A firm salute over his heart, with an approving expression.",
+   "robux": 49,
+   "price": 500,
+   "name": "Erwin · Respect",
+   "group": "Good Sports",
+   "desc": "A firm salute over his heart, with an approving expression.",
+   "characterName": "Erwin",
+   "currency": "Diamonds / Robux",
+   "reaction": "respect",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Respect",
+   "character": "erwin",
+   "id": "erwin_respect"
+  },
+  {
+   "expansion": true,
+   "description": "A relieved smile, hand to chest, after a narrow duel.",
+   "robux": 49,
+   "price": 500,
+   "name": "Asuna · Close One",
+   "group": "Good Sports",
+   "desc": "A relieved smile, hand to chest, after a narrow duel.",
+   "characterName": "Asuna",
+   "currency": "Diamonds / Robux",
+   "reaction": "close_one",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Close One",
+   "character": "asuna",
+   "id": "asuna_close_one"
+  },
+  {
+   "expansion": true,
+   "description": "A shy smile and a heart made with both hands.",
+   "robux": 49,
+   "price": 500,
+   "name": "Hinami · Thank You",
+   "group": "Good Sports",
+   "desc": "A shy smile and a heart made with both hands.",
+   "characterName": "Hinami",
+   "currency": "Diamonds / Robux",
+   "reaction": "thank_you",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Thank You",
+   "character": "hinami",
+   "id": "hinami_thank_you"
+  },
+  {
+   "expansion": true,
+   "description": "An apologetic head dip, pressed palms and one sweat drop.",
+   "robux": 49,
+   "price": 500,
+   "name": "Kobeni · My Bad",
+   "group": "Good Sports",
+   "desc": "An apologetic head dip, pressed palms and one sweat drop.",
+   "characterName": "Kobeni",
+   "currency": "Diamonds / Robux",
+   "reaction": "my_bad",
+   "animated": false,
+   "diamonds": 500,
+   "label": "My Bad",
+   "character": "kobeni",
+   "id": "kobeni_my_bad"
+  },
+  {
+   "expansion": true,
+   "description": "Key pose for one unhurried sip, followed by a deadpan stare.",
+   "robux": 149,
+   "id": "levi_tea_break",
+   "desc": "Key pose for one unhurried sip, followed by a deadpan stare.",
+   "characterName": "Brock",
+   "currency": "Robux",
+   "reaction": "tea_break",
+   "name": "Brock · Tea Break",
+   "group": "Character Signatures",
+   "animated": true,
+   "label": "Tea Break",
+   "character": "levi"
+  },
+  {
+   "expansion": true,
+   "description": "Two fingers lift his glasses to reveal one bright blue eye.",
+   "robux": 49,
+   "price": 500,
+   "name": "Red · Glasses Up",
+   "group": "Character Signatures",
+   "desc": "Two fingers lift his glasses to reveal one bright blue eye.",
+   "characterName": "Red",
+   "currency": "Diamonds / Robux",
+   "reaction": "glasses_up",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Glasses Up",
+   "character": "gojo",
+   "id": "gojo_glasses_up"
+  },
+  {
+   "expansion": true,
+   "description": "Key pose for a watch glance, then a tired unimpressed stare.",
+   "robux": 149,
+   "id": "nanami_clocking_out",
+   "desc": "Key pose for a watch glance, then a tired unimpressed stare.",
+   "characterName": "Nanami",
+   "currency": "Robux",
+   "reaction": "clocking_out",
+   "name": "Nanami · Clocking Out",
+   "group": "Character Signatures",
+   "animated": true,
+   "label": "Clocking Out",
+   "character": "nanami"
+  },
+  {
+   "expansion": true,
+   "description": "Full cheeks and a treasured half-eaten potato.",
+   "robux": 49,
+   "price": 500,
+   "name": "Sasha · One More Bite",
+   "group": "Character Signatures",
+   "desc": "Full cheeks and a treasured half-eaten potato.",
+   "characterName": "Sasha",
+   "currency": "Diamonds / Robux",
+   "reaction": "one_more_bite",
+   "animated": false,
+   "diamonds": 500,
+   "label": "One More Bite",
+   "character": "sasha",
+   "id": "sasha_one_more_bite"
+  },
+  {
+   "expansion": true,
+   "description": "A controlled, determined mask adjustment with one red eye.",
+   "robux": 49,
+   "price": 500,
+   "name": "Sabrina · Mask Up",
+   "group": "Character Signatures",
+   "desc": "A controlled, determined mask adjustment with one red eye.",
+   "characterName": "Sabrina",
+   "currency": "Diamonds / Robux",
+   "reaction": "mask_up",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Mask Up",
+   "character": "kaneki",
+   "id": "kaneki_mask_up"
+  },
+  {
+   "expansion": true,
+   "description": "Offering a warm coffee with a subtle welcoming smile.",
+   "robux": 49,
+   "price": 500,
+   "name": "Touka · Coffee’s Ready",
+   "group": "Character Signatures",
+   "desc": "Offering a warm coffee with a subtle welcoming smile.",
+   "characterName": "Touka",
+   "currency": "Diamonds / Robux",
+   "reaction": "coffees_ready",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Coffee’s Ready",
+   "character": "touka",
+   "id": "touka_coffees_ready"
+  },
+  {
+   "expansion": true,
+   "description": "Key pose for Pina landing and giving a gentle cheek nuzzle.",
+   "robux": 149,
+   "id": "silica_pina_cuddle",
+   "desc": "Key pose for Pina landing and giving a gentle cheek nuzzle.",
+   "characterName": "Silica",
+   "currency": "Robux",
+   "reaction": "pina_cuddle",
+   "name": "Silica · Pina Cuddle",
+   "group": "Character Signatures",
+   "animated": true,
+   "label": "Pina Cuddle",
+   "character": "silica"
+  },
+  {
+   "expansion": true,
+   "description": "A starter-cord grip and an enormous excited grin.",
+   "robux": 49,
+   "price": 500,
+   "name": "Denji · Revved Up",
+   "group": "Character Signatures",
+   "desc": "A starter-cord grip and an enormous excited grin.",
+   "characterName": "Denji",
+   "currency": "Diamonds / Robux",
+   "reaction": "revved_up",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Revved Up",
+   "character": "denji",
+   "id": "denji_revved_up"
+  },
+  {
+   "expansion": true,
+   "description": "Key pose for two deliberately slow, sarcastic claps.",
+   "robux": 149,
+   "id": "makima_slow_clap",
+   "desc": "Key pose for two deliberately slow, sarcastic claps.",
+   "characterName": "Blue",
+   "currency": "Robux",
+   "reaction": "slow_clap",
+   "name": "Blue · Slow Clap",
+   "group": "Bad Manners",
+   "animated": true,
+   "label": "Slow Clap",
+   "character": "makima"
+  },
+  {
+   "expansion": true,
+   "description": "Examining her manicure with exaggerated indifference.",
+   "robux": 49,
+   "price": 500,
+   "name": "Nobara · Bored Already",
+   "group": "Bad Manners",
+   "desc": "Examining her manicure with exaggerated indifference.",
+   "characterName": "Nobara",
+   "currency": "Diamonds / Robux",
+   "reaction": "bored_already",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Bored Already",
+   "character": "nobara",
+   "id": "nobara_bored_already"
+  },
+  {
+   "expansion": true,
+   "description": "A boastful grin, hands on hips and a crooked crown.",
+   "robux": 49,
+   "price": 500,
+   "name": "Power · Too Easy",
+   "group": "Bad Manners",
+   "desc": "A boastful grin, hands on hips and a crooked crown.",
+   "characterName": "Power",
+   "currency": "Diamonds / Robux",
+   "reaction": "too_easy",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Too Easy",
+   "character": "power",
+   "id": "power_too_easy"
+  },
+  {
+   "expansion": true,
+   "description": "A knowing smirk and a casual invitation to try once more.",
+   "robux": 49,
+   "price": 500,
+   "name": "Sinon · Try Again",
+   "group": "Bad Manners",
+   "desc": "A knowing smirk and a casual invitation to try once more.",
+   "characterName": "Sinon",
+   "currency": "Diamonds / Robux",
+   "reaction": "try_again",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Try Again",
+   "character": "sinon",
+   "id": "sinon_try_again"
+  },
+  {
+   "expansion": true,
+   "description": "A palm-up beckoning finger and a sharp challenging grin.",
+   "robux": 49,
+   "price": 500,
+   "name": "Ayato · Come On, Then",
+   "group": "Bad Manners",
+   "desc": "A palm-up beckoning finger and a sharp challenging grin.",
+   "characterName": "Ayato",
+   "currency": "Diamonds / Robux",
+   "reaction": "come_on_then",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Come On, Then",
+   "character": "ayato",
+   "id": "ayato_come_on_then"
+  },
+  {
+   "expansion": true,
+   "description": "Armored Reiner dismissively brushes a scuff from his shoulder.",
+   "robux": 49,
+   "price": 500,
+   "name": "Reiner · Barely Felt It",
+   "group": "Bad Manners",
+   "desc": "Armored Reiner dismissively brushes a scuff from his shoulder.",
+   "characterName": "Reiner",
+   "currency": "Diamonds / Robux",
+   "reaction": "barely_felt_it",
+   "animated": false,
+   "diamonds": 500,
+   "label": "Barely Felt It",
+   "character": "reiner",
+   "id": "reiner_barely_felt_it"
+  }
+ ],
+ "Skins": [
+  {
+   "rarity": "Legendary",
+   "robux": 599,
+   "color": [
+    176,
+    84,
+    255
+   ],
+   "desc": "Violet-black uniform and glowing eyes. Wins by forging Hollow Purple; shatters into violet light when eliminated.",
+   "duplicatePrice": 5000,
+   "commander": "Red",
+   "name": "Hollow Purple",
+   "id": "Gojo_Purple",
+   "price": 7500
+  },
+  {
+   "rarity": "Epic",
+   "robux": 399,
+   "price": 3000,
+   "desc": "Steel-grey jacket, crimson cape and cyan blades. Wins with a blade spin; falls apart in steel shards.",
+   "duplicatePrice": 3000,
+   "diamonds": 3000,
+   "name": "Ackerman Steel",
+   "id": "Levi_Steel",
+   "color": [
+    120,
+    232,
+    255
+   ],
+   "commander": "Brock"
+  },
+  {
+   "rarity": "Epic",
+   "robux": 399,
+   "price": 3000,
+   "desc": "Crimson coat and a burning blade. Wins with a flame pillar; burns out into embers when eliminated.",
+   "duplicatePrice": 3000,
+   "diamonds": 3000,
+   "name": "Elucidator Ember",
+   "id": "Kirito_Ember",
+   "color": [
+    255,
+    122,
+    26
+   ],
+   "commander": "Misty"
+  },
+  {
+   "rarity": "Legendary",
+   "robux": 599,
+   "color": [
+    255,
+    206,
+    96
+   ],
+   "desc": "Golden suit and a halo of control. Wins by binding the arena in golden threads; threads snap when eliminated.",
+   "duplicatePrice": 5000,
+   "commander": "Blue",
+   "name": "Dominion Gold",
+   "id": "Makima_Gold",
+   "price": 7500
+  },
+  {
+   "rarity": "Legendary",
+   "robux": 799,
+   "color": [
+    232,
+    24,
+    42
+   ],
+   "desc": "Bone-white coat with a blazing kagune. Wins with spread kagune; crumbles into crimson ash when eliminated.",
+   "duplicatePrice": 5000,
+   "commander": "Sabrina",
+   "name": "One-Eyed King",
+   "id": "Kaneki_King",
+   "price": 10000
+  }
+ ],
+ "Boards": [
+  {
+   "rarity": "Common",
+   "id": "moonlit",
+   "border": [
+    155,
+    123,
+    71
+   ],
+   "desc": "The classic courtyard under a night sky.",
+   "name": "Moonlit Shrine",
+   "price": 0,
+   "petal": [
+    224,
+    152,
+    174
+   ],
+   "default": true,
+   "tiles": [
+    [
+     52,
+     61,
+     77
+    ],
+    [
+     52,
+     61,
+     77
+    ]
+   ],
+   "inlay": [
+    155,
+    123,
+    71
+   ]
+  },
+  {
+   "price": 2000,
+   "glow": [
+    255,
+    110,
+    40
+   ],
+   "rarity": "Epic",
+   "robux": 399,
+   "id": "ember",
+   "fx": "ember",
+   "border": [
+    255,
+    150,
+    70
+   ],
+   "desc": "Black basalt tiles split by glowing lava seams, with embers drifting up from the board.",
+   "duplicatePrice": 2000,
+   "diamonds": 2000,
+   "name": "Ember Forge",
+   "inlay": [
+    255,
+    196,
+    110
+   ],
+   "petal": [
+    255,
+    140,
+    70
+   ],
+   "material": "Basalt",
+   "reflect": 0,
+   "tiles": [
+    [
+     58,
+     36,
+     30
+    ],
+    [
+     92,
+     52,
+     38
+    ]
+   ]
+  },
+  {
+   "price": 2000,
+   "glow": [
+    150,
+    225,
+    255
+   ],
+   "rarity": "Epic",
+   "robux": 399,
+   "id": "frost",
+   "fx": "snow",
+   "border": [
+    170,
+    220,
+    255
+   ],
+   "desc": "Polished ice flagstones with frozen light in the seams and snow falling over the field.",
+   "duplicatePrice": 2000,
+   "diamonds": 2000,
+   "name": "Frost Citadel",
+   "inlay": [
+    214,
+    242,
+    255
+   ],
+   "petal": [
+    205,
+    236,
+    255
+   ],
+   "material": "Ice",
+   "reflect": 0.12,
+   "tiles": [
+    [
+     70,
+     110,
+     150
+    ],
+    [
+     110,
+     160,
+     205
+    ]
+   ]
+  },
+  {
+   "price": 2000,
+   "glow": [
+    170,
+    255,
+    150
+   ],
+   "rarity": "Epic",
+   "robux": 399,
+   "id": "verdant",
+   "fx": "firefly",
+   "border": [
+    196,
+    230,
+    120
+   ],
+   "desc": "Mossy stone and jade trim, with fireflies drifting through the grass-green glow.",
+   "duplicatePrice": 2000,
+   "diamonds": 2000,
+   "name": "Verdant Garden",
+   "inlay": [
+    232,
+    250,
+    170
+   ],
+   "petal": [
+    250,
+    250,
+    200
+   ],
+   "material": "Grass",
+   "reflect": 0,
+   "tiles": [
+    [
+     38,
+     86,
+     58
+    ],
+    [
+     62,
+     124,
+     80
+    ]
+   ]
+  },
+  {
+   "glow": [
+    165,
+    95,
+    255
+   ],
+   "rarity": "Legendary",
+   "price": 3500,
+   "id": "void",
+   "fx": "void",
+   "border": [
+    150,
+    90,
+    255
+   ],
+   "desc": "Mirror-black obsidian over a violet rift. Light pulses through the seams as shadows rise. Can be acquired from the Monthly Pass (Tier 1 Premium reward).",
+   "duplicatePrice": 3500,
+   "material": "SmoothPlastic",
+   "name": "Midnight Void",
+   "inlay": [
+    196,
+    146,
+    255
+   ],
+   "petal": [
+    130,
+    86,
+    255
+   ],
+   "passOnly": true,
+   "reflect": 0.35,
+   "tiles": [
+    [
+     20,
+     16,
+     40
+    ],
+    [
+     44,
+     30,
+     82
+    ]
+   ]
+  },
+  {
+   "glow": [
+    255,
+    180,
+    120
+   ],
+   "rarity": "Legendary",
+   "robux": 599,
+   "id": "sakura",
+   "price": 7500,
+   "border": [
+    255,
+    205,
+    120
+   ],
+   "desc": "Pink marble at dusk with lantern-gold seams and a constant fall of blossoms.",
+   "duplicatePrice": 3500,
+   "fx": "petal",
+   "name": "Sakura Sunset",
+   "inlay": [
+    255,
+    236,
+    190
+   ],
+   "petal": [
+    255,
+    196,
+    214
+   ],
+   "material": "Marble",
+   "reflect": 0.05,
+   "tiles": [
+    [
+     150,
+     100,
+     128
+    ],
+    [
+     205,
+     150,
+     172
+    ]
+   ]
+  }
+ ],
+ "Effects": [
+  {
+   "name": "Radiant Burst",
+   "price": 0,
+   "id": "radiant",
+   "rarity": "Common",
+   "color": [
+    255,
+    214,
+    96
+   ],
+   "desc": "A pillar of golden light and expanding rings. Three-star merges add a second wave."
+  },
+  {
+   "duplicatePrice": 1500,
+   "id": "sakura",
+   "name": "Sakura Storm",
+   "robux": 399,
+   "color": [
+    255,
+    168,
+    196
+   ],
+   "rarity": "Epic",
+   "price": 5000,
+   "desc": "Blossoms spiral up around the hero and scatter into a star."
+  },
+  {
+   "rarity": "Epic",
+   "robux": 199,
+   "color": [
+    140,
+    208,
+    255
+   ],
+   "desc": "Lightning crashes down and a shockwave rolls across the board.",
+   "duplicatePrice": 1500,
+   "diamonds": 1500,
+   "name": "Thunder Ascend",
+   "id": "thunder",
+   "price": 1500
+  },
+  {
+   "rarity": "Legendary",
+   "robux": 199,
+   "color": [
+    255,
+    122,
+    70
+   ],
+   "desc": "A spirit dragon coils the hero and roars out in a burst of stars.",
+   "duplicatePrice": 2500,
+   "diamonds": 1500,
+   "name": "Dragon Spirit",
+   "id": "dragon",
+   "price": 1500
+  }
+ ],
+ "StartingGold": 1500
+}

@@ -1,0 +1,1818 @@
+{
+ "HalfRows": 4,
+ "FactionNames": {
+  "Normal": "Normal",
+  "Fire": "Fire",
+  "Water": "Water",
+  "Electric": "Electric",
+  "Grass": "Grass",
+  "Ice": "Ice",
+  "Fighting": "Fighting",
+  "Poison": "Poison",
+  "Ground": "Ground",
+  "Flying": "Flying",
+  "Psychic": "Psychic",
+  "Bug": "Bug",
+  "Rock": "Rock",
+  "Ghost": "Ghost",
+  "Dragon": "Dragon",
+  "Dark": "Dark",
+  "Steel": "Steel",
+  "Fairy": "Fairy"
+ },
+ "Commanders": [
+  {
+   "id": "Blue",
+   "text": "Copy Trap: during Preparation a movable trap sits on your half of the board. When an enemy Hero steps on it, obtain their 1-Star version (once per round) and gain 1 Gold. If no Hero was copied by the end of the round, gain 1 Gold."
+  },
+  {
+   "id": "Joy",
+   "text": "Love's Protection: select an ally to protect. That Hero fires Love Energy every 3s, healing allies in its path for 5% of their Max HP and dealing 100 / 190 / 320 / 540 Magic DMG (by Stage) to enemies in its path."
+  },
+  {
+   "id": "Misty",
+   "text": "Water Shield: during Preparation, select a Hero. When its HP first drops below 50% in battle it gains a Shield equal to 85% of its Max HP."
+  },
+  {
+   "id": "Brock",
+   "text": "Stone Choice: choose Go Go Cards twice in Round II-3. Gain extra Commander EXP by card quality in II-3: 16 EXP for a Purple card, 26 EXP for a Blue card."
+  },
+  {
+   "id": "Sabrina",
+   "text": "Power of Chaos (1 use, after Stage I-2): select a Hero without a Blessing to give it a random Blessing, then gain 2 random Heroes from the Synergy it grants (by current Shop odds) and 2 Gold."
+  }
+ ],
+ "FactionColors": {
+  "Normal": [
+   168,
+   168,
+   120
+  ],
+  "Fire": [
+   240,
+   128,
+   48
+  ],
+  "Water": [
+   104,
+   144,
+   240
+  ],
+  "Electric": [
+   248,
+   208,
+   48
+  ],
+  "Grass": [
+   120,
+   200,
+   80
+  ],
+  "Ice": [
+   152,
+   216,
+   216
+  ],
+  "Fighting": [
+   192,
+   48,
+   40
+  ],
+  "Poison": [
+   160,
+   64,
+   160
+  ],
+  "Ground": [
+   224,
+   192,
+   104
+  ],
+  "Flying": [
+   168,
+   144,
+   240
+  ],
+  "Psychic": [
+   248,
+   88,
+   136
+  ],
+  "Bug": [
+   168,
+   184,
+   32
+  ],
+  "Rock": [
+   184,
+   160,
+   56
+  ],
+  "Ghost": [
+   112,
+   88,
+   152
+  ],
+  "Dragon": [
+   112,
+   56,
+   248
+  ],
+  "Dark": [
+   112,
+   88,
+   72
+  ],
+  "Steel": [
+   184,
+   184,
+   208
+  ],
+  "Fairy": [
+   238,
+   153,
+   172
+  ]
+ },
+ "EnemyBalance": {
+  "CreepHealth": {
+   "base": 1,
+   "perRound": 0.1
+  },
+  "BossAttack": {
+   "base": 1.3,
+   "perBoss": 0.45
+  },
+  "CreepAttack": {
+   "base": 1,
+   "perRound": 0.1
+  },
+  "BossHealth": {
+   "base": 1.3,
+   "perBoss": 0.45
+  },
+  "CreepCount": 3
+ },
+ "Balance": {
+  "Rules": "STARS: HP/AD × 1 / 1.8 / 3.24. S denotes star scale; AD is current attack; P = 1 + ability-power bonuses. Listed character damage/heal/shield amounts multiply by P, except transformation stats.\n\nDEFENSE: physical uses armor; magic uses MR. Damage multiplier = 100/(100 + defense). Strongest reduction first, then penetration; penetration cap 50%.\n\nCRITS: basic attacks only; base 20% chance, 150% damage. Chance cap 100%.\n\nATTACK SPEED: base × (1 + additive bonuses) × (1 - strongest slow), clamped 0.25–2.50/s.\n\nMANA: +10 per basic attack; +1 per 1% max HP lost, capped 8/s. No mana during casts or from shield damage. Cast spends threshold; no refund on interruption.\n\nSHIELDS: expire after 4s unless noted; same source refreshes/keeps stronger; total cap 40% recipient HP.\n\nHEALING: actual HP damage, no overkill; direct-damage healing cap 35%. Strongest anti-heal only.\n\nITEMS: 3 different items per unit. Extra item hits never crit, grant mana, trigger other items or grant lifesteal. Planning allows removal/transfer. Bleed snapshots AD; maximum 3 shared stacks.\n\nCONTROL: stuns interrupt windups/channels. Dash has no invulnerability and needs a free landing hex. Temporary buffs refresh. Damage reduction cap 50%.\n\nDROPS: successful creeps at rounds 4/12/20/28 grant 1/2/3/4 equipment; successful bosses at rounds 8/16/24/32 grant 3/4/5/6. Each later creep or boss grants one more than the previous encounter of its own type. Failure or draw always grants exactly 1 Rare equipment. Victory rarity: round 4 Rare; rounds 8/12 Epic; later creeps Epic and bosses Legendary. Each item is rolled independently; duplicate drops are possible.\n\nSUPPORT EQUIPMENT: healing/shields scale from the recipient's maximum HP and the holder's healing output, not ability power. Support synergy and Rika's Ring bonuses add together. Identical Rika shields and Healing Crystal heals do not stack; Blood Supply and Signal Flare have per-recipient cooldowns. Signal Flare grants 20 mana and excludes allies currently casting. Pochita prevents lethal damage once after shields; further hits can kill. Curing Crystal cleanses the first stun and bleed, but never refunds an interrupted cast.\n\nCLASS SYNERGIES: count unique deployed characters at 2/4/6. At six units, every class retains all of its four-unit bonuses and gains its unique six-unit effect. Support duration follows the source Support once; cast/channel lengths, permanent effects, periodic tick schedules and cooldowns do not scale. Class extra shots/echoes cannot crit, grant mana or trigger equipment.\n\nEXPANSION CONTROL: roots prevent movement, dashes and grapples but allow attacks/casts. Silence prevents new skills, while active casts continue. Shoko removes one eligible debuff; permanent Ratio marks are removable by Shoko, but not by Curing Crystal.\n\nTRANSFORMATION INVESTMENT: Denji, Reiner, Armin, Eren, Sabrina and Reze deal 25% more ability damage after transforming (listed damage formula × P × 1.25 before defenses). This multiplies their existing transformation/stat bonuses. Basic attacks, item damage, bleed, healing and shielding receive no extra multiplier. Armin and Reze also deal their listed body-centered burst on transformation. Other first transformation casts do not deal damage.\n\nABSOLUTE CONTROL: a dominated unit temporarily treats its former allies as enemies, retaining its existing equipment, mana, stats and trait bonuses. Its owner and victory affiliation never change. Its crits, equipment and skill casts work normally; controlled basics use Blue's listed multiplier. Control interrupts an existing cast when it begins. At expiry, unfinished borrowed casts stop without a mana refund; already-released projectiles keep their original target team. Control ends early if its controller dies. Bosses cannot be controlled.",
+  "Thresholds": {
+   "Fighter": [
+    2,
+    4,
+    6
+   ],
+   "Support": [
+    2,
+    4,
+    6
+   ],
+   "Caster": [
+    2,
+    4,
+    6
+   ],
+   "Ranger": [
+    2,
+    4,
+    6
+   ],
+   "Guardian": [
+    2,
+    4,
+    6
+   ],
+   "Assassin": [
+    2,
+    4,
+    6
+   ]
+  },
+  "TransformUnits": {
+   "denji": true,
+   "kaneki": true,
+   "reiner": true,
+   "reze": true,
+   "eren": true,
+   "armin": true
+  },
+  "Stats": {
+   "kobeni": [
+    540,
+    50,
+    1,
+    15,
+    15,
+    1,
+    0,
+    50
+   ],
+   "makima": [
+    900,
+    55,
+    0.7,
+    20,
+    35,
+    3,
+    50,
+    100
+   ],
+   "heathcliff": [
+    1200,
+    60,
+    0.6,
+    55,
+    35,
+    1,
+    30,
+    100
+   ],
+   "yuji": [
+    700,
+    55,
+    0.85,
+    25,
+    20,
+    1,
+    0,
+    60
+   ],
+   "tatara": [
+    950,
+    55,
+    0.65,
+    35,
+    35,
+    2,
+    20,
+    100
+   ],
+   "shoko": [
+    650,
+    40,
+    0.7,
+    15,
+    30,
+    3,
+    30,
+    80
+   ],
+   "sasha": [
+    700,
+    70,
+    0.8,
+    15,
+    20,
+    4,
+    20,
+    60
+   ],
+   "silica": [
+    570,
+    40,
+    0.7,
+    15,
+    25,
+    3,
+    20,
+    70
+   ],
+   "yuuki": [
+    800,
+    80,
+    1.05,
+    20,
+    25,
+    1,
+    0,
+    80
+   ],
+   "ayato": [
+    780,
+    70,
+    1.05,
+    20,
+    25,
+    3,
+    10,
+    75
+   ],
+   "yoshimura": [
+    1100,
+    90,
+    0.55,
+    40,
+    35,
+    4,
+    40,
+    90
+   ],
+   "aki": [
+    760,
+    65,
+    0.75,
+    25,
+    20,
+    1,
+    20,
+    80
+   ],
+   "kaneki": [
+    1150,
+    85,
+    0.9,
+    30,
+    30,
+    1,
+    30,
+    100
+   ],
+   "yuta": [
+    900,
+    65,
+    0.75,
+    25,
+    30,
+    2,
+    30,
+    90
+   ],
+   "denji": [
+    1000,
+    80,
+    0.9,
+    30,
+    25,
+    1,
+    20,
+    80
+   ],
+   "erwin": [
+    950,
+    55,
+    0.65,
+    35,
+    35,
+    1,
+    30,
+    100
+   ],
+   "reiner": [
+    850,
+    45,
+    0.6,
+    40,
+    20,
+    1,
+    30,
+    90
+   ],
+   "sinon": [
+    680,
+    85,
+    0.65,
+    15,
+    20,
+    4,
+    10,
+    80
+   ],
+   "megumi": [
+    720,
+    50,
+    0.7,
+    20,
+    25,
+    3,
+    20,
+    80
+   ],
+   "katana_man": [
+    760,
+    75,
+    0.95,
+    20,
+    20,
+    1,
+    0,
+    70
+   ],
+   "eugeo": [
+    850,
+    55,
+    0.7,
+    30,
+    35,
+    2,
+    20,
+    100
+   ],
+   "armin": [
+    620,
+    40,
+    0.65,
+    15,
+    25,
+    3,
+    30,
+    90
+   ],
+   "mikasa": [
+    850,
+    75,
+    0.85,
+    25,
+    20,
+    1,
+    10,
+    70
+   ],
+   "levi": [
+    780,
+    85,
+    1,
+    20,
+    25,
+    1,
+    20,
+    80
+   ],
+   "asuna": [
+    800,
+    75,
+    1,
+    20,
+    25,
+    1,
+    0,
+    60
+   ],
+   "kenny": [
+    760,
+    78,
+    0.9,
+    20,
+    20,
+    3,
+    0,
+    80
+   ],
+   "eren": [
+    1300,
+    80,
+    0.7,
+    40,
+    30,
+    1,
+    40,
+    100
+   ],
+   "kirito": [
+    1050,
+    85,
+    0.95,
+    30,
+    30,
+    1,
+    20,
+    100
+   ],
+   "panda": [
+    950,
+    50,
+    0.65,
+    35,
+    25,
+    1,
+    30,
+    90
+   ],
+   "touka": [
+    700,
+    70,
+    0.95,
+    20,
+    20,
+    3,
+    0,
+    70
+   ],
+   "power": [
+    1050,
+    65,
+    0.65,
+    40,
+    25,
+    1,
+    30,
+    90
+   ],
+   "leafa": [
+    720,
+    45,
+    0.75,
+    20,
+    25,
+    2,
+    20,
+    80
+   ],
+   "lisbeth": [
+    900,
+    50,
+    0.65,
+    35,
+    25,
+    1,
+    20,
+    80
+   ],
+   "juuzou": [
+    850,
+    80,
+    1,
+    25,
+    20,
+    1,
+    0,
+    70
+   ],
+   "amon": [
+    820,
+    50,
+    0.65,
+    35,
+    25,
+    1,
+    20,
+    70
+   ],
+   "himeno": [
+    740,
+    45,
+    0.7,
+    20,
+    30,
+    3,
+    30,
+    90
+   ],
+   "akane": [
+    750,
+    45,
+    0.7,
+    20,
+    30,
+    3,
+    30,
+    90
+   ],
+   "nobara": [
+    620,
+    65,
+    0.75,
+    15,
+    20,
+    3,
+    20,
+    70
+   ],
+   "gojo": [
+    950,
+    60,
+    0.75,
+    25,
+    35,
+    3,
+    30,
+    120
+   ],
+   "reze": [
+    780,
+    75,
+    0.8,
+    20,
+    25,
+    3,
+    20,
+    80
+   ],
+   "nanami": [
+    780,
+    75,
+    0.85,
+    25,
+    25,
+    1,
+    20,
+    70
+   ],
+   "arima": [
+    650,
+    65,
+    0.8,
+    20,
+    25,
+    2,
+    20,
+    70
+   ],
+   "hinami": [
+    760,
+    45,
+    0.7,
+    20,
+    30,
+    2,
+    30,
+    90
+   ]
+  },
+  "TransformDamageBonus": 0.25,
+  "Items": [
+   {
+    "key": "cloud",
+    "faction": "JJK",
+    "id": "Playful Cloud",
+    "text": "+15% AD. Every third basic attack adds 40% AD physical damage.",
+    "rarity": "Rare",
+    "attack": 0.15
+   },
+   {
+    "key": "soul",
+    "faction": "JJK",
+    "id": "Split Soul Katana",
+    "text": "+15% AD. Basic attacks ignore 25% armor.",
+    "rarity": "Epic",
+    "attack": 0.15
+   },
+   {
+    "key": "spear",
+    "faction": "JJK",
+    "id": "Inverted Spear of Heaven",
+    "text": "+15% ability power. Basic attack marks for 4s: next damaging cast deals 20% less damage. 6s cooldown; marks do not stack.",
+    "rarity": "Legendary",
+    "power": 0.15
+   },
+   {
+    "key": "odm",
+    "faction": "AOT",
+    "id": "ODM Gear",
+    "text": "+15% attack speed. After first completed cast, dash up to 4 hexes toward farthest enemy. Once per battle.",
+    "rarity": "Rare",
+    "speed": 0.15
+   },
+   {
+    "key": "thunder",
+    "faction": "AOT",
+    "id": "Thunder Spear",
+    "text": "+10% AD. Every 6s explode at current target for 100% AD physical damage within 1 hex. First activation at 6s.",
+    "rarity": "Epic",
+    "attack": 0.1
+   },
+   {
+    "key": "captain",
+    "faction": "AOT",
+    "id": "Captain's Blades",
+    "text": "+15 percentage points crit chance. Critical basic attack triggers 2 slashes, each 25% AD physical. 4s cooldown; bonus hits cannot crit.",
+    "crit": 0.15,
+    "rarity": "Legendary"
+   },
+   {
+    "rarity": "Epic",
+    "key": "elucidator",
+    "faction": "SAO",
+    "id": "Elucidator",
+    "text": "+20% AD and +10 percentage points critical chance.",
+    "crit": 0.1,
+    "attack": 0.2
+   },
+   {
+    "key": "repulser",
+    "faction": "SAO",
+    "id": "Dark Repulser",
+    "text": "+10% attack speed. Every fifth basic attack fires a line slash: 80% AD physical to up to 3 enemies.",
+    "rarity": "Epic",
+    "speed": 0.1
+   },
+   {
+    "key": "excalibur",
+    "faction": "SAO",
+    "id": "Excalibur",
+    "text": "+20% AD. Every fourth basic attack cleaves up to 2 enemies adjacent to primary target for 60% AD physical each. Excludes primary.",
+    "rarity": "Legendary",
+    "attack": 0.2
+   },
+   {
+    "key": "chainsaw",
+    "faction": "CSM",
+    "id": "Chainsaw Devil's Power",
+    "text": "+10% AD. Attacks apply 15% AD physical bleed per second for 3s. Up to 3 shared stacks per target; applications at cap refresh duration.",
+    "rarity": "Epic",
+    "attack": 0.1
+   },
+   {
+    "key": "katana",
+    "faction": "CSM",
+    "id": "Katana Devil's Blade",
+    "text": "+10% AD. After first completed cast, dash up to 2 hexes toward target, then deal 100% AD physical if in attack range. Once per battle. ODM dash takes priority.",
+    "rarity": "Rare",
+    "attack": 0.1
+   },
+   {
+    "key": "blood",
+    "faction": "CSM",
+    "id": "Blood Hammer",
+    "text": "+15% maximum HP. Heal for 12% of direct health damage dealt (4% for area damage). Excludes equipment and bleed.",
+    "rarity": "Epic",
+    "health": 0.15
+   },
+   {
+    "key": "rinkaku",
+    "faction": "TG",
+    "id": "Rinkaku Kagune",
+    "text": "+10% attack speed. Every fourth eligible attack adds two 20% AD physical strikes and heals 3% maximum HP. 3s cooldown; no counting during cooldown.",
+    "rarity": "Epic",
+    "speed": 0.1
+   },
+   {
+    "key": "ixa",
+    "faction": "TG",
+    "id": "IXA Quinque",
+    "text": "+20 armor. Once per battle, survive damage below 35% HP: 20% maximum-HP shield for 4s. Counter next basic attacker within 2 hexes for 100% AD physical.",
+    "rarity": "Legendary",
+    "armor": 20
+   },
+   {
+    "key": "narukami",
+    "faction": "TG",
+    "id": "Narukami Quinque",
+    "text": "+20% ability power. After a completed damaging cast, lightning line deals 80% AD × P magic to up to 3 enemies, retaining 75% per target. 6s cooldown.",
+    "rarity": "Legendary",
+    "power": 0.2
+   },
+   {
+    "key": "liberator",
+    "faction": "SAO",
+    "id": "Liberator Shield",
+    "text": "+20 armor. Reduce the next incoming basic attack's damage by 40%. Ready at battle start; 4s cooldown. Does not block extra item hits.",
+    "rarity": "Epic",
+    "armor": 20
+   },
+   {
+    "rarity": "Epic",
+    "key": "arata",
+    "faction": "TG",
+    "id": "Arata Armor",
+    "text": "+15% maximum HP and +15 armor. Once per battle, survive HP damage below 50% HP: gain 15% damage reduction for 4s. The triggering hit is not reduced.",
+    "health": 0.15,
+    "armor": 15
+   },
+   {
+    "mr": 25,
+    "key": "simple_domain",
+    "faction": "JJK",
+    "id": "Simple Domain Charm",
+    "text": "+25 magic resist. Reduce the next incoming ability hit by 30%, including physical abilities. Ready at battle start; 6s cooldown. Does not affect basic attacks, item hits or bleed.",
+    "rarity": "Epic"
+   },
+   {
+    "key": "healing_crystal",
+    "faction": "SAO",
+    "id": "Healing Crystal",
+    "text": "+10% maximum HP. Once per battle, an ally within 2 hexes survives HP damage below 50% HP: heal the lowest-HP% eligible ally for 15% of their maximum HP over 3s. Includes self; cannot stack with another active Healing Crystal.",
+    "rarity": "Rare",
+    "health": 0.1
+   },
+   {
+    "key": "rika",
+    "faction": "JJK",
+    "id": "Rika's Ring",
+    "text": "+20% healing and shielding output. After a completed cast, shield the lowest-HP% ally within 2 hexes for 10% of their maximum HP for 4s. Includes self; 6s cooldown. Active Rika shields do not stack; other allies are prioritized.",
+    "rarity": "Legendary",
+    "healPower": 0.2
+   },
+   {
+    "mr": 10,
+    "key": "signal",
+    "faction": "AOT",
+    "id": "Survey Corps Signal Flare",
+    "text": "+10 magic resist. Every 8s, grant 20 mana to up to 2 nearest eligible allies within 2 hexes. Excludes self, casting allies and full-mana allies. A recipient can gain mana from Signal Flare only once per 8s.",
+    "rarity": "Rare"
+   },
+   {
+    "mr": 15,
+    "key": "curing",
+    "faction": "SAO",
+    "id": "Curing Crystal",
+    "text": "+15 magic resist. Once per battle, cleanse the holder's first stun and all active bleed stacks. An interrupted cast stays interrupted: no mana refund or skill completion effects. Does not remove other debuffs.",
+    "rarity": "Rare"
+   },
+   {
+    "key": "koukaku",
+    "faction": "TG",
+    "id": "Koukaku Kagune",
+    "text": "+20 armor. Reduce the bonus portion of incoming critical basic-attack damage by 50%. A 150% critical hit becomes 125% before armor; ordinary attack damage is unchanged.",
+    "rarity": "Rare",
+    "armor": 20
+   },
+   {
+    "key": "devil_blood",
+    "faction": "CSM",
+    "id": "Devil Blood Supply",
+    "text": "+10% maximum HP. Every 6s, heal the lowest-HP% injured ally within 2 hexes for 6% of their maximum HP. Includes self; maximum 3 activations per battle. Identical pulses cannot heal a recipient more than once per 6s.",
+    "rarity": "Epic",
+    "health": 0.1
+   },
+   {
+    "key": "pochita",
+    "faction": "CSM",
+    "id": "Pochita's Contract",
+    "text": "+10% maximum HP. Once per battle, a lethal hit leaves the holder at 1 HP instead, grants a 15%-maximum-HP shield for 2s, and heals 10% maximum HP over 2s. Further hits can still kill the holder; no resurrection or invulnerability.",
+    "rarity": "Legendary",
+    "health": 0.1
+   }
+  ],
+  "StarScale": 1.8,
+  "Version": "Balance V2 · Expanded roster",
+  "MaxAttackSpeed": 2.5,
+  "Abilities": {
+   "kobeni": {
+    "ad": 2.4,
+    "duration": 0.6,
+    "text": "Dash beside target and deliver 3 strikes totaling 240% AD physical damage. Gain 20% damage reduction for 1s."
+   },
+   "makima": {
+    "fallbackWeak": 0.2,
+    "windup": 0.6,
+    "controlSeconds": 2,
+    "controlBasicMultiplier": 0.75,
+    "fallbackDuration": 4,
+    "ad": 1.5,
+    "controlImmunity": 5,
+    "base": 220,
+    "text": "After 0.6s, control the highest-AD eligible enemy for 2s. It fights its former team, can critically strike, trigger equipment, generate mana and cast skills. Its basic attacks deal 75% of their normal damage, multiplied by Blue's ability power, with no attack-count cap. Skills and equipment use the victim's normal stats. Afterward it cannot be controlled again for 5s. Bosses, immune targets or a lone enemy instead take (220S + 150% AD) magic damage and lose 20% AD for 4s. No stun."
+   },
+   "heathcliff": {
+    "effectDuration": 4,
+    "shieldAd": 0.8,
+    "name": "Divine Bulwark",
+    "shieldBase": 300,
+    "text": "Gain a (300S + 80% AD) shield for 4s. Adjacent allies gain 20% damage reduction for 4s.",
+    "duration": 1.5,
+    "reduction": 0.2,
+    "impact": 0.5
+   },
+   "yuji": {
+    "base2": 60,
+    "ad": 1.8,
+    "text": "Strike for 180% AD physical damage; 0.4s later deal (60S + 80% AD) magic damage to the same surviving target.",
+    "ad2": 0.8,
+    "delay": 0.4
+   },
+   "tatara": {
+    "channelStart": 0.35,
+    "text": "Channel a locked forward cone for 2s, dealing (70S + 60% AD) magic damage every 0.5s, up to four hits. Hard interruption ends the channel.",
+    "impact": 0.55,
+    "duration": 2.8,
+    "cues": [
+     0.55,
+     1.05,
+     1.55,
+     2.05
+    ],
+    "name": "Crimson Furnace",
+    "base": 70,
+    "ad": 0.6,
+    "length": 3,
+    "halfAngleDegrees": 30,
+    "channelDuration": 2
+   },
+   "shoko": {
+    "ad": 0.8,
+    "base": 160,
+    "name": "Reverse Cursed Technique",
+    "text": "Heal the lowest-HP% ally for (160S + 80% AD), cleanse one removable debuff, and grant 10% damage reduction for 3s.",
+    "buffDuration": 3,
+    "duration": 1.5,
+    "reduction": 0.1,
+    "impact": 0.58
+   },
+   "sasha": {
+    "effectDuration": 6,
+    "previewCues": [
+     0.72,
+     1.97,
+     3.22
+    ],
+    "name": "Hunter's Focus",
+    "thirdAd": 3,
+    "text": "Focus for up to 6s. Against one target, the first two basic attacks deal normal damage; the third deals 300% AD instead of its normal damage.",
+    "duration": 0.5,
+    "previewDuration": 4,
+    "impact": 0.32
+   },
+   "silica": {
+    "ad": 0.8,
+    "defense": 15,
+    "base": 140,
+    "text": "Heal lowest-HP% ally for (140S + 80% AD). Grant +15 armor and MR for 4s (refreshes)."
+   },
+   "yuuki": {
+    "strikeAd": 0.2,
+    "cues": [
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9,
+     1,
+     1.1,
+     1.2,
+     1.48
+    ],
+    "name": "Mother's Rosario",
+    "text": "Strike ten times for 20% AD physical damage each, then thrust for 150% AD Ã— (1 + 2 Ã— the target's missing-health fraction).",
+    "finisherAd": 1.5,
+    "duration": 1.95,
+    "missingHealthScale": 2,
+    "impact": 0.3
+   },
+   "ayato": {
+    "text": "Hop to a safe firing position and launch three feathers for 70% AD physical damage each. Gain 35% attack speed for 4s.",
+    "impact": 0.48,
+    "repositionRange": 1,
+    "name": "Ukaku Skirmish",
+    "duration": 1.4,
+    "ad": 0.7,
+    "attackSpeedBonus": 0.35,
+    "cues": [
+     0.48,
+     0.64,
+     0.8
+    ],
+    "effectDuration": 4
+   },
+   "yoshimura": {
+    "radius": 1,
+    "duration": 1.7,
+    "impact": 1.35,
+    "windup": 1,
+    "name": "Owl's Judgment",
+    "splash": 0.6,
+    "ad": 2,
+    "release": 1.08,
+    "base": 100,
+    "text": "After a 1s wind-up, bombard a marked hex for (100S + 200% AD) physical damage. Enemies on adjacent hexes take 60% damage."
+   },
+   "aki": {
+    "ad": 1.5,
+    "text": "Fox bite deals (120S + 150% AD) magic damage and stuns target 0.6s. Adjacent enemies take 40% damage, no stun.",
+    "base": 120,
+    "stun": 0.6
+   },
+   "kaneki": {
+    "heal": 0.05,
+    "ad": 3,
+    "text": "First cast: transform, +20% maximum HP (restore added HP), 10% direct-damage healing (one-third for area damage). Later: frontal cone for 300% AD physical damage and heal 5% maximum HP. After transforming, multiply the listed ability damage by 1.25.",
+    "hp": 0.2,
+    "vamp": 0.1
+   },
+   "yuta": {
+    "shield": 120,
+    "ad": 1.2,
+    "text": "Heal lowest-HP% ally for (180S + 120% AD), shield for 120S for 4s, then strike current enemy for 140% AD magic damage.",
+    "base": 180,
+    "ad2": 1.4
+   },
+   "denji": {
+    "ad": 3,
+    "text": "First cast: transform, +20% maximum HP (restore added HP), +20% attack speed. Later casts: 300% AD physical damage and 30% reduced healing for 4s. After transforming, multiply the listed ability damage by 1.25.",
+    "hp": 0.2,
+    "speed": 0.2
+   },
+   "erwin": {
+    "attackBonus": 0.2,
+    "radius": 2,
+    "name": "Commander's Rally",
+    "attackSpeedBonus": 0.25,
+    "text": "Rally allies within 2 hexes, including Erwin, granting 20% bonus AD and 25% attack speed for 5s.",
+    "duration": 1.45,
+    "effectDuration": 5,
+    "impact": 0.5
+   },
+   "reiner": {
+    "shield": 0.18,
+    "ad": 1.5,
+    "text": "First cast: transform, +20% maximum HP (restore added HP), +20 armor. Later: 18% maximum-HP shield for 4s and 150% AD physical strike. After transforming, multiply the listed ability damage by 1.25.",
+    "hp": 0.2,
+    "armor": 20
+   },
+   "sinon": {
+    "ad": 3.5,
+    "windup": 0.8,
+    "text": "After 0.8s, shoot toward farthest enemy within 4 hexes. First hit: 350% AD physical; next 2 take 60%. Ignores 20% armor.",
+    "penetration": 0.2
+   },
+   "megumi": {
+    "shredDuration": 5,
+    "shred": 0.2,
+    "ad": 0.9,
+    "text": "Two spectral bites, each (70S + 90% AD) magic damage. Second bite reduces armor and MR by 20% for 5s.",
+    "base": 70
+   },
+   "katana_man": {
+    "text": "After a brief draw stance, dash through the target for 300% AD physical damage. Up to two other enemies on the path take half damage.",
+    "name": "Iai Slash",
+    "splash": 0.5,
+    "ad": 3,
+    "duration": 1.35,
+    "maxSecondary": 2,
+    "impact": 0.52
+   },
+   "eugeo": {
+    "root": 1.5,
+    "text": "Send ice through a 4-hex line, dealing (180S + 150% AD) magic damage to each enemy hit and rooting them for 1.5s.",
+    "width": 1,
+    "release": 0.72,
+    "name": "Blue Rose Prison",
+    "impact": 0.8,
+    "ad": 1.5,
+    "length": 4,
+    "base": 180,
+    "duration": 1.65
+   },
+   "armin": {
+    "slow": 0.2,
+    "ad": 1.2,
+    "firstCastTransform": true,
+    "windup": 1,
+    "transformRadius": 2,
+    "firstDamage": 0.6,
+    "base": 180,
+    "text": "First cast: transform into the Colossal Titan after 1s and erupt with steam within 2 hexes of self, dealing 60% of the normal blast damage. Later casts: after 1s, explode within 1 hex of target for (180S + 120% AD) magic damage. Both blasts slow attack speed by 20% for 3s. After transforming, multiply the listed ability damage by 1.25."
+   },
+   "mikasa": {
+    "ad": 2.8,
+    "text": "Dash through target to free hex behind it: 280% AD physical damage; up to 2 others on path take 50%. +20% attack speed for 3s. Strike in place if blocked.",
+    "speed": 0.2
+   },
+   "levi": {
+    "ad": 4.2,
+    "duration": 1.2,
+    "text": "Dash beside lowest-HP% enemy within 3 hexes; 6 slashes over 1.2s total 420% AD physical damage. 30% damage reduction during channel; not invulnerable."
+   },
+   "asuna": {
+    "ad": 2.6,
+    "text": "Dash beside target for 260% AD physical damage; +25% attack speed for 3s (refreshes).",
+    "speed": 0.25
+   },
+   "kenny": {
+    "preferredTargetDistance": [
+     2,
+     3
+    ],
+    "repositionRange": 2,
+    "name": "Crossfire Ambush",
+    "cues": [
+     0.6,
+     0.82
+    ],
+    "ad": 1.4,
+    "text": "Grapple to a safe flank that preserves shooting distance, then fire two shots at one enemy for 140% AD physical damage each.",
+    "duration": 1.45,
+    "impact": 0.6
+   },
+   "eren": {
+    "ad": 2.6,
+    "stun": 0.75,
+    "text": "First cast: transform, +25% maximum HP (restore added HP), +20% AD. Later: frontal cone for 260% AD physical damage and 0.75s stun. After transforming, multiply the listed ability damage by 1.25.",
+    "hp": 0.25,
+    "attack": 0.2
+   },
+   "kirito": {
+    "ad": 6,
+    "duration": 1.6,
+    "text": "Channel 8 slashes over 1.6s, totaling 600% AD physical damage. Remaining slashes transfer to an adjacent enemy if the target dies. Interrupted by stun."
+   },
+   "panda": {
+    "shield": 0.18,
+    "text": "Shield self for 18% maximum HP and gain 15% damage reduction for 4s. Strike for 160% AD physical damage; adjacent enemies take half damage.",
+    "reduction": 0.15,
+    "impact": 0.44,
+    "name": "Gorilla Guard",
+    "splash": 0.5,
+    "ad": 1.6,
+    "buffDuration": 4,
+    "duration": 1.15
+   },
+   "touka": {
+    "ad": 0.65,
+    "text": "Distribute 5 shards evenly across up to 3 nearest enemies within 3 hexes, extras nearest first. Each deals (25S + 65% AD) magic damage.",
+    "base": 25
+   },
+   "power": {
+    "ad": 2.2,
+    "text": "Slam for 220% AD physical damage; adjacent enemies take 60%. Gain a 12% maximum-HP shield for 4s.",
+    "shield": 0.12
+   },
+   "leafa": {
+    "healAd": 0.8,
+    "maxAllies": 2,
+    "text": "Heal the two lowest-HP% allies within 3 hexes for (160S + 80% AD) each and grant them 25% attack speed for 4s.",
+    "effectDuration": 4,
+    "name": "Sylph's Blessing",
+    "healBase": 160,
+    "attackSpeedBonus": 0.25,
+    "impact": 0.58,
+    "duration": 1.5
+   },
+   "lisbeth": {
+    "shield": 0.18,
+    "text": "Shield self for 18% maximum HP for 4s. Up to 2 adjacent lowest-HP% allies receive half that shield."
+   },
+   "juuzou": {
+    "ad": 3.6,
+    "duration": 0.8,
+    "shred": 0.2,
+    "text": "Four strikes total 360% AD physical damage. First applies 20% armor reduction for 4s; later strikes benefit."
+   },
+   "amon": {
+    "shield": 0.16,
+    "text": "Gain a 16% maximum-HP shield and +15 armor for 4s. Strike current target for 170% AD physical damage.",
+    "armor": 15,
+    "ad": 1.7
+   },
+   "himeno": {
+    "attackReduction": 0.2,
+    "buffDuration": 4,
+    "text": "A ghost hand stuns an enemy for 0.8s and reduces its AD by 20% for 4s. Shield the lowest-HP% ally for (120S + 60% AD) for 4s.",
+    "impact": 0.6,
+    "name": "Ghost's Grasp",
+    "shieldBase": 120,
+    "stun": 0.8,
+    "shieldAd": 0.6,
+    "duration": 1.5
+   },
+   "akane": {
+    "silence": 1.5,
+    "name": "Serpent's Seal",
+    "text": "Summon a serpent to strike the enemy with the highest mana percentage within 3 hexes for (180S + 120% AD) magic damage and silence them for 1.5s.",
+    "ad": 1.2,
+    "duration": 1.7,
+    "base": 180,
+    "impact": 0.65
+   },
+   "nobara": {
+    "mark": 35,
+    "ad": 1,
+    "duration": 4,
+    "base": 100,
+    "text": "Deal (100S + 100% AD) magic damage. Mark for 4s: next 3 basic attacks against that target add 35S magic damage."
+   },
+   "gojo": {
+    "ad": 2,
+    "windup": 0.8,
+    "base": 350,
+    "text": "After 0.8s, fire a line through the target: (350S + 200% AD) magic damage; each enemy pierced reduces damage by 15 percentage points, minimum 55%."
+   },
+   "reze": {
+    "text": "First cast: transform into Bomb Devil form and detonate within 1 hex of self for (45S + 75% AD) magic damage. Later casts: throw three bombs for that damage each, with half damage to adjacent enemies. Remaining bombs retarget a living enemy in range if their victim dies. After transforming, multiply the listed ability damage by 1.25.",
+    "cues": [
+     0.42,
+     0.72,
+     1.02
+    ],
+    "name": "Bombardment",
+    "splash": 0.5,
+    "ad": 0.75,
+    "duration": 1.5,
+    "base": 45,
+    "impact": 0.42
+   },
+   "nanami": {
+    "repeatImpact": 0.5,
+    "text": "Strike for 200% AD physical damage and mark until cleansed or defeated. Nanami deals 30% more direct damage to marked targets. Recasts deal 300% AD physical damage and stun for 0.5s.",
+    "impact": 0.46,
+    "repeatAd": 3,
+    "name": "Ratio Technique",
+    "mark": 0.3,
+    "ad": 2,
+    "stun": 0.5,
+    "duration": 1.1,
+    "repeatDuration": 1.2
+   },
+   "arima": {
+    "ad": 2.4,
+    "text": "Alternate Lance: 240% AD physical, 50% to one enemy behind; Guard: 150S shield for 4s, counter next basic attacker within 2 hexes for 180% AD physical. Starts with Lance.",
+    "ad2": 1.8,
+    "shield": 150
+   },
+   "hinami": {
+    "maxAllies": 2,
+    "text": "Shield the two lowest-HP% allies within 3 hexes for (180S + 80% AD) for 4s. Enemies adjacent to those allies lose 20% attack speed for 4s.",
+    "attackSpeedReduction": 0.2,
+    "effectDuration": 4,
+    "name": "Guardian Bloom",
+    "shieldBase": 180,
+    "shieldAd": 0.8,
+    "impact": 0.6,
+    "duration": 1.6
+   }
+  },
+  "TraitDescriptions": {
+   "AOT": "2/4 unique: +12%/24% direct damage to living enemy with highest maximum HP.",
+   "Caster": "2/4: Casters +15%/+30% ability power. 6 — Spell Echo (retains all 4-unit bonuses): every third completed damaging cast echoes 35% of its damage to the same surviving targets after 0.25s, without control, mana or item procs.",
+   "CSM": "2/4 unique: up to 20%/40% bonus AD proportional to missing HP.",
+   "Assassin": "2/4: Assassins +10/+20 points crit chance and crit damage. 6 — Chain Hunt (retains all 4-unit bonuses): a direct-damage kill grants that Assassin 20 mana and +25% attack speed for 3s; no mana while casting.",
+   "TG": "2/4 unique: heal for 8%/16% basic-attack health damage (not shields or overkill).",
+   "Support": "2/4: Supports +20%/+30% healing and shielding; their timed buffs, shields and debuffs last +10%/+20%. 6 — Rally (retains all 4-unit bonuses): after each completed Support cast, shield the lowest-HP% ally within 3 hexes for 8% recipient max HP for 3s and grant 10 mana if they are not casting.",
+   "Fighter": "2/4: Fighters +12%/+24% AD. 6 — Battle Rhythm (retains all 4-unit bonuses): every fourth basic grants that Fighter +20% attack speed and 15% damage reduction for 3s; refreshes.",
+   "JJK": "2/4 unique: completed casts grant 6%/12% ability power, maximum 5 stacks; applies to future casts.",
+   "Ranger": "2/4: Rangers +10%/+20% attack speed and basic attacks ignore 10%/20% armor. 6 — Crossfire (retains all 4-unit bonuses): every fourth basic fires a 50% AD physical shot at one other enemy in basic range. No crit, mana or item procs.",
+   "Guardian": "2/4: Guardians +15/+30 armor and MR; adjacent allies start with a 6%/10% Guardian-max-HP shield for 5s (strongest overlap). 6 — Last Bastion (retains all 4-unit bonuses): once per Guardian below 35% HP, shield self and adjacent allies for 15% of each recipient's max HP for 5s.",
+   "SAO": "2/4 unique: attacks grant 3%/5% attack speed, capped at 18%/35%."
+  },
+  "DamageManaCap": 8,
+  "ManaPerAttack": 10
+ },
+ "MaxCapacity": 10,
+ "StartingHealth": 100,
+ "PreparationSeconds": 25,
+ "StartingGold": 10,
+ "TraitDescriptions": {
+  "Normal": "Pokémon of this type: 2: +6% max HP, +4% attack | 4: +12% max HP, +8% attack | 6: +20% max HP, +12% attack",
+  "Fire": "Pokémon of this type: 2: +10% attack | 4: +20% attack | 6: +35% attack | 8: +55% attack",
+  "Water": "Pokémon of this type: 2: +8% max HP | 4: +16% max HP, +10% healing power | 6: +26% max HP, +20% healing power | 8: +40% max HP, +30% healing power",
+  "Electric": "Pokémon of this type: 2: +12% attack speed | 4: +25% attack speed | 6: +45% attack speed",
+  "Grass": "Pokémon of this type: 2: +6% life-steal | 4: +12% life-steal | 6: +20% life-steal",
+  "Ice": "Pokémon of this type: 2: +15 special defence | 3: +30 special defence, +10% ability power | 4: +50 special defence, +25% ability power",
+  "Fighting": "Pokémon of this type: 2: +8% attack, +5% defence penetration | 4: +16% attack, +10% defence penetration | 6: +30% attack, +20% defence penetration",
+  "Poison": "Pokémon of this type: 2: +8% defence penetration | 4: +18% defence penetration, +8% attack",
+  "Ground": "Pokémon of this type: 2: +10 armour | 4: +20 armour | 6: +35 armour, +8% max HP",
+  "Flying": "Pokémon of this type: 2: +8% attack speed | 3: +16% attack speed | 4: +28% attack speed, +8% crit chance",
+  "Psychic": "Pokémon of this type: 2: +15% ability power | 4: +30% ability power | 6: +55% ability power",
+  "Bug": "Pokémon of this type: 2: +6% attack | 4: +12% attack, +6% attack speed | 6: +22% attack, +12% attack speed",
+  "Rock": "Pokémon of this type: 2: +12 armour, +5% max HP | 4: +25 armour, +10% max HP | 6: +40 armour, +15% max HP",
+  "Ghost": "Pokémon of this type: 2: +15% crit damage, +10 starting mana | 4: +30% crit damage, +20 starting mana | 6: +50% crit damage, +30 starting mana",
+  "Dragon": "Pokémon of this type: 2: +10% damage dealt | 4: +22% damage dealt | 6: +40% damage dealt",
+  "Dark": "Pokémon of this type: 2: +10% crit chance | 4: +20% crit chance | 6: +35% crit chance",
+  "Steel": "Pokémon of this type: 2: +15 armour, +15 special defence, +8% opening shield (max HP) | 4: +30 armour, +30 special defence, +14% opening shield (max HP) | 6: +50 armour, +50 special defence, +22% opening shield (max HP)",
+  "Fairy": "Team-wide: 2: +10 special defence, +10% healing power | 4: +20 special defence, +20% healing power | 6: +30 special defence, +30% healing power",
+  "Fighter": "2/4: Fighters +12%/+24% AD. 6 — Battle Rhythm (retains all 4-unit bonuses): every fourth basic grants that Fighter +20% attack speed and 15% damage reduction for 3s; refreshes.",
+  "Caster": "2/4: Casters +15%/+30% ability power. 6 — Spell Echo (retains all 4-unit bonuses): every third completed damaging cast echoes 35% of its damage to the same surviving targets after 0.25s, without control, mana or item procs.",
+  "Assassin": "2/4: Assassins +10/+20 points crit chance and crit damage. 6 — Chain Hunt (retains all 4-unit bonuses): a direct-damage kill grants that Assassin 20 mana and +25% attack speed for 3s; no mana while casting.",
+  "Support": "2/4: Supports +20%/+30% healing and shielding; their timed buffs, shields and debuffs last +10%/+20%. 6 — Rally (retains all 4-unit bonuses): after each completed Support cast, shield the lowest-HP% ally within 3 hexes for 8% recipient max HP for 3s and grant 10 mana if they are not casting.",
+  "Guardian": "2/4: Guardians +15/+30 armor and MR; adjacent allies start with a 6%/10% Guardian-max-HP shield for 5s (strongest overlap). 6 — Last Bastion (retains all 4-unit bonuses): once per Guardian below 35% HP, shield self and adjacent allies for 15% of each recipient's max HP for 5s.",
+  "Ranger": "2/4: Rangers +10%/+20% attack speed and basic attacks ignore 10%/20% armor. 6 — Crossfire (retains all 4-unit bonuses): every fourth basic fires a 50% AD physical shot at one other enemy in basic range. No crit, mana or item procs."
+ },
+ "NPCRoundInterval": 4,
+ "Columns": 8,
+ "CombatTicks": 350,
+ "ShopOdds": {
+  "1": [
+   100,
+   0,
+   0,
+   0,
+   0
+  ],
+  "2": [
+   80,
+   20,
+   0,
+   0,
+   0
+  ],
+  "3": [
+   60,
+   30,
+   10,
+   0,
+   0
+  ],
+  "4": [
+   45,
+   33,
+   20,
+   2,
+   0
+  ],
+  "5": [
+   30,
+   35,
+   25,
+   10,
+   0
+  ],
+  "6": [
+   20,
+   30,
+   30,
+   18,
+   2
+  ],
+  "7": [
+   15,
+   25,
+   30,
+   25,
+   5
+  ],
+  "8": [
+   10,
+   20,
+   25,
+   30,
+   15
+  ],
+  "9": [
+   5,
+   15,
+   25,
+   30,
+   25
+  ],
+  "10": [
+   5,
+   10,
+   20,
+   30,
+   35
+  ]
+ },
+ "XPToLevel": {
+  "1": 2,
+  "2": 3,
+  "3": 3,
+  "4": 8,
+  "5": 20,
+  "6": 32,
+  "7": 40,
+  "8": 54,
+  "9": 74
+ },
+ "PoolCopies": [
+  25,
+  21,
+  18,
+  14,
+  9
+ ],
+ "ShopSize": 5,
+ "Items": [
+  {
+   "key": "choice_band",
+   "faction": "Item",
+   "id": "Choice Band",
+   "text": "+25% attack.",
+   "rarity": "Rare",
+   "attack": 0.25
+  },
+  {
+   "key": "choice_specs",
+   "faction": "Item",
+   "id": "Choice Specs",
+   "text": "+25% ability power.",
+   "rarity": "Rare",
+   "power": 0.25
+  },
+  {
+   "key": "scope_lens",
+   "faction": "Item",
+   "id": "Scope Lens",
+   "text": "+15% crit chance, +25% crit damage.",
+   "rarity": "Rare",
+   "crit": 0.15,
+   "critDmg": 0.25
+  },
+  {
+   "key": "leftovers",
+   "faction": "Item",
+   "id": "Leftovers",
+   "text": "Restores 1.5% max HP every second.",
+   "rarity": "Rare"
+  },
+  {
+   "key": "quick_claw",
+   "faction": "Item",
+   "id": "Quick Claw",
+   "text": "15% chance after a basic attack to attack again at once.",
+   "rarity": "Rare"
+  },
+  {
+   "key": "kings_rock",
+   "faction": "Item",
+   "id": "King's Rock",
+   "text": "Basic attacks have a 12% chance to make the target flinch.",
+   "rarity": "Rare"
+  },
+  {
+   "key": "mental_herb",
+   "faction": "Item",
+   "id": "Mental Herb",
+   "text": "Blocks the first status effect applied to the holder.",
+   "rarity": "Rare"
+  },
+  {
+   "key": "life_orb",
+   "faction": "Item",
+   "id": "Life Orb",
+   "text": "+20% damage dealt; direct hits cost 2% max HP.",
+   "rarity": "Epic",
+   "dmgMul": 0.2
+  },
+  {
+   "key": "focus_sash",
+   "faction": "Item",
+   "id": "Focus Sash",
+   "text": "Survives one lethal hit at 1 HP if it started the hit at full HP.",
+   "rarity": "Epic"
+  },
+  {
+   "key": "assault_vest",
+   "faction": "Item",
+   "id": "Assault Vest",
+   "text": "+35 special defence, +10 armour.",
+   "rarity": "Epic",
+   "mr": 35,
+   "armor": 10
+  },
+  {
+   "key": "rocky_helmet",
+   "faction": "Item",
+   "id": "Rocky Helmet",
+   "text": "Reflects 12% of basic-attack damage taken back to the attacker.",
+   "rarity": "Epic"
+  },
+  {
+   "key": "eviolite",
+   "faction": "Item",
+   "id": "Eviolite",
+   "text": "+30 armour and special defence while the holder can still evolve (below max stars of its line).",
+   "rarity": "Epic"
+  },
+  {
+   "key": "choice_scarf",
+   "faction": "Item",
+   "id": "Choice Scarf",
+   "text": "+20% attack speed.",
+   "rarity": "Legendary",
+   "speed": 0.2
+  },
+  {
+   "key": "ability_capsule",
+   "faction": "Item",
+   "id": "Ability Capsule",
+   "text": "+15% ability power, +20 starting mana.",
+   "rarity": "Legendary",
+   "power": 0.15,
+   "startMana": 20
+  }
+ ],
+ "CombatStepSeconds": 0.1,
+ "RerollCost": 2,
+ "MaxRounds": 35,
+ "ItemsByKey": {
+  "choice_band": {
+   "key": "choice_band",
+   "faction": "Item",
+   "id": "Choice Band",
+   "text": "+25% attack.",
+   "rarity": "Rare",
+   "attack": 0.25
+  },
+  "choice_specs": {
+   "key": "choice_specs",
+   "faction": "Item",
+   "id": "Choice Specs",
+   "text": "+25% ability power.",
+   "rarity": "Rare",
+   "power": 0.25
+  },
+  "scope_lens": {
+   "key": "scope_lens",
+   "faction": "Item",
+   "id": "Scope Lens",
+   "text": "+15% crit chance, +25% crit damage.",
+   "rarity": "Rare",
+   "crit": 0.15,
+   "critDmg": 0.25
+  },
+  "leftovers": {
+   "key": "leftovers",
+   "faction": "Item",
+   "id": "Leftovers",
+   "text": "Restores 1.5% max HP every second.",
+   "rarity": "Rare"
+  },
+  "quick_claw": {
+   "key": "quick_claw",
+   "faction": "Item",
+   "id": "Quick Claw",
+   "text": "15% chance after a basic attack to attack again at once.",
+   "rarity": "Rare"
+  },
+  "kings_rock": {
+   "key": "kings_rock",
+   "faction": "Item",
+   "id": "King's Rock",
+   "text": "Basic attacks have a 12% chance to make the target flinch.",
+   "rarity": "Rare"
+  },
+  "mental_herb": {
+   "key": "mental_herb",
+   "faction": "Item",
+   "id": "Mental Herb",
+   "text": "Blocks the first status effect applied to the holder.",
+   "rarity": "Rare"
+  },
+  "life_orb": {
+   "key": "life_orb",
+   "faction": "Item",
+   "id": "Life Orb",
+   "text": "+20% damage dealt; direct hits cost 2% max HP.",
+   "rarity": "Epic",
+   "dmgMul": 0.2
+  },
+  "focus_sash": {
+   "key": "focus_sash",
+   "faction": "Item",
+   "id": "Focus Sash",
+   "text": "Survives one lethal hit at 1 HP if it started the hit at full HP.",
+   "rarity": "Epic"
+  },
+  "assault_vest": {
+   "key": "assault_vest",
+   "faction": "Item",
+   "id": "Assault Vest",
+   "text": "+35 special defence, +10 armour.",
+   "rarity": "Epic",
+   "mr": 35,
+   "armor": 10
+  },
+  "rocky_helmet": {
+   "key": "rocky_helmet",
+   "faction": "Item",
+   "id": "Rocky Helmet",
+   "text": "Reflects 12% of basic-attack damage taken back to the attacker.",
+   "rarity": "Epic"
+  },
+  "eviolite": {
+   "key": "eviolite",
+   "faction": "Item",
+   "id": "Eviolite",
+   "text": "+30 armour and special defence while the holder can still evolve (below max stars of its line).",
+   "rarity": "Epic"
+  },
+  "choice_scarf": {
+   "key": "choice_scarf",
+   "faction": "Item",
+   "id": "Choice Scarf",
+   "text": "+20% attack speed.",
+   "rarity": "Legendary",
+   "speed": 0.2
+  },
+  "ability_capsule": {
+   "key": "ability_capsule",
+   "faction": "Item",
+   "id": "Ability Capsule",
+   "text": "+15% ability power, +20 starting mana.",
+   "rarity": "Legendary",
+   "power": 0.15,
+   "startMana": 20
+  }
+ },
+ "TraitInfo": {
+  "Normal": {
+   "base": "Pokémon of this type: 2: +6% max HP, +4% attack | 4: +12% max HP, +8% attack | 6: +20% max HP, +12% attack"
+  },
+  "Fire": {
+   "base": "Pokémon of this type: 2: +10% attack | 4: +20% attack | 6: +35% attack | 8: +55% attack"
+  },
+  "Water": {
+   "base": "Pokémon of this type: 2: +8% max HP | 4: +16% max HP, +10% healing power | 6: +26% max HP, +20% healing power | 8: +40% max HP, +30% healing power"
+  },
+  "Electric": {
+   "base": "Pokémon of this type: 2: +12% attack speed | 4: +25% attack speed | 6: +45% attack speed"
+  },
+  "Grass": {
+   "base": "Pokémon of this type: 2: +6% life-steal | 4: +12% life-steal | 6: +20% life-steal"
+  },
+  "Ice": {
+   "base": "Pokémon of this type: 2: +15 special defence | 3: +30 special defence, +10% ability power | 4: +50 special defence, +25% ability power"
+  },
+  "Fighting": {
+   "base": "Pokémon of this type: 2: +8% attack, +5% defence penetration | 4: +16% attack, +10% defence penetration | 6: +30% attack, +20% defence penetration"
+  },
+  "Poison": {
+   "base": "Pokémon of this type: 2: +8% defence penetration | 4: +18% defence penetration, +8% attack"
+  },
+  "Ground": {
+   "base": "Pokémon of this type: 2: +10 armour | 4: +20 armour | 6: +35 armour, +8% max HP"
+  },
+  "Flying": {
+   "base": "Pokémon of this type: 2: +8% attack speed | 3: +16% attack speed | 4: +28% attack speed, +8% crit chance"
+  },
+  "Psychic": {
+   "base": "Pokémon of this type: 2: +15% ability power | 4: +30% ability power | 6: +55% ability power"
+  },
+  "Bug": {
+   "base": "Pokémon of this type: 2: +6% attack | 4: +12% attack, +6% attack speed | 6: +22% attack, +12% attack speed"
+  },
+  "Rock": {
+   "base": "Pokémon of this type: 2: +12 armour, +5% max HP | 4: +25 armour, +10% max HP | 6: +40 armour, +15% max HP"
+  },
+  "Ghost": {
+   "base": "Pokémon of this type: 2: +15% crit damage, +10 starting mana | 4: +30% crit damage, +20 starting mana | 6: +50% crit damage, +30 starting mana"
+  },
+  "Dragon": {
+   "base": "Pokémon of this type: 2: +10% damage dealt | 4: +22% damage dealt | 6: +40% damage dealt"
+  },
+  "Dark": {
+   "base": "Pokémon of this type: 2: +10% crit chance | 4: +20% crit chance | 6: +35% crit chance"
+  },
+  "Steel": {
+   "base": "Pokémon of this type: 2: +15 armour, +15 special defence, +8% opening shield (max HP) | 4: +30 armour, +30 special defence, +14% opening shield (max HP) | 6: +50 armour, +50 special defence, +22% opening shield (max HP)"
+  },
+  "Fairy": {
+   "base": "Team-wide: 2: +10 special defence, +10% healing power | 4: +20 special defence, +20% healing power | 6: +30 special defence, +30% healing power"
+  },
+  "Caster": {
+   "base": "2/4: Casters +15%/+30% ability power. 6 — Spell Echo (retains all 4-unit bonuses): every third completed damaging cast echoes 35% of its damage to the same surviving targets after 0.25s, without control, mana or item procs."
+  },
+  "Assassin": {
+   "base": "2/4: Assassins +10/+20 points crit chance and crit damage. 6 — Chain Hunt (retains all 4-unit bonuses): a direct-damage kill grants that Assassin 20 mana and +25% attack speed for 3s; no mana while casting."
+  },
+  "Support": {
+   "base": "2/4: Supports +20%/+30% healing and shielding; their timed buffs, shields and debuffs last +10%/+20%. 6 — Rally (retains all 4-unit bonuses): after each completed Support cast, shield the lowest-HP% ally within 3 hexes for 8% recipient max HP for 3s and grant 10 mana if they are not casting."
+  },
+  "Guardian": {
+   "base": "2/4: Guardians +15/+30 armor and MR; adjacent allies start with a 6%/10% Guardian-max-HP shield for 5s (strongest overlap). 6 — Last Bastion (retains all 4-unit bonuses): once per Guardian below 35% HP, shield self and adjacent allies for 15% of each recipient's max HP for 5s."
+  },
+  "Ranger": {
+   "base": "2/4: Rangers +10%/+20% attack speed and basic attacks ignore 10%/20% armor. 6 — Crossfire (retains all 4-unit bonuses): every fourth basic fires a 50% AD physical shot at one other enemy in basic range. No crit, mana or item procs."
+  },
+  "Fighter": {
+   "base": "2/4: Fighters +12%/+24% AD. 6 — Battle Rhythm (retains all 4-unit bonuses): every fourth basic grants that Fighter +20% attack speed and 15% damage reduction for 3s; refreshes."
+  }
+ },
+ "BenchSize": 10,
+ "Factions": [
+  "Normal",
+  "Fire",
+  "Water",
+  "Electric",
+  "Grass",
+  "Ice",
+  "Fighting",
+  "Poison",
+  "Ground",
+  "Flying",
+  "Psychic",
+  "Bug",
+  "Rock",
+  "Ghost",
+  "Dragon",
+  "Dark",
+  "Steel",
+  "Fairy"
+ ],
+ "Economy": {
+  "baseIncome": 5,
+  "winBonus": 2,
+  "lossBonus": 1,
+  "interestPer": 10,
+  "interestMax": 5,
+  "xpPerRound": 2,
+  "xpBuyGold": 1,
+  "xpBuyAmount": 1,
+  "streaks": [
+   [
+    1,
+    2,
+    1
+   ],
+   [
+    3,
+    3,
+    2
+   ],
+   [
+    4,
+    99,
+    3
+   ]
+  ],
+  "startLevel": 3,
+  "maxLegendaryDeployed": 1,
+  "stonePerNpcWin": 1
+ },
+ "Damage": {
+  "base": 3,
+  "perSurvivor": 1,
+  "roundDivisor": 5,
+  "ghostMultiplier": 0.5,
+  "table": {
+   "I": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+   ],
+   "II": [
+    5,
+    5,
+    5,
+    5,
+    6,
+    6
+   ],
+   "III": [
+    7,
+    7,
+    7,
+    11,
+    11,
+    11
+   ],
+   "IV": [
+    13,
+    13,
+    13,
+    14,
+    14,
+    14
+   ],
+   "V": [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ]
+  }
+ },
+ "Stones": [
+  {
+   "key": "water_stone",
+   "id": "Water Stone",
+   "text": "Evolution Stone: evolves Eevee into Vaporeon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  },
+  {
+   "key": "thunder_stone",
+   "id": "Thunder Stone",
+   "text": "Evolution Stone: evolves Eevee into Jolteon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  },
+  {
+   "key": "fire_stone",
+   "id": "Fire Stone",
+   "text": "Evolution Stone: evolves Eevee into Flareon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  },
+  {
+   "key": "sun_stone",
+   "id": "Sun Stone",
+   "text": "Evolution Stone: evolves Eevee into Espeon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  },
+  {
+   "key": "moon_stone",
+   "id": "Moon Stone",
+   "text": "Evolution Stone: evolves Eevee into Umbreon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  },
+  {
+   "key": "leaf_stone",
+   "id": "Blue Stone",
+   "text": "Evolution Stone: evolves Eevee into Leafeon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  },
+  {
+   "key": "ice_stone",
+   "id": "Ice Stone",
+   "text": "Evolution Stone: evolves Eevee into Glaceon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  },
+  {
+   "key": "shiny_stone",
+   "id": "Shiny Stone",
+   "text": "Evolution Stone: evolves Eevee into Sylveon (use it from the Eevee's inspector).",
+   "rarity": "Rare",
+   "stone": true
+  }
+ ]
+}

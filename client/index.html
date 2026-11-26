@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>PokéTactix</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="interface.css?v=2"></head>
+<body>
+<canvas id="view"></canvas>
+<div id="numbers"></div>
+<div id="stage">
+  <!-- MENU -->
+  <section id="menu" class="screen lobbyMenu">
+    <div class="blossom-backdrop" aria-hidden="true"><canvas id="blossomBackdrop"></canvas></div>
+    <div id="lmRoot">
+    <div class="lm-profile panel"><div id="lmAvatar" class="lm-avatar"></div><div class="who"><label for="name">Trainer name</label><input id="name" maxlength="20" value="Player"></div></div>
+    <div id="rankCard" class="lm-rank panel"><b id="rkName">Bronze III</b><span id="rkRP">0 RP</span><small id="rkTitle">Rookie Trainer</small><div class="rkTrack"><i id="rkFill"></i></div><small id="rkNote"></small></div>
+    <h1 class="lm-title"><span class="lm-brand-mark" aria-hidden="true"></span>Pok&eacute;<span>Tactix</span></h1>
+    <div class="lm-collection panel">47 POK&Eacute;MON &nbsp;/&nbsp; 18 TYPES</div>
+    <button id="menuSettings" class="lm-gear" aria-label="Settings" title="Graphics &amp; sound">&#9881;</button>
+    <details class="lm-notice panel lm-event">
+      <summary><span class="notice-icon" aria-hidden="true">★</span><span class="notice-label"><small>Events</small><b>Blossom Cup</b></span><span class="notice-chevron" aria-hidden="true"></span></summary>
+      <p>Sample event notice for a weekend tournament at Blossom Arena.</p>
+    </details>
+    <details class="lm-notice panel lm-news">
+      <summary><span class="notice-icon" aria-hidden="true">▤</span><span class="notice-label"><small>News</small><b>Arena update</b></span><span class="notice-chevron" aria-hidden="true"></span></summary>
+      <p>Adjust Scenery motion in Settings to animate the lobby and battlefield.</p>
+    </details>
+    <div class="lm-side">
+      <button id="helpBtn" class="lm-sb"><i>?</i><span>How to play</span></button>
+      <button id="lbBtn" class="lm-sb lm-lb"><i>&#9813;</i><span>Leaderboard</span></button>
+      <button id="sideGallery" class="lm-sb"><i>&#9638;</i><span>Gallery</span></button>
+    </div>
+    <button id="playBackgroundMotion" class="lm-sb lm-motion hidden"><i aria-hidden="true">&#9654;</i><span>Play background motion</span></button>
+    <div id="helpPanel" class="lm-help-panel panel hidden"><b>HOW TO PLAY</b><p>Recruit Pok&eacute;mon from the shop.<br>Place them on your hexes.<br>Combine three copies to evolve.<br>Build type synergies.<br>Outlast seven rivals.<br><br>All commanders are available to everyone.</p></div>
+    <div id="heroStage" class="lm-stage"><canvas id="heroCanvas" width="700" height="900"></canvas><img id="heroImg" alt="" class="hidden"></div>
+    <div class="lm-passive panel"><small>COMMANDER SKILL</small><div id="cmdInfo"></div></div>
+    <button id="heroPlate" class="lm-plate" aria-label="Choose commander" aria-controls="cmdPicker" aria-expanded="false"><b id="heroName"></b><i aria-hidden="true">&#8644;</i></button>
+    <div id="cmdPicker" class="lm-picker panel hidden"><div class="ph">Choose your commander<button id="cmdPickerClose" aria-label="Close commander picker">&#10005;</button></div><div id="commanders"></div></div>
+    <nav class="lm-nav" aria-label="Lobby">
+      <button class="on" id="navPrep" aria-current="page"><i aria-hidden="true">&#9876;</i><span>Preparation</span></button>
+      <button id="navCollection" aria-controls="cmdPicker" aria-expanded="false"><i aria-hidden="true">&#10040;</i><span>Commanders</span></button>
+      <button id="navGallery"><i aria-hidden="true">&#9638;</i><span>Gallery</span></button>
+      <button id="navEncy"><i aria-hidden="true">&#9776;</i><span>Encyclopedia</span></button>
+    </nav>
+    <label class="lm-srv">Server <input id="server" size="22" placeholder="Local server"></label><div id="menuMsg" class="msg lm-msg" role="status"></div>
+    <button id="modeBtn" class="lm-modebtn">Mode &nbsp;<span id="modeTxt">Practice · Intermediate</span> &nbsp;&#9652;</button>
+    <button id="online" class="lm-ranked">Ranked</button>
+    <button id="solo" class="lm-play"><b>Play</b><small>8-player practice</small><i aria-hidden="true">→</i></button>
+    <div id="modePanel" class="lm-modepanel panel hidden"><small>PRACTICE DIFFICULTY · UNRANKED</small><div id="diffBtns"></div></div>
+    <select id="difficulty" class="hidden"><option>Beginner</option><option selected>Intermediate</option><option>Hard</option></select>
+    <div id="rankBox" class="hidden"></div>
+  </div></section>
+  <!-- GALLERY -->
+  <section id="gallery" class="screen hidden"><div id="glRoot">
+    <button id="glBack" class="gl-back"><i>&#10094;</i> Gallery</button>
+    <div id="glNav" class="gl-nav"><button data-t="hero">Pok&eacute;mon</button><button data-t="equipment">Items</button><button data-t="encyclopedia">Encyclopedia</button><button data-t="cards">Pok&eacute;mon Cards</button></div>
+    <div id="glBody"></div>
+  </div></section>
+  <section id="lobby" class="screen hidden"><div class="menuPanel"><h2>Finding players…</h2><div id="lobbyList"></div><div class="sub small">Empty seats are filled with bots after a few seconds.</div></div></section>
+  <!-- MATCH HUD -->
+  <section id="match" class="screen hidden">
+    <div id="topBar">
+      <div id="matchPhase"><div id="round" class="tb"></div><div id="phase" class="tb">Preparation</div></div>
+      <div id="timerWrap" role="timer" aria-label="Time remaining in seconds"><span id="timer">…</span><span id="timerPrevious" aria-hidden="true"></span></div>
+    </div>
+    <div id="roundStrip"><div id="rDmg"></div><div id="rIcons"></div></div>
+    <div id="topRight">
+      <div id="levelChip" class="hudbox"><div class="lvTop"><b>Level <span id="level">3</span></b><span id="fielded"></span></div><div class="xpTrack"><i id="xpbar"></i></div></div>
+      <div id="goldChip" class="hudbox"><img src="art/ui/icons/gold.png" alt=""><b id="gold">0</b></div>
+      <button id="settings" class="rbtn dark" aria-label="Settings" title="Settings"><span>&#9881;</span></button>
+    </div>
+    <div id="toolbar">
+      <button data-tool="synergies" class="tb-btn on" title="Synergies"><img src="art/ui/toolbar/synergies.png" alt="Synergies"></button>
+      <button data-tool="damage" class="tb-btn" title="Damage"><img src="art/ui/toolbar/damage.png" alt="Damage"></button>
+      <button data-tool="equipment" class="tb-btn" title="Bag: equip items"><img src="art/ui/toolbar/equipment.png" alt="Bag"></button>
+      <button data-tool="emotes" class="tb-btn" title="Emotes"><img src="art/ui/toolbar/emotes.png" alt="Emotes"></button>
+      <button data-tool="statistics" class="tb-btn on" title="Standings"><img src="art/ui/toolbar/statistics.png" alt="Standings"></button>
+      <div id="emoteMenu" class="hidden"><button>😀</button><button>👍</button><button>😢</button><button>🔥</button><button>❤️</button></div>
+    </div>
+    <section id="synergies" aria-labelledby="synergyHeading"><h2 id="synergyHeading">Synergies</h2><div class="sgrid" id="facGrid"></div><div class="sgrid" id="roleGrid"></div><div id="synEmpty" class="hidden">Deploy Pokémon to activate bonuses.</div></section>
+    <div id="emoteBubble" class="hidden"></div>
+    <div id="synDetail" class="hidden"></div><div id="pickPanel" class="hidden"></div><div id="blessPanel" class="hidden"></div><div id="supplyPanel" class="hidden"></div><div id="cardPanel" class="hidden"></div><button id="cardStack" title="Pokémon Cards"></button><div id="cardDetails" class="hidden"></div><button id="cmdSkill" title="Commander skill"></button><div id="cmdDetails" class="hidden"></div><div id="joy"><i id="joyKnob"></i></div><button id="jumpBtn" title="Jump (Space)">⤒</button><button id="camBtn" title="Camera angle (C)">📷</button><div id="camName"></div><div id="scoutBar" class="hidden"></div><div id="scoutPanel" class="hidden"></div><div id="dmgPanel" class="lpanel hidden"></div>
+    <div id="bagPanel" class="lpanel hidden"></div>
+    <div id="bag" class="hidden"></div>
+    <section id="standings2" aria-labelledby="standingsHeading"><h2 id="standingsHeading">Standings</h2><div id="standingRows"></div></section>
+    <div id="inspector" class="closed"></div>
+    <div id="sellZone" class="hidden">Drop here to sell</div>
+    <div id="banner"></div>
+    <div id="msg" class="msg"></div>
+    <div id="tray">
+      <div id="trayLeft">
+        <button id="xp" class="rbtn blue"><span>Buy XP</span><em><img src="art/ui/icons/gold.png" alt=""><span id="xpCost">1</span></em></button>
+        <button id="reroll" class="rbtn blue"><span>Reroll</span><em><img src="art/ui/icons/gold.png" alt=""><b id="rerollCost">2</b></em></button>
+      </div>
+      <div id="shopWrap"><div id="shop"></div></div>
+      <div id="trayRight"><button id="lock" class="rbtn dark" title="Lock shop (L)" aria-label="Lock shop" aria-pressed="false"><span class="lk" aria-hidden="true">&#128275;</span></button><button id="ready" class="wbtn gold"><span>Ready</span></button></div>
+    </div>
+    <div id="tip" class="hidden"></div>
+  </section>
+  <section id="settingsPanel" class="screen hidden" aria-label="Settings"><div class="menuPanel narrow">
+    <h2>Settings</h2>
+    <div class="row"><label>Graphics <select id="quality"><option>Low</option><option>Medium</option><option selected>High</option></select></label></div>
+    <div class="row"><label>Scenery motion <select id="backgroundMotion"><option value="system">Use system setting</option><option value="on">On</option><option value="off">Off</option></select></label></div>
+    <div class="row"><label>Master <input id="volMaster" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="volMusic" type="range" min="0" max="1" step="0.05"></label><label>SFX <input id="volSfx" type="range" min="0" max="1" step="0.05"></label></div>
+    <div class="row"><button id="fullscreen">Toggle fullscreen</button><button id="leave" class="alt">Leave match</button></div>
+    <div class="row"><button id="settingsClose" class="gold">Close</button></div>
+  </div></section>
+  <section id="over" class="screen hidden"><div class="menuPanel">
+    <h2 id="overTitle"></h2><div id="rankResult" class="sub"></div><div id="standings"></div><button id="again" class="gold">Play again</button>
+  </div></section>
+</div>
+<script type="module" src="client.js?v=3"></script>
+<script type="module" src="blossom-background.js?v=3"></script>
+</body></html>
