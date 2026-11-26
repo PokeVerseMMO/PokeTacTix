@@ -106,7 +106,7 @@ export class Scene3D {
       seen.add(u.key);
       let v = this.units.get(u.key);
       if (!v) { v = new UnitVisual(u.key, u.id, u.def, styleOf(u.id, u.def, u.fcolor), this.fx, this.spriteFor(u.art ?? u.id)); this.units.set(u.key, v); this.scene.add(v.root); v.pop = 0.0001; const w = u.world || this.worldOf(u.cell, u.flip); v.place(w.x, w.z, w.y, true); if (u.noPop) v.pop = 0; if (u.spawnFx) this.fx.burst(v.worldPos(0.8), 0xfff0a0, 14, 1.8); }
-      v.away = !!u.mine;
+      v.away = !!u.mine; if (u.big) v.giantT = u.big; // far-side units are drawn larger so they read like the near side
       {
         const artKey = u.art ?? u.id, want = this.spriteFor(artKey, v.away);
         if (v.artKey === undefined) v.artKey = artKey;
