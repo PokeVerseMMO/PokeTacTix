@@ -494,3 +494,4 @@ body.supplying #joy,body.supplying #jumpBtn,body.carding #joy,body.carding #jump
 #camName{position:absolute;left:150px;top:590px;width:90px;color:#cfe6ff;font-size:12px;font-weight:700;text-shadow:0 1px 3px #000;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}
 #camName.on{opacity:1}
 body.supplying #camBtn,body.carding #camBtn{visibility:hidden}
+body.fixedcam #camBtn,body.fixedcam #camName{display:none}

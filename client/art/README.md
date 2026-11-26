@@ -100,6 +100,8 @@ Sprites: creeps are drawn ~3 world units tall and bosses ~4.2, so give them 768 
   walk plays on the battlefield when the player moves.
 
 ### Island
+
+- The default battlefield uses `client/art/environment/verdant-blossom-terrace.webp` (2470 × 1618). The original 1672 × 941 composition starts at pixel (378, 310). Branch and waterfall paths in `client/verdant-terrace.js` use coordinates relative to that origin. Taller and wider windows reveal the surrounding painting. Opposing reserves stand on the paving along the rear rail. The floating island below loads if the painting is unavailable.
 - `client/art/environment/ground.png` - 2048 x 1740, top-down painted grass with a stone battlefield in the middle
 - `client/art/environment/sky.png` - 2048 x 1024, painted sky
 

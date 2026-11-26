@@ -65,22 +65,22 @@ function waterMaterial(stream = false) {
       }` });
 }
 // petals: fully GPU-animated instanced quads
-function petalSystem(count, origin, spread, height, color) {
+export function petalSystem(count, origin, spread, height, color, opacity = 1) {
   const base = new THREE.PlaneGeometry(0.17, 0.11), geo = new THREE.InstancedBufferGeometry(); geo.index = base.index; geo.setAttribute("position", base.attributes.position); geo.setAttribute("uv", base.attributes.uv);
   const r = rng(99), st = new Float32Array(count * 3), sd = new Float32Array(count * 4);
   for (let i = 0; i < count; i++) { st.set([origin.x + (r() - 0.5) * spread.x, origin.y, origin.z + (r() - 0.5) * spread.z], i * 3); sd.set([r(), 0.5 + r() * 0.8, r() * 6.28, r() * 6.28], i * 4); }
   geo.setAttribute("aStart", new THREE.InstancedBufferAttribute(st, 3)); geo.setAttribute("aSeed", new THREE.InstancedBufferAttribute(sd, 4)); geo.instanceCount = count;
-  const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, uniforms: { uTime: WIND, uH: { value: height }, uCol: { value: new THREE.Color(color) } },
+  const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, uniforms: { uTime: WIND, uH: { value: height }, uCol: { value: new THREE.Color(color) }, uOpacity: { value: opacity } },
     vertexShader: `attribute vec3 aStart; attribute vec4 aSeed; uniform float uTime; uniform float uH; varying float vA; varying vec2 vUv;
       void main(){
         float ph = fract(aSeed.x + uTime * 0.035 * aSeed.y);
         vec3 p = aStart + vec3(sin(uTime*0.7+aSeed.z)*0.9 + ph*7.0, (1.0-ph)*uH, cos(uTime*0.55+aSeed.w)*0.9 - ph*1.5);
         float a = uTime*1.8*aSeed.y + aSeed.z, ca = cos(a), sa = sin(a);
         vec3 l = position; l.xy = vec2(l.x*ca - l.y*sa, l.x*sa + l.y*ca); l.xz = vec2(l.x*cos(aSeed.w) - l.z*sin(aSeed.w), l.x*sin(aSeed.w));
-        vA = smoothstep(0.0,0.06,ph) * smoothstep(1.0,0.9,ph); vUv = uv;
+        vA = smoothstep(0.0,0.06,ph) * (1.0-smoothstep(0.9,1.0,ph)); vUv = uv;
         gl_Position = projectionMatrix * viewMatrix * vec4(p + l * (1.0 + 0.4*sin(aSeed.z*3.0)), 1.0);
       }`,
-    fragmentShader: "uniform vec3 uCol; varying float vA; varying vec2 vUv; void main(){ float e = smoothstep(0.0,0.35,vUv.x)*smoothstep(1.0,0.65,vUv.x); gl_FragColor = vec4(uCol * (0.9+0.2*vUv.y), vA * (0.35+0.6*e)); }" });
+    fragmentShader: "uniform vec3 uCol; uniform float uOpacity; varying float vA; varying vec2 vUv; void main(){ vec2 p=vUv*2.0-1.0; p.y+=0.18*p.x*p.x; float edge=length(vec2(p.x,p.y*(1.0+0.32*p.x))); float a=1.0-smoothstep(0.78,1.0,edge); gl_FragColor=vec4(uCol*(0.88+0.22*vUv.y),vA*a*uOpacity); }" });
   const m = new THREE.Mesh(geo, mat); m.frustumCulled = false; return m;
 }
 function moteSystem(count, box, color) {
