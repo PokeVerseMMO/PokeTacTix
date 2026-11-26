@@ -311,9 +311,16 @@ export class Room {
     const m = this.match, p = m.players[seat];
     const counts = traitCounts(deployed(p));
     const need = xpNeed(p);
+    const endsAt = m.phase === "Preparation" ? this.prepEndsAt : m.phase === "Supply" ? this.supply?.endsAt : undefined;
+    const phaseClock = endsAt ? {
+      endsAt,
+      remaining: Math.max(0, (endsAt - Date.now()) * SPEED / 1000),
+      duration: m.phase === "Preparation" ? PREP_SECONDS : SUPPLY_TURN_SECONDS,
+      rate: SPEED,
+    } : null;
     return {
       t: "state", round: m.round, phase: m.phase,
-      timeLeft: m.phase === "Preparation" ? Math.max(0, Math.round((this.prepEndsAt - Date.now()) * SPEED / 1000)) : m.phase === "Supply" && this.supply ? Math.max(0, Math.round((this.supply.endsAt - Date.now()) * SPEED / 1000)) : 0,
+      timeLeft: Math.round(phaseClock?.remaining ?? 0), phaseClock,
       supply: m.phase === "Supply" && this.supply ? { stage: this.supply.stage, entries: this.supply.entries, order: this.supply.order, turn: this.supply.order[this.supply.idx] ?? null } : null,
       message, seat, npc: this.npcMeta, opponent: this.opponentOf(seat), ranked: this.ranked, pool: this.poolInfo(p),
       you: {

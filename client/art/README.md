@@ -8,7 +8,7 @@ Formats: PNG (recommended, needs transparency for sprites), WebP or JPG for opaq
 |---|---|---|---|
 | `sprites/` | `<id>.png` | Full-body character cut-out, transparent background, feet at the bottom edge, facing the camera (slightly to the right is fine; the game mirrors it when the unit walks left) | 512 x 768 |
 | `portraits/` | `<id>.png` | Bust/face illustration for shop cards and the inspector | 440 x 520 |
-| `avatars/` | `<player name in lowercase>.png` | Square avatar for the standings list | 128 x 128 |
+| `trainers/` | `<commander id in lowercase>_head.png` | Square commander portrait for the standings and commander picker | 256 x 256 |
 | `environment/` | `ground.png` | Top-down painted texture of the island surface (grass with a stone battlefield in the middle). Covers 23 x 19.5 world units, so use ~2:1 landscape, e.g. 2048 x 1740 | 2048 x 1740 |
 | `environment/` | `sky.png` | Painted sky (clouds, blue gradient) wrapped on the background dome | 2048 x 1024 |
 
@@ -87,9 +87,17 @@ Commanders (also fighters, same ids, shown on the podium): `gojo`, `makima`, `ki
 
 Sprites: creeps are drawn ~3 world units tall and bosses ~4.2, so give them 768 x 768 or larger canvases.
 
-### Players' avatars (standings list)
-`client/art/avatars/<player name in lowercase>.png`, 128 x 128. Bots are named `Rival 1` ... `Rival 7`, so
-`avatars/rival 1.png` etc. (with the space) replaces theirs.
+### Commander portraits and podium models
+
+- The standings and commander picker resolve portraits from `trainers/<id>_head.png` using the
+  commander ID in `data/Config.json`, converted to lowercase. The standings show initials if the
+  portrait is absent. Both human and bot seats use the same rule.
+- Put an existing skinned model at `models/<id>/model.glb`. The lobby and battle client use the
+  same asset. Keep the model upright and include all textures. The battle client scales the model
+  and aligns its feet to the podium.
+- The current loaders use `models/<id>/anim.json` with `motions.stand` and `motions.walk` tracks.
+  See the Blue model directory for the track structure. Stand loops in both the lobby and battle;
+  walk plays on the battlefield when the player moves.
 
 ### Island
 - `client/art/environment/ground.png` - 2048 x 1740, top-down painted grass with a stone battlefield in the middle

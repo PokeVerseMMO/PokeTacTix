@@ -2,13 +2,13 @@
 import { Scene3D } from "./scene.js";
 import { initGallery, openGallery } from "./gallery.js";
 import { Audio2 } from "./audio.js";
-import { portrait, avatar, iconSvg, loadArtManifest, artPath, hash } from "./art.js";
+import { portrait, iconSvg, loadArtManifest, artPath } from "./art.js";
 import { Lobby3D } from "./lobby3d.js";
 const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(location.search);
-let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, roundTotal = 1, lastCombatRound = -1, lastCombat = null, dmgMode = "dealt", bagPick = null;
+let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, lastCombat = null, dmgMode = "dealt", bagPick = null;
 let DATA = null, ws = null, state = null, combat = null, spec = null, watchKey = "", scene = null, lastMode = "solo";
-let timerBase = { left: 0, at: 0 }, selItem = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, shopSig: [], syn: {}, hp: {} };
+let timerBase = null, selItem = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, shopSig: [], syn: {}, hp: {} };
 const TIER_COLORS = ["#9aa3b8", "#59c27a", "#4aa3ff", "#b36bff", "#ffb23e"];
 const RARITY_COLORS = { Rare: "#4aa3ff", Epic: "#b36bff", Legendary: "#ffb23e" };
 const hexNum = (s) => parseInt(s.slice(1), 16);
@@ -28,7 +28,14 @@ function fit() {
   scene && scene.resize();
 }
 addEventListener("resize", fit);
-const show = (id) => { if (id === "menu") Audio2.music("title"); if (id === "over") Audio2.music("victory_trainer"); for (const s of document.querySelectorAll(".screen")) if (s.id !== "settingsPanel") s.classList.toggle("hidden", s.id !== id); };
+const show = (id) => {
+  if (id === "menu") Audio2.music("title");
+  else setCommanderPicker(false);
+  if (id === "over") Audio2.music("victory_trainer");
+  for (const screen of document.querySelectorAll(".screen")) {
+    if (screen.id !== "settingsPanel") screen.classList.toggle("hidden", screen.id !== id);
+  }
+};
 const apiBase = () => {
   const v = $("server").value.trim();
   if (!v) return { http: location.origin, ws: location.origin.replace(/^http/, "ws") };
@@ -50,10 +57,20 @@ async function loadData() {
   await loadArtManifest(base);
   const box = $("commanders"); box.innerHTML = "";
   for (const c of DATA.rules.commanders) {
-    const d = document.createElement("div");
-    d.className = "cmd" + (c.id === (localStorage.cmd || "Blue") ? " sel" : "");
-    d.innerHTML = `<i class="cav" style="background-image:url(${avatarUrl({ commander: c.id, human: true })})"></i><div><b>${c.id}</b><span>${c.text}</span></div>`;
-    d.onclick = () => { localStorage.cmd = c.id; for (const e of box.children) e.classList.remove("sel"); d.classList.add("sel"); setCommanderVisual(c.id); $("cmdPicker").classList.add("hidden"); };
+    const d = document.createElement("button"), selected = c.id === (localStorage.cmd || "Blue");
+    d.type = "button";
+    d.className = "cmd" + (selected ? " sel" : "");
+    d.setAttribute("aria-pressed", String(selected));
+    d.innerHTML = `<i class="cav" style="background-image:${trainerAvatar(c.id)}"></i><span class="cmd-copy"><b>${c.id}</b><span>${c.text}</span></span>`;
+    d.onclick = () => {
+      localStorage.cmd = c.id;
+      for (const option of box.children) {
+        option.classList.toggle("sel", option === d);
+        option.setAttribute("aria-pressed", String(option === d));
+      }
+      setCommanderVisual(c.id);
+      setCommanderPicker(false);
+    };
     box.appendChild(d);
   }
   initGallery({ DATA, show, defOf, emb, ric, portraitOf, roleName, prettyName, TIER_COLORS, TIER_NAME, RARITY_COLORS });
@@ -64,15 +81,26 @@ async function loadData() {
   setCommanderVisual(localStorage.cmd || "Blue");
 }
 function setCommanderVisual(cid) {
-  const cm = (DATA.rules.commanders || []).find((c) => c.id === cid); if ($("cmdInfo") && cm) $("cmdInfo").textContent = cm.text; if ($("heroName")) $("heroName").textContent = cid; if ($("lmAvatar")) $("lmAvatar").style.backgroundImage = `url(${avatarUrl({ commander: cid, human: true })})`;
+  const cm = (DATA.rules.commanders || []).find((c) => c.id === cid); if ($("cmdInfo") && cm) $("cmdInfo").textContent = cm.text; if ($("heroName")) $("heroName").textContent = cid; if ($("lmAvatar")) $("lmAvatar").style.backgroundImage = trainerAvatar(cid);
   if (!lobby3d && $("heroCanvas")) { try { lobby3d = new Lobby3D($("heroCanvas")); } catch (e) { console.warn(e); } } lobby3d && lobby3d.show(cid.toLowerCase());
   const id = cid.toLowerCase(), d = defOf(id) || { role: "Caster", faction: "JJK", name: cid };
   scene && scene.setCommander(id, d, fRGB(d.faction));
 }
 $("name").value = localStorage.name || "Player";
 $("helpBtn").onclick = () => $("helpPanel").classList.toggle("hidden");
-const togglePicker = () => $("cmdPicker").classList.toggle("hidden");
-$("heroPlate").onclick = togglePicker; $("navCollection").onclick = togglePicker; $("cmdPickerClose").onclick = () => $("cmdPicker").classList.add("hidden");
+function setCommanderPicker(open) {
+  $("cmdPicker").classList.toggle("hidden", !open);
+  $("navPrep").classList.toggle("on", !open);
+  $("navCollection").classList.toggle("on", open);
+  if (open) $("navPrep").removeAttribute("aria-current");
+  else $("navPrep").setAttribute("aria-current", "page");
+  for (const id of ["heroPlate", "navCollection"]) $(id).setAttribute("aria-expanded", String(open));
+}
+const togglePicker = () => setCommanderPicker($("cmdPicker").classList.contains("hidden"));
+$("navPrep").onclick = () => setCommanderPicker(false);
+$("heroPlate").onclick = togglePicker;
+$("navCollection").onclick = togglePicker;
+$("cmdPickerClose").onclick = () => setCommanderPicker(false);
 $("navGallery").onclick = () => openGallery("hero"); $("sideGallery").onclick = () => openGallery("hero"); $("navEncy").onclick = () => openGallery("encyclopedia");
 $("modeBtn").onclick = () => $("modePanel").classList.toggle("hidden");
 for (const v of ["Beginner", "Intermediate", "Hard"]) { const b = document.createElement("button"); b.className = "lm-btn"; b.textContent = v; b.onclick = () => { $("difficulty").value = v; $("modeTxt").textContent = `Practice · ${v}`; $("modePanel").classList.add("hidden"); }; $("diffBtns").appendChild(b); }
@@ -87,6 +115,7 @@ function connect(mode) {
   try { ws = new WebSocket(apiBase().ws); } catch (e) { $("menuMsg").textContent = "Bad server address."; return; }
   ws.onopen = () => {
     ws.send(JSON.stringify({ t: "join", mode, name: $("name").value, commander: localStorage.cmd || "Blue", difficulty: $("difficulty").value }));
+    $("menuMsg").textContent = "";
     show(mode === "solo" ? "match" : "lobby");
   };
   ws.onerror = () => { $("menuMsg").textContent = "Could not reach the server."; show("menu"); };
@@ -96,7 +125,21 @@ function connect(mode) {
 $("solo").onclick = () => connect("solo");
 $("online").onclick = () => connect("online");
 $("again").onclick = () => leave();
-function leave() { try { ws && ws.close(); } catch {} state = null; combat = null; selUid = null; $("settingsPanel").classList.add("hidden"); show("menu"); scene && scene.clearUnits(); }
+function leave() {
+  try { ws && ws.close(); } catch {}
+  state = null;
+  combat = null;
+  timerBase = null;
+  selUid = null;
+  scouting = null;
+  synOpen = null;
+  lastRound = -1;
+  document.body.classList.remove("scouting", "modalpick", "supplying", "carding", "inspecting");
+  $("synDetail").classList.add("hidden");
+  $("settingsPanel").classList.add("hidden");
+  show("menu");
+  scene && scene.clearUnits();
+}
 $("server").addEventListener("change", loadData);
 async function showRank() {
   const name = $("name").value.trim(); if (!name) return;
@@ -118,12 +161,24 @@ $("leave").onclick = leave;
 function onMessage(m) {
   if (m.t === "lobby") {
     show("lobby");
-    $("lobbyList").innerHTML = m.players.map((p) => `${p.name} <small style="color:#a9b3d6">(${p.commander})</small>`).join("<br>") + `<br><br>${m.players.length} / 8`;
+    const entries = m.players.map((player) => {
+      const row = document.createElement("div");
+      const name = document.createElement("b"), commander = document.createElement("span");
+      name.textContent = player.name;
+      commander.textContent = player.commander;
+      row.append(name, commander);
+      return row;
+    });
+    const count = document.createElement("small");
+    count.textContent = `${m.players.length} / 8 players`;
+    $("lobbyList").replaceChildren(...entries, count);
   } else if (m.t === "state") {
     if ($("match").classList.contains("hidden")) { show("match"); }
-    const phaseChanged = !state || state.phase !== m.phase; if (phaseChanged) phaseAt = performance.now();
+    const now = performance.now();
+    const phaseChanged = !state || state.phase !== m.phase;
+    if (phaseChanged) phaseAt = now;
+    syncPhaseClock(m, now, phaseChanged);
     state = m;
-    timerBase = { left: m.timeLeft, at: performance.now() }; if (m.timeLeft > roundTotal || m.round !== lastCombatRound) { roundTotal = Math.max(1, m.timeLeft); lastCombatRound = m.round; }
     if (m.phase === "Preparation") { combat = null; Audio2.music("route101"); } else if (m.phase === "Supply") combat = null;
     setCommanderVisual(m.you.commander);
     refreshHud();
@@ -137,12 +192,31 @@ function onMessage(m) {
     $("overTitle").textContent = m.placement === 1 ? "VICTORY — 1st place!" : `You placed #${m.placement}`;
     const r = m.rank;
     $("rankResult").innerHTML = r ? (r.ranked ? `Rank: <b>${r.label}</b> · ${r.rp} RP (${r.delta >= 0 ? "+" : ""}${r.delta})` : `Practice match — rank unchanged (${r.label}, ${r.rp} RP). Online matches are ranked.`) : "";
-    $("standings").innerHTML = m.standings.map((s) => `<div class="${s.human ? "me" : ""}"><span>#${s.placement} ${s.name}</span><span>${s.commander}</span></div>`).join("");
+    $("standings").replaceChildren(...m.standings.map((player) => {
+      const row = document.createElement("div"), position = document.createElement("b");
+      const name = document.createElement("span"), commander = document.createElement("small");
+      row.classList.toggle("me", player.placement === m.placement);
+      position.textContent = player.placement <= 8 ? `#${player.placement}` : "—";
+      name.textContent = player.name;
+      commander.textContent = player.commander;
+      row.append(position, name, commander);
+      return row;
+    }));
     lastRound = -1;
   }
 }
 function banner(text, sub = "", cls = "") {
-  const b = $("banner"); b.className = ""; void b.offsetWidth; b.innerHTML = (cls ? `<img src="${UI}banners/${cls === "win" ? "victory" : "defeat"}.png" alt="${text}">` : text) + (sub ? `<small>${sub}</small>` : ""); b.className = "show " + cls;
+  const panel = $("banner"), title = document.createElement("strong");
+  panel.className = "";
+  title.textContent = text;
+  panel.replaceChildren(title);
+  if (sub) {
+    const subtitle = document.createElement("small");
+    subtitle.textContent = sub;
+    panel.appendChild(subtitle);
+  }
+  void panel.offsetWidth;
+  panel.className = "show " + cls;
 }
 
 // ---------------- actions ----------------
@@ -157,7 +231,7 @@ addEventListener("keydown", (e) => {
   if (e.key === "r" || e.key === "R") send({ a: "reroll" }); // D is for walking (WASD)
   if (e.key === "f" || e.key === "F") send({ a: "xp" });
   if (e.key === "l" || e.key === "L") send({ a: "lock" });
-  if (e.key === "Enter") send({ a: "ready" });
+  if (e.key === "Enter" && !e.target.closest?.("button, select")) send({ a: "ready" });
   if (e.key === "Escape" && cmdTarget) { cmdTarget = null; refreshCmd(); return; }
   if (e.key === "Escape" && scouting !== null) { scouting = null; refreshHud(); return; }
   if (e.key === "Escape") { selUid = null; selItem = null; renderInspector(); }
@@ -166,17 +240,15 @@ addEventListener("keydown", (e) => {
 // ---------------- HUD ----------------
 const UI = "art/ui/";
 const COIN = `<img src="${UI}icons/gold.png" alt="">`;
-const TIER_FRAME = (t) => `${UI}cards/tier_${Math.max(1, Math.min(5, t))}.png`;
 const TIER_NAME = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
-const COMMANDER_TRAINER = { blue: "blue", joy: "joy", misty: "misty", brock: "brock", sabrina: "sabrina" };
-const RIVAL_TRAINERS = ["lance", "erika", "ltsurge", "giovanni", "koga"];
 const emb = (f) => { const ti = artPath("types", f); if (ti) return `<i class="emb ti" style="background-image:url(${ti})" title="${f}"></i>`; const c = DATA.rules.factionColors[f] || [150, 150, 150]; return `<i class="emb tb" style="--tc:rgb(${c[0]},${c[1]},${c[2]})" title="${f}">${f.slice(0, 2)}</i>`; };
 const ROLE_LABEL = { Fighter: "Striker" }, roleName = (r) => ROLE_LABEL[r] || r;
 const ric = (r) => `<i class="ric" style="background-image:url(${UI}roles/${r.toLowerCase()}.png)" title="${r}"></i>`;
 const hasIcon = (k) => DATA.rules.factionColors[k] !== undefined;
-function avatarUrl(p) {
-  const t = COMMANDER_TRAINER[(p.commander || "").toLowerCase()] || RIVAL_TRAINERS[hash(p.name) % RIVAL_TRAINERS.length];
-  return `art/trainers/${t}_head.png`;
+function trainerAvatar(commander) {
+  const id = commander?.toLowerCase();
+  const url = id && artPath("trainers", `${id}_head`);
+  return url ? `url(${encodeURI(url)})` : "none";
 }
 function traitInfo(counts) {
   const rows = [];
@@ -189,8 +261,9 @@ function traitInfo(counts) {
 function refreshHud() {
   if (!state) return;
   const y = state.you, prep = state.phase === "Preparation" && !y.eliminated, live = state.phase !== "Finished" && !y.eliminated;
-  $("round").textContent = `Round ${state.round}` + (state.npc ? (state.npc.boss ? " · Boss" : " · Creeps") : "");
-  $("phase").textContent = state.phase === "Preparation" ? "Preparation" : state.phase === "Supply" ? "Supply" : "Combat";
+  $("match").dataset.phase = state.phase.toLowerCase();
+  $("round").textContent = `Round ${state.round}` + (state.npc ? (state.npc.boss ? " · Boss" : " · Wild") : "");
+  $("phase").textContent = state.phase;
   $("level").textContent = y.level; $("fielded").textContent = `${y.units.filter((u) => u.col !== null).length}/${y.level}`;
   $("xpbar").style.width = y.level >= DATA.rules.maxLevel ? "100%" : `${(y.xp / Math.max(1, y.xpNeed)) * 100}%`;
   if (prev.gold !== null && prev.gold !== y.gold) { const g = $("goldChip"); g.classList.remove("pop"); void g.offsetWidth; g.classList.add("pop"); }
@@ -198,20 +271,26 @@ function refreshHud() {
   $("rerollCost").textContent = y.rerollCost; $("reroll").disabled = !live || y.shopLocked;
   $("xp").disabled = !live || y.level >= DATA.rules.maxLevel;
   $("lock").querySelector("span").innerHTML = y.shopLocked ? "&#128274;" : "&#128275;"; $("lock").classList.toggle("sel", y.shopLocked);
+  $("lock").setAttribute("aria-pressed", String(y.shopLocked));
   $("lock").classList.toggle("goldr", y.shopLocked); $("lock").classList.toggle("dark", !y.shopLocked);
-  $("ready").disabled = !prep || y.ready; $("ready").firstElementChild.textContent = y.ready ? "Waiting…" : "Ready";
+  $("ready").disabled = !prep || y.ready;
+  $("ready").firstElementChild.textContent = y.eliminated ? "Eliminated" : state.phase === "Combat" ? "In battle" : state.phase === "Supply" ? "Drafting" : y.ready ? "Waiting…" : "Ready";
   $("ready").classList.toggle("sel", !!y.ready);
   // shop
   const shop = $("shop"); shop.innerHTML = "";
   y.shop.forEach((id, slot) => {
-    const d = id && defOf(id), el = document.createElement("div");
+    const d = id && defOf(id), el = document.createElement(d ? "button" : "div");
     if (!d) { el.className = "card empty"; shop.appendChild(el); prev.shopSig[slot] = null; return; }
+    el.type = "button";
+    el.disabled = !live;
     const same = prev.shopSig[slot] === id; prev.shopSig[slot] = id;
     const pi = (state.pool || {})[id], left = pi ? pi[0] : null, ratio = pi && pi[1] ? pi[0] / pi[1] : 1, heat = ratio <= 0.15 ? " scarce" : ratio <= 0.35 ? " hot" : "";
     el.className = "card t" + d.tier + (y.gold < d.tier ? " poor" : "") + heat;
     if (pi) el.title = `${pi[0]} of ${pi[1]} copies left in the shared pool · ${pi[2]} owned by players${heat ? " — heavily contested!" : ""}`;
-    if (same) el.style.animation = "none"; else el.style.animationDelay = slot * 0.05 + "s";
-    el.innerHTML = `<div class="pic" style="background-image:url(${artPath("portraits", id) || portrait(id, d, fRGB(d.faction))})"></div><div class="frame" style="background-image:url(${TIER_FRAME(d.tier)})"></div>${hasIcon(d.faction) ? emb(d.faction) : ""}${ric(d.role)}${pi ? `<div class="left">${heat ? "⚠ " : ""}${pi[0]}<small>/${pi[1]}</small></div>` : ""}<div class="nm">${d.name.split(" ")[0]}</div><div class="cost">${COIN}${d.tier}</div>`;
+    if (same) el.classList.add("steady");
+    else el.style.animationDelay = slot * 0.05 + "s";
+    el.innerHTML = `<span class="pic" style="background-image:url(${artPath("portraits", id) || portrait(id, d, fRGB(d.faction))})"></span>${hasIcon(d.faction) ? emb(d.faction) : ""}${ric(d.role)}${pi ? `<span class="left">${heat ? "⚠ " : ""}${pi[0]}<small>/${pi[1]}</small></span>` : ""}<span class="nm">${d.name}</span><span class="cost">${COIN}${d.tier}</span>`;
+    el.setAttribute("aria-label", `Buy ${d.name} for ${d.tier} gold`);
     el.onclick = () => {
       if (!live) return;
       if (y.gold < d.tier) { el.classList.remove("deny"); void el.offsetWidth; el.classList.add("deny"); $("goldChip").classList.add("nogold"); setTimeout(() => $("goldChip").classList.remove("nogold"), 320); return; }
@@ -227,19 +306,24 @@ function refreshHud() {
         const el = document.createElement("div"); el.className = "sc" + (tier > 0 ? " active" : "");
         el.innerHTML = `${icon(k)}<div><div class="nm">${roleName(k)}</div><div class="cnt"><b>${n}</b>/${next}</div></div>`;
         if (tier > (prev.syn[k] || 0)) { el.classList.add("flash"); } prev.syn[k] = tier;
-        el.onclick = () => showSynDetail(k, icon); // details open on click, no hover tooltip
+        el.onclick = () => showSynDetail(k);
         grid.appendChild(el);
       } };
     const have = (k) => (y.traits[k] || 0) > 0, rank = (a, b) => { const ta = thOf(a).filter((t) => y.traits[a] >= t).length, tb = thOf(b).filter((t) => y.traits[b] >= t).length; return tb - ta || y.traits[b] - y.traits[a]; };
     fill($("facGrid"), DATA.rules.factions.filter(have).sort(rank), emb); fill($("roleGrid"), ROLES.filter(have).sort(rank), ric);
     $("synEmpty").classList.toggle("hidden", Object.values(y.traits || {}).some((n) => n > 0)); }
   // standings
-  const st = $("standings2"); st.innerHTML = "";
+  const st = $("standingRows"); st.innerHTML = "";
   const order = [...state.players].sort((a, b) => (a.eliminated - b.eliminated) || b.hp - a.hp || a.seat - b.seat); // highest HP first, you included
   for (const p of order) {
-    const el = document.createElement("div"), pct = Math.max(0, Math.min(100, (p.hp / DATA.rules.startHealth) * 100));
+    const el = document.createElement("div"), pct = Math.max(0, Math.min(100, (p.hp / (DATA.rules.startHealth || 100)) * 100));
     el.className = "pl" + (p.seat === state.seat ? " me" : "") + (p.eliminated ? " dead" : "");
-    el.innerHTML = `<span class="av" style="background-image:url(${avatarUrl(p)})"></span><span class="nm">${p.name}</span><span class="hp">${Math.max(0, p.hp)}${p.shield ? `<small class="shd" title="Commander shield">🛡${p.shield}</small>` : ""}</span><div class="bar"><i style="width:${pct}%;background-size:${pct > 0 ? 10000 / pct : 100}% 100%"></i></div>`;
+    el.innerHTML = `<span class="av" aria-hidden="true"></span><span class="nm"></span><span class="hp">${Math.max(0, p.hp)}${p.shield ? `<small class="shd" title="Commander shield">🛡${p.shield}</small>` : ""}</span><div class="bar"><i style="width:${pct}%"></i></div>`;
+    el.querySelector(".nm").textContent = p.name;
+    const badge = el.querySelector(".av"), portrait = trainerAvatar(p.commander);
+    badge.title = p.commander || "";
+    if (portrait === "none") badge.textContent = (p.commander || p.name || "?").trim().slice(0, 2).toUpperCase();
+    else badge.style.backgroundImage = portrait;
     if (p.seat !== state.seat && !p.eliminated) { el.classList.add("scoutable"); el.title = "Click to scout this board"; el.onclick = () => { scouting = scouting === p.seat ? null : p.seat; selUid = null; renderInspector(); refreshHud(); }; }
     if (scouting === p.seat) el.classList.add("scouted");
     if (prev.hp[p.seat] !== undefined && p.hp < prev.hp[p.seat]) { el.classList.add("hit"); }
@@ -248,6 +332,7 @@ function refreshHud() {
   }
   { const c = $("xpCost"); if (c) { c.textContent = DATA.rules.xpBuyGold ?? 1; $("xp").title = `Buy ${DATA.rules.xpBuyAmount ?? 1} XP (F)`; } }
   renderBag(); renderInspector();
+  if (synOpen) renderSynDetail();
   $("msg").textContent = state.message || (state.phase === "Preparation" && y.reward ? y.reward : "") || (y.eliminated ? "You were eliminated — waiting for the match to end." : "");
 }
 function renderBag() {
@@ -401,6 +486,61 @@ function updateWalkers(now) {
   if (lp && now - lastAvatarSent > 100 && ws && ws.readyState === 1) { lastAvatarSent = now; ws.send(JSON.stringify({ t: "avatar", island: viewed, x: lp.x, y: lp.y, z: lp.z, yaw: lp.yaw, mv: lp.mv })); }
 }
 let homePose = null;
+const halo = $("timerWrap"), timer = $("timer"), timerPrevious = $("timerPrevious");
+const reduceHudMotion = matchMedia("(prefers-reduced-motion: reduce)");
+let previousClock = null, digitAnimations = [];
+
+function syncPhaseClock(message, now, phaseChanged) {
+  if (message.phase !== "Preparation" && message.phase !== "Supply") {
+    timerBase = null;
+    return;
+  }
+  const serverClock = message.phaseClock;
+  const key = `${message.phase}/${message.round}/${message.supply?.turn ?? ""}/${serverClock?.endsAt ?? ""}`;
+  if (!phaseChanged && timerBase?.key === key) return;
+  // Keep the same monotonic deadline when a shop action sends another snapshot.
+  const remaining = serverClock?.remaining ?? message.timeLeft;
+  timerBase = {
+    key, remaining, at: now,
+    duration: Math.max(.001, serverClock?.duration ?? remaining),
+    rate: serverClock?.rate ?? 1,
+  };
+}
+
+function renderPhaseClock(now) {
+  const replay = state.phase === "Combat" ? viewCombat() : null;
+  const source = timerBase || replay;
+  let left = 0, duration = 1, display = "…";
+  if (timerBase) {
+    duration = timerBase.duration;
+    left = Math.max(0, timerBase.remaining - (now - timerBase.at) * timerBase.rate / 1000);
+    display = String(Math.ceil(left));
+  } else if (replay) {
+    duration = Math.max(1, replay.m.duration + .9);
+    left = Math.max(0, duration - (now - replay.t0) / 1000);
+    display = replay.done ? "✓" : String(Math.ceil(left));
+  }
+  halo.style.setProperty("--halo-progress", String(Math.min(1, left / duration)));
+  const warning = source && !replay?.done ? Math.min(1, Math.max(0, (5 - left) / 1.4)) : 0;
+  const tint = `${warning * 100}%`;
+  if (halo.style.getPropertyValue("--halo-warning") !== tint) halo.style.setProperty("--halo-warning", tint);
+
+  const old = timer.textContent;
+  const sameClock = source === previousClock;
+  previousClock = source;
+  if (sameClock && old === display) return;
+  for (const animation of digitAnimations) animation.cancel();
+  digitAnimations = [];
+  timer.textContent = display;
+  if (sameClock && !reduceHudMotion.matches && /^\d+$/.test(old) && /^\d+$/.test(display)) {
+    timerPrevious.textContent = old;
+    const timing = { duration: 185, easing: "ease-in-out" };
+    digitAnimations = [
+      timer.animate([{ opacity: 0 }, { opacity: 1 }], timing),
+      timerPrevious.animate([{ opacity: 1, visibility: "visible" }, { opacity: 0, visibility: "visible" }], timing),
+    ];
+  }
+}
 function loop(now) {
   requestAnimationFrame(loop);
   if (!scene) return;
@@ -413,10 +553,9 @@ function loop(now) {
   const hc = dragging ? drag.hoverCell : placing ? scene.pickCell(ptr.x, ptr.y, false) : null, hb = dragging ? drag.hoverBench : placing ? scene.pickBench(ptr.x, ptr.y) : null;
   scene.setGrid({ mode: inMatch && viewCombat() ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat", hoverCell: hc, hoverBench: hb });
   scene.frame();
-  if (inMatch) { renderDmg(); renderBagPanel(); renderRoundStrip(); renderPick(); renderBless(); renderSupply(); renderCards(); renderCardStack(); renderCmdSkill(); renderScout(); if (synOpen) renderSynDetail(); }
+  if (inMatch) { renderDmg(); renderBagPanel(); renderRoundStrip(); renderPick(); renderBless(); renderSupply(); renderCards(); renderCardStack(); renderCmdSkill(); renderScout(); }
   if (inMatch) {
-    if (state.phase === "Preparation" || state.phase === "Supply") { const left = Math.max(0, timerBase.left - (now - timerBase.at) / 1000); $("timer").textContent = Math.ceil(left); { const w = Math.min(100, (left / roundTotal) * 100) + "%"; $("tFill").style.width = w; $("tFill2").style.width = w; } $("timerWrap").classList.toggle("urgent", left <= 5 && left > 0); }
-    else $("timer").textContent = combat ? (combat.done ? "✓" : "⚔") : "…";
+    renderPhaseClock(now);
     $("sellZone").classList.toggle("hidden", !dragging);
   }
   updateTip();
@@ -510,19 +649,29 @@ function renderRoundStrip() {
   if (!state || !DATA) return; const iv = DATA.rules.npcInterval || 3, r = state.round;
   const sig = r + "|" + iv; const el = $("rIcons"); if (el._sig === sig) return; el._sig = sig;
   { const L = DATA.rules.stageLen || 6, T = DATA.rules.dmgTable || {}, R = ["I", "II", "III", "IV", "V"], row = T[R[Math.min(4, Math.floor((Math.max(1, r) - 1) / L))]] || [3], base = row[Math.min(5, (Math.max(1, r) - 1) % L)] ?? row[row.length - 1], st = R[Math.min(4, Math.floor((Math.max(1, r) - 1) / L))] + "-" + (((Math.max(1, r) - 1) % L) + 1);
-    $("rDmg").innerHTML = `<b>${st}</b> · lose = <i>${base}</i> + enemy ★`; $("rDmg").title = `If you lose this round your commander takes ${base} base damage plus the star levels of every enemy unit still standing (a 2★ counts 2). A draw damages both players.`; }
+    $("rDmg").innerHTML = `<b>Stage ${st}</b><span>Loss <i>${base}</i> + enemy ★</span>`; $("rDmg").title = `If you lose this round your commander takes ${base} base damage plus the star levels of every enemy unit still standing (a 2★ counts 2). A draw damages both players.`; }
   el.innerHTML = [0, 1, 2, 3, 4].map((k) => { const n = r + k, npc = n > 0 && n % iv === 0, boss = npc && Math.floor(n / iv) % 2 === 0;
     return `<div class="ri ${k === 0 ? "cur " : ""}${boss ? "boss" : npc ? "creep" : ""}" title="${boss ? "Boss" : npc ? "Creep encounter" : "Player battle"} · round ${n}">${boss ? `<img src="art/ui/toolbar/equipment.png" alt="">` : npc ? "<span>🐾</span>" : `<img src="art/ui/toolbar/combat.png" alt="">`}<small>${n}</small></div>`; }).join("");
 }
 let synOpen = null;
-function showSynDetail(k, icon) {
-  const el = $("synDetail"); if (synOpen === k) { synOpen = null; el.classList.add("hidden"); return; } synOpen = k; el._icon = icon; renderSynDetail();
+function showSynDetail(k) {
+  const el = $("synDetail");
+  if (synOpen === k) {
+    synOpen = null;
+    el.classList.add("hidden");
+    return;
+  }
+  synOpen = k;
+  renderSynDetail();
 }
 function renderSynDetail() {
   const el = $("synDetail"), k = synOpen; if (!k || !state) return; const y = state.you, n = y.traits[k] || 0, th = thOf(k), isRole = ROLES.includes(k);
-  const members = DATA.roster.filter((d) => (isRole ? d.role === k : d.faction === k)).sort((a, b) => a.tier - b.tier);
   const owned = new Set(y.units.map((u) => (defOf(u.id)?.evolutionLine || [u.id])[0]));
   el.classList.remove("hidden");
+  const signature = [k, n, ...[...owned].sort()].join("|");
+  if (el._sig === signature) return;
+  el._sig = signature;
+  const members = DATA.roster.filter((d) => (isRole ? d.role === k : d.faction === k)).sort((a, b) => a.tier - b.tier);
   el.innerHTML = `<div class="hd">${isRole ? ric(k) : emb(k)}<span>${roleName(k)}</span><button title="Close">✕</button></div><div class="ds">${DATA.rules.traitDescriptions[k] || ""}</div>`
     + `<div class="th">${th.map((t) => `<div class="${n >= t ? "on" : ""}">[${t}] ${n >= t ? "✓ active" : n + "/" + t}</div>`).join("")}</div>`
     + `<div class="mem">${members.map((d) => `<div class="${owned.has((d.evolutionLine || [d.id])[0]) ? "own" : ""}" title="${d.name}" style="background-image:url(${artPath("portraits", d.id) || portrait(d.id, d, fRGB(d.faction))})"><b>${d.tier}</b></div>`).join("")}</div>`;
@@ -559,9 +708,9 @@ function renderSupply() {
   const stageName = ["", "I", "II", "III", "IV"][Math.min(S.stage, 4)] || S.stage;
   const card = (e) => { const taker = e.by !== null ? who(e.by) : null, c = RARITY_COLORS[e.rarity] || (e.kind === "bless" ? "#ff9de2" : e.kind === "unit" ? "#7be0a0" : "#e9c46a");
     const pic = e.kind === "unit" ? `<div class="ic big" style="background-image:url(${portraitOf(e.unitId)})"></div>` : e.icon ? `<div class="ic"><img src="${e.icon}" alt=""></div>` : `<div class="ic"></div>`;
-    return `<div class="sc2${taker ? " taken" : mine ? " can" : ""}" data-id="${e.id}" style="--rc:${c}">${pic}<b>${e.label}</b><span>${e.text}</span>${taker ? `<div class="by"><i style="background-image:url(${avatarUrl(taker)})"></i>${taker.name}</div>` : ""}</div>`; };
+    return `<div class="sc2${taker ? " taken" : mine ? " can" : ""}" data-id="${e.id}" style="--rc:${c}">${pic}<b>${e.label}</b><span>${e.text}</span>${taker ? `<div class="by"><i style="background-image:${trainerAvatar(taker.commander)}"></i>${taker.name}</div>` : ""}</div>`; };
   el.innerHTML = `<div class="hd"><b>Stage ${stageName} Supply</b><span>${mine ? "Your turn — choose one reward!" : `Waiting for ${who(S.turn)?.name || "…"}`}</span></div>`
-    + `<div class="order">${S.order.map((seat) => { const p = who(seat), done = S.entries.some((e) => e.by === seat); return `<i class="${seat === S.turn ? "cur" : ""}${done ? " done" : ""}${seat === state.seat ? " me" : ""}" title="${p?.name} · ${p?.hp} HP" style="background-image:url(${avatarUrl(p)})"></i>`; }).join("")}</div>`
+    + `<div class="order">${S.order.map((seat) => { const p = who(seat), done = S.entries.some((e) => e.by === seat); return `<i class="${seat === S.turn ? "cur" : ""}${done ? " done" : ""}${seat === state.seat ? " me" : ""}" title="${p?.name} · ${p?.hp} HP" style="background-image:${trainerAvatar(p?.commander)}"></i>`; }).join("")}</div>`
     + `<div class="cards">${S.entries.map(card).join("")}</div><div class="foot">Lowest HP chooses first · one reward each</div>`;
   if (mine) for (const c of el.querySelectorAll(".sc2.can")) c.onclick = () => send({ a: "supplypick", id: Number(c.dataset.id) });
 }
@@ -584,14 +733,14 @@ function renderCmdSkill() {
   const unit = (uid) => state.you.units.find((x) => x.uid === uid), nm = (u) => { const r = u && DATA.roster.find((q) => q.id === u.id); return r ? r.name : ""; };
   const sig = JSON.stringify([id, cmdOpen, cmdTarget, c, prep, state.round, state.you.units.map((u) => [u.uid, u.col, u.row]), scouting]); if (b._sig === sig) return; b._sig = sig;
   const cm = (DATA.rules.commanders || []).find((x) => x.id === id), act = CMD_ACT[id];
-  b.style.backgroundImage = `url(${avatarUrl({ commander: id, human: true })})`; b.classList.toggle("ready", id === "Sabrina" && prep && state.round >= 2 && !c.used); d.classList.toggle("hidden", !cmdOpen);
+  b.style.backgroundImage = trainerAvatar(id); b.classList.toggle("ready", id === "Sabrina" && prep && state.round >= 2 && !c.used); d.classList.toggle("hidden", !cmdOpen);
   let status = "", dis = !prep;
   if (id === "Sabrina") { status = state.round < 2 ? "Unlocks after Stage I-2" : c.used ? "Used (0/1)" : "1 use left"; dis = dis || state.round < 2 || !!c.used; }
   else if (id === "Misty") status = c.water !== undefined && unit(c.water) ? "Shielded: " + nm(unit(c.water)) : "No Hero selected";
   else if (id === "Joy") status = c.love !== undefined && unit(c.love) ? "Protecting: " + nm(unit(c.love)) : "No ally selected";
   else if (id === "Blue") status = c.trap ? `Trap at column ${c.trap.col + 1}, row ${c.trap.row + 1}` : "Trap not placed yet";
   else if (id === "Brock") status = state.round === 9 ? "Pick two Go Go Cards now" : "Active in Round II-3";
-  if (cmdOpen) { d.innerHTML = `<div class="ttl">Details</div><div class="it"><div class="gi" style="background-image:url(${avatarUrl({ commander: id, human: true })});background-size:cover;border-radius:50%;width:52px;height:52px"></div><div><b>${id} · Commander skill</b><span>${cm ? cm.text : ""}</span><span class="cstat">${status}</span>${act ? `<button class="cact${cmdTarget ? " on" : ""}"${dis ? " disabled" : ""}>${cmdTarget ? "Click a " + (cmdTarget === "cell" ? "tile" : "Hero") + "… (Esc)" : act[0]}</button>` : ""}</div></div>`;
+  if (cmdOpen) { d.innerHTML = `<div class="ttl">Details</div><div class="it"><div class="gi" style="background-image:${trainerAvatar(id)};background-size:cover;border-radius:50%;width:52px;height:52px"></div><div><b>${id} · Commander skill</b><span>${cm ? cm.text : ""}</span><span class="cstat">${status}</span>${act ? `<button class="cact${cmdTarget ? " on" : ""}"${dis ? " disabled" : ""}>${cmdTarget ? "Click a " + (cmdTarget === "cell" ? "tile" : "Hero") + "… (Esc)" : act[0]}</button>` : ""}</div></div>`;
     const bt = d.querySelector(".cact"); if (bt) bt.onclick = () => { cmdTarget = cmdTarget ? null : act[1]; refreshCmd(); }; }
   // markers on the board
   const marks = []; if (prep && scouting === null) {
