@@ -1,0 +1,20 @@
+// Needs: PORT=8097 PREP_SECONDS=8 TEST_START_GOLD=60
+import { chromium } from "/opt/npm-tools/node_modules/playwright/index.mjs";
+const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } }); const errs = []; p.on("pageerror", (e) => errs.push(String(e)));
+const ok = (c, m) => { console.log(c ? "ok:" : "FAIL:", m); if (!c) process.exitCode = 1; };
+await p.goto("http://localhost:8097/"); await p.waitForSelector(".cmd", { state: "attached" }); await p.click("#solo");
+await p.waitForSelector("#shop .card:not(.empty)", { timeout: 60000 });
+await p.waitForFunction(() => __ui.state.phase === "Combat", null, { timeout: 90000 }); await p.waitForTimeout(800);
+const n0 = await p.evaluate(() => __ui.state.you.units.length), g0 = await p.evaluate(() => __ui.state.you.gold);
+await p.evaluate(() => document.querySelector("#shop .card:not(.empty)").click());
+await p.waitForFunction((n) => __ui.state.you.units.length > n, n0, { timeout: 15000 }).catch(() => {});
+const n1 = await p.evaluate(() => ({ n: __ui.state.you.units.length, g: __ui.state.you.gold, ph: __ui.state.phase }));
+ok(n1.ph === "Combat" && n1.n === n0 + 1 && n1.g < g0, `bought during combat: units ${n0}->${n1.n}, gold ${g0}->${n1.g}, phase ${n1.ph}`);
+await p.waitForTimeout(800);
+ok(await p.evaluate(() => [...__scene.units.keys()].some((k) => k.startsWith("u"))), "bench unit visible during combat");
+await p.screenshot({ path: "shots/live-buy.png" });
+const uid = await p.evaluate(() => __ui.state.you.units.find((u) => u.col === null).uid);
+await p.evaluate((u) => __ui.send({ a: "sell", uid: u }), uid); await p.waitForTimeout(1500);
+ok(await p.evaluate((n) => __ui.state.you.units.length === n, n0), "sold during combat");
+ok(errs.length === 0, "no errors " + errs.join("|").slice(0, 200)); await b.close();

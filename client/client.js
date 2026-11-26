@@ -6,7 +6,7 @@ import { Lobby3D } from "./lobby3d.js";
 const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(location.search);
 let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, roundTotal = 1, lastCombatRound = -1, lastCombat = null, dmgMode = "dealt", bagPick = null;
-let DATA = null, ws = null, state = null, combat = null, scene = null, lastMode = "solo";
+let DATA = null, ws = null, state = null, combat = null, spec = null, watchKey = "", scene = null, lastMode = "solo";
 let timerBase = { left: 0, at: 0 }, selItem = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, shopSig: [], syn: {}, hp: {} };
 const TIER_COLORS = ["#9aa3b8", "#59c27a", "#4aa3ff", "#b36bff", "#ffb23e"];
 const RARITY_COLORS = { Rare: "#4aa3ff", Epic: "#b36bff", Legendary: "#ffb23e" };
@@ -126,7 +126,7 @@ function onMessage(m) {
   } else if (m.t === "avatars") {
     avatars = new Map(m.list.map((a) => [a.seat, a]));
   } else if (m.t === "combat") {
-    startCombat(m);
+    if (m.spectate !== undefined) spec = makeCombat(m, m.spectate); else startCombat(m);
   } else if (m.t === "over") {
     show("over");
     $("overTitle").textContent = m.placement === 1 ? "VICTORY — 1st place!" : `You placed #${m.placement}`;
@@ -183,15 +183,15 @@ function traitInfo(counts) {
 }
 function refreshHud() {
   if (!state) return;
-  const y = state.you, prep = state.phase === "Preparation" && !y.eliminated;
+  const y = state.you, prep = state.phase === "Preparation" && !y.eliminated, live = state.phase !== "Finished" && !y.eliminated;
   $("round").textContent = `Round ${state.round}` + (state.npc ? (state.npc.boss ? " · Boss" : " · Creeps") : "");
   $("phase").textContent = state.phase === "Preparation" ? "Preparation" : state.phase === "Supply" ? "Supply" : "Combat";
   $("level").textContent = y.level; $("fielded").textContent = `${y.units.filter((u) => u.col !== null).length}/${y.level}`;
   $("xpbar").style.width = y.level >= DATA.rules.maxLevel ? "100%" : `${(y.xp / Math.max(1, y.xpNeed)) * 100}%`;
   if (prev.gold !== null && prev.gold !== y.gold) { const g = $("goldChip"); g.classList.remove("pop"); void g.offsetWidth; g.classList.add("pop"); }
   prev.gold = y.gold; $("gold").textContent = y.gold;
-  $("rerollCost").textContent = y.rerollCost; $("reroll").disabled = !prep || y.shopLocked;
-  $("xp").disabled = !prep || y.level >= DATA.rules.maxLevel;
+  $("rerollCost").textContent = y.rerollCost; $("reroll").disabled = !live || y.shopLocked;
+  $("xp").disabled = !live || y.level >= DATA.rules.maxLevel;
   $("lock").querySelector("span").innerHTML = y.shopLocked ? "&#128274;" : "&#128275;"; $("lock").classList.toggle("sel", y.shopLocked);
   $("lock").classList.toggle("goldr", y.shopLocked); $("lock").classList.toggle("dark", !y.shopLocked);
   $("ready").disabled = !prep || y.ready; $("ready").firstElementChild.textContent = y.ready ? "Waiting…" : "Ready";
@@ -208,7 +208,7 @@ function refreshHud() {
     if (same) el.style.animation = "none"; else el.style.animationDelay = slot * 0.05 + "s";
     el.innerHTML = `<div class="pic" style="background-image:url(${artPath("portraits", id) || portrait(id, d, fRGB(d.faction))})"></div><div class="frame" style="background-image:url(${TIER_FRAME(d.tier)})"></div>${hasIcon(d.faction) ? emb(d.faction) : ""}${ric(d.role)}${pi ? `<div class="left">${heat ? "⚠ " : ""}${pi[0]}<small>/${pi[1]}</small></div>` : ""}<div class="nm">${d.name.split(" ")[0]}</div><div class="cost">${COIN}${d.tier}</div>`;
     el.onclick = () => {
-      if (!prep) return;
+      if (!live) return;
       if (y.gold < d.tier) { el.classList.remove("deny"); void el.offsetWidth; el.classList.add("deny"); $("goldChip").classList.add("nogold"); setTimeout(() => $("goldChip").classList.remove("nogold"), 320); return; }
       el.classList.add("bought"); send({ a: "buy", slot });
     };
@@ -230,7 +230,7 @@ function refreshHud() {
     $("synEmpty").classList.toggle("hidden", Object.values(y.traits || {}).some((n) => n > 0)); }
   // standings
   const st = $("standings2"); st.innerHTML = "";
-  const order = [...state.players].sort((a, b) => (a.seat === state.seat ? -1 : b.seat === state.seat ? 1 : (a.eliminated - b.eliminated) || b.hp - a.hp));
+  const order = [...state.players].sort((a, b) => (a.eliminated - b.eliminated) || b.hp - a.hp || a.seat - b.seat); // highest HP first, you included
   for (const p of order) {
     const el = document.createElement("div"), pct = Math.max(0, Math.min(100, (p.hp / DATA.rules.startHealth) * 100));
     el.className = "pl" + (p.seat === state.seat ? " me" : "") + (p.eliminated ? " dead" : "");
@@ -260,7 +260,7 @@ function renderBag() {
 }
 function renderInspector() {
   const box = $("inspector"), u = state && selUid != null ? state.you.units.find((x) => x.uid === selUid) : null;
-  if (!u || state.phase !== "Preparation") { box.classList.add("closed"); document.body.classList.remove("inspecting"); return; }
+  if (!u || (state.phase !== "Preparation" && u.col !== null)) { box.classList.add("closed"); document.body.classList.remove("inspecting"); return; }
   const d = defOf(u.id), S = 1.8 ** (u.stars - 1), rc = TIER_COLORS[d.tier - 1];
   // dock on the side that keeps the selected fighter visible
   const sp = u.col !== null && scene ? scene.cellScreen({ col: u.col, row: u.row }) : null;
@@ -288,15 +288,26 @@ const abilityImg = (id, d, cls) => ABIL_BAD.has(id) || !(DATA.abilityIcons || []
 const sellValue = (d, u) => d.tier * 3 ** (u.stars - 1);
 
 // ---------------- combat replay ----------------
-function startCombat(m) {
-  Audio2.music(m.npc ? (/Mewtwo|Rayquaza/.test(m.vs || "") ? "vs_rayquaza" : "vs_wild") : "vs_trainer");
+function makeCombat(m, spectate) {
   const units = {};
   for (const u of m.start) { const d = defOf(u.id); units[u.uid] = { ...u, formArt: null, maxHp: u.hp, alive: true, tc: u.col, tr: u.row, mana: u.mana ?? 0, maxMana: u.maxMana ?? 0 }; }
-  combat = { m, units, idx: 0, t0: performance.now(), done: false, banner: false, stats: {} }; lastCombat = combat;
+  const c = { m, units, idx: 0, t0: performance.now() - (m.elapsed || 0) * 1000, done: false, banner: false, stats: {}, spectate };
+  if (spectate !== undefined && m.elapsed > 1) stepCombat(performance.now(), c, true); // late joiner: catch up silently
+  return c;
+}
+// the battle on screen: mine, or (while scouting) the scouted player's live battle
+function viewCombat() { if (!state || state.phase !== "Combat") return null; return scouting === null ? combat : (spec && spec.spectate === scouting ? spec : null); }
+function startCombat(m) {
+  Audio2.music(m.npc ? (/Mewtwo|Rayquaza/.test(m.vs || "") ? "vs_rayquaza" : "vs_wild") : "vs_trainer");
+  combat = makeCombat(m); lastCombat = combat;
   selUid = null; renderInspector(); phaseAt = performance.now();
 }
-function stepCombat(now) {
-  const c = combat, t = (now - c.t0) / 1000 - 0.9;
+function stepCombat(now, c, silent) {
+  if (silent) { const sv = [scene.fxEvent, Audio2.sfx, Audio2.cry, Audio2.music]; scene.fxEvent = () => {}; Audio2.sfx = () => {}; Audio2.cry = () => {}; Audio2.music = () => {}; try { return stepCombat2(now, c, true); } finally { [scene.fxEvent, Audio2.sfx, Audio2.cry, Audio2.music] = sv; } }
+  return stepCombat2(now, c, false);
+}
+function stepCombat2(now, c, silent) {
+  const t = (now - c.t0) / 1000 - 0.9;
   while (c.idx < c.m.events.length && c.m.events[c.idx].t <= t) {
     const e = c.m.events[c.idx++], u = c.units[e.u], tg = e.tg && c.units[e.tg], K = (id) => "c" + id;
     if (e.k === "move") { u.tc = e.col; u.tr = e.row; }
@@ -313,7 +324,7 @@ function stepCombat(now) {
     else if (e.k === "buff") scene.fxEvent("buff", K(e.u), undefined, { name: e.name });
   }
   if (!c.done && t > c.m.duration + 0.5) {
-    c.done = true; scene.setWeatherFx("none"); const won = c.m.winner === c.m.you, drew = c.m.winner === -1;
+    c.done = true; if (silent) return; scene.setWeatherFx("none"); if (c.spectate !== undefined) return; const won = c.m.winner === c.m.you, drew = c.m.winner === -1;
     Audio2.music(won ? "victory_trainer" : "too_bad"); banner(drew ? "DRAW" : won ? "VICTORY" : "DEFEAT", c.m.npc ? c.m.vs : `vs ${c.m.vs}`, drew ? "" : won ? "win" : "lose"); if (!won && !drew) scene.shake(0.3);
   }
 }
@@ -327,12 +338,15 @@ function buildList(now) {
     return MENU_SHOW.map(([id, col, row]) => { const d = defOf(id); return { key: "m" + id, id, def: d, fcolor: fRGB(d.faction), stars: 1 + (col % 3), cell: { col, row }, hp: 1 }; });
   }
   const list = [], fresh = now - phaseAt < 450;
-  if (combat && state.phase !== "Preparation") {
-    const c0 = combat, flip = combat.m.you === 1;
-    for (const u of Object.values(combat.units)) {
+  const cv = viewCombat();
+  if (state.phase === "Combat" && scouting !== null && !cv) return []; // waiting for the scouted player's battle to arrive
+  if (cv) {
+    const c0 = cv, flip = cv.m.you === 1;
+    for (const u of Object.values(cv.units)) {
       const d = defOf(u.id);
       list.push({ key: "c" + u.uid, id: u.id, art: u.formArt || formId(u), def: u.npc ? { ...d, npc: true, boss: !!u.boss } : d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), cell: { col: u.tc, row: u.tr }, flip, mine: u.side === c0.m.you, hp: u.hp / u.maxHp, mana: u.maxMana ? u.mana / u.maxMana : 0, showMana: u.maxMana > 0, noPop: true, noEvo: true, instant: false, hidden: false, world: null });
     }
+    if (!cv.spectate) { const bn = state.you.units.filter((u) => u.col === null); bn.forEach((u, i) => { const d = defOf(u.id); list.push({ key: "u" + u.uid, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: true, selected: u.uid === selUid, spawnFx: false, noPop: true, cell: { bench: i } }); }); } // bench stays visible (and sellable) during battle
     return list;
   }
   if (scouting !== null) { // view-only scouting of another player's board
@@ -379,12 +393,12 @@ function loop(now) {
   if (!scene) return;
   const inMatch = state && !$("match").classList.contains("hidden");
   if (inMatch && state.players) updateWalkers(now);
-  if (inMatch && combat && state.phase !== "Preparation") stepCombat(now);
+  if (inMatch && state.phase === "Combat") { const cv = viewCombat(); if (combat && combat !== cv) stepCombat(now, combat, true); if (spec && spec !== cv) stepCombat(now, spec, true); if (cv) stepCombat(now, cv, false); }
   scene.sync(buildList(now));
   const dragging = drag && drag.moved;
   const placing = !dragging && inMatch && state.phase === "Preparation" && selUid != null && document.elementFromPoint(ptr.x, ptr.y) === view; // click-to-place preview
   const hc = dragging ? drag.hoverCell : placing ? scene.pickCell(ptr.x, ptr.y, false) : null, hb = dragging ? drag.hoverBench : placing ? scene.pickBench(ptr.x, ptr.y) : null;
-  scene.setGrid({ mode: inMatch && combat && state.phase !== "Preparation" ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat", hoverCell: hc, hoverBench: hb });
+  scene.setGrid({ mode: inMatch && viewCombat() ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat", hoverCell: hc, hoverBench: hb });
   scene.frame();
   if (inMatch) { renderDmg(); renderBagPanel(); renderRoundStrip(); renderPick(); renderBless(); renderSupply(); renderCards(); renderCardStack(); renderCmdSkill(); renderScout(); if (synOpen) renderSynDetail(); }
   if (inMatch) {
@@ -400,8 +414,13 @@ const view = $("view");
 const uidOfVisual = (v) => (v && v.key.startsWith("u") ? Number(v.key.slice(1)) : null);
 view.addEventListener("pointerdown", (e) => {
   ptr = { x: e.clientX, y: e.clientY };
-  if (e.button !== 0 || !state || state.phase !== "Preparation" || state.you.eliminated || scouting !== null) return;
+  if (e.button !== 0 || !state || state.you.eliminated || scouting !== null) return;
   const uid = uidOfVisual(scene.pickUnit(e.clientX, e.clientY));
+  if (state.phase !== "Preparation") { // mid-battle: only bench Pokémon can be picked up (to sell them)
+    const bu = uid != null && state.you.units.find((x) => x.uid === uid && x.col === null);
+    if (bu) drag = { uid, sx: e.clientX, sy: e.clientY, moved: false };
+    return;
+  }
   if (cmdTarget) { // commander skill targeting
     if (cmdTarget === "unit" && uid != null) { send({ a: "cmd", uid }); cmdTarget = null; refreshCmd(); return; }
     if (cmdTarget === "cell") { const cell = scene.pickCell(e.clientX, e.clientY, false); if (cell && cell.row < 4) { send({ a: "cmd", col: cell.col, row: cell.row }); cmdTarget = null; refreshCmd(); return; } }
@@ -440,6 +459,7 @@ addEventListener("pointerup", (e) => {
   if (!d.moved) { selUid = selUid === d.uid ? null : d.uid; renderInspector(); return; }
   const overSell = document.elementFromPoint(e.clientX, e.clientY)?.closest?.("#sellZone");
   if (overSell) return send({ a: "sell", uid: d.uid });
+  if (state.phase !== "Preparation") return;
   const cell = scene.pickCell(e.clientX, e.clientY, false);
   if (cell && cell.row < 4) return send({ a: "move", uid: d.uid, col: cell.col, row: cell.row });
   if (scene.pickBench(e.clientX, e.clientY) !== null) return send({ a: "move", uid: d.uid, col: null, row: null });
@@ -580,7 +600,8 @@ function renderCardStack() {
 }
 function renderScout() {
   const bar = $("scoutBar"), panel = $("scoutPanel");
-  if (scouting !== null && (!state || state.phase !== "Preparation" || !state.players.find((q) => q.seat === scouting && !q.eliminated))) scouting = null;
+  if (scouting !== null && (!state || (state.phase !== "Preparation" && state.phase !== "Combat") || !state.players.find((q) => q.seat === scouting && !q.eliminated))) scouting = null;
+  if (scouting !== null && state.phase === "Combat") { const k = scouting + ":" + state.round; if (watchKey !== k) { watchKey = k; spec = null; if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: "watch", seat: scouting })); } } else if (!state || state.phase !== "Combat") { watchKey = ""; spec = null; }
   document.body.classList.toggle("scouting", scouting !== null);
   if (scouting === null) { if (!bar.classList.contains("hidden")) { bar.classList.add("hidden"); panel.classList.add("hidden"); bar._sig = ""; } return; }
   const o = state.players.find((q) => q.seat === scouting), sig = JSON.stringify([o.board, o.hp, scouting]); if (bar._sig === sig) return; bar._sig = sig;

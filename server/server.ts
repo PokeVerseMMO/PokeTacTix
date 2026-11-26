@@ -92,6 +92,8 @@ export function startServer(port = Number(process.env.PORT ?? 8080)) {
         }
       } else if (msg.t === "avatar" && room && room.started && me) {
         room.setAvatar(room.match.players.indexOf(me), msg);
+      } else if (msg.t === "watch" && room && room.started && me) {
+        room.watch(room.match.players.indexOf(me), Number(msg.seat));
       } else if (msg.t === "act" && room && room.started) {
         room.handle(room.match.players.indexOf(me), msg.action);
       }

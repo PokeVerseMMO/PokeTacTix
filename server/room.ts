@@ -137,6 +137,14 @@ export class Room {
     if (res.ok && action.a === "ready") this.checkAllReady();
   }
 
+  // Scouting an opponent during battle: send them the fight that player is in, from that player's point of view.
+  combatAt = 0;
+  watch(seat: number, target: number) {
+    const m = this.match, f = this.fights.get(target);
+    if (m.phase !== "Combat" || !f || !this.conns.get(seat)) return;
+    this.conns.get(seat)!.send({ t: "combat", you: f.you, vs: f.vs, round: m.round, npc: f.vs === this.npcMeta?.name || undefined, spectate: target, elapsed: (Date.now() - this.combatAt) / 1000, ...f.result });
+  }
+
   checkAllReady() {
     const humans = this.humans.filter((p) => p.connected && !p.eliminated);
     if (humans.length && humans.every((p) => p.ready) && this.match.phase === "Preparation") {
@@ -163,7 +171,7 @@ export class Room {
       const ghost = alive.filter((p) => p !== solo)[Math.floor(m.rng() * (alive.length - 1))];
       pairs.push([solo, ghost, true]); // ghost fight: no damage dealt to the ghost
     }
-    this.fights.clear();
+    this.fights.clear(); this.combatAt = Date.now();
     let longest = 0;
     const slots = (p: Player) => this.slotsOf(p);
     const results: { a: Player; b: Player; res: CombatResult; ghost: boolean }[] = [];
@@ -203,7 +211,7 @@ export class Room {
 
   npcCombat(alive: Player[]) {
     const m = this.match;
-    this.fights.clear();
+    this.fights.clear(); this.combatAt = Date.now();
     this.rewards.clear();
     let longest = 0;
     const lineup = this.npcLineup(m.round);

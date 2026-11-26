@@ -321,7 +321,10 @@ export type Action =
   | { a: "reroll" } | { a: "xp" } | { a: "evolve"; uid: number; stone: string } | { a: "lock" } | { a: "ready" } | { a: "pick"; item: string } | { a: "cardpick"; id: string } | { a: "cardreroll"; slot: number } | { a: "bless"; uid: number } | { a: "cmd"; uid?: number; col?: number; row?: number } | { a: "blesspick"; type: string } | { a: "transfer"; from: number; to: number };
 
 export function act(m: Match, p: Player, action: Action): Result {
-  if (m.phase !== "Preparation" || p.eliminated) return fail("You can only act during preparation.");
+  // Buying, selling, refreshing the shop, buying XP and locking work at any time (even mid-battle); everything else is preparation-only
+  const LIVE_ACTIONS = ["buy", "sell", "reroll", "xp", "lock"];
+  if (p.eliminated || m.phase === "Finished") return fail("You can't act right now.");
+  if (m.phase !== "Preparation" && !LIVE_ACTIONS.includes(action.a)) return fail("You can only do that during preparation.");
   switch (action.a) {
     case "buy": return Number.isInteger(action.slot) ? buy(m, p, action.slot) : fail("Bad slot.");
     case "sell": return sell(m, p, action.uid);
