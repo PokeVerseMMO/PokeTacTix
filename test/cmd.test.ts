@@ -23,9 +23,9 @@ test("combat: water shield, love energy, trap", () => {
 });
 test("buy / sell / lock / reroll work during combat, other actions do not", () => {
   const { m, p } = mk("Blue"); m.phase = "Combat"; p.gold = 50;
-  assert.equal(act(m, p, { a: "lock" }).ok, true); assert.equal(p.shopLocked, true);
   assert.equal(act(m, p, { a: "reroll" }).ok, true);
   const n = p.units.length; assert.equal(act(m, p, { a: "buy", slot: p.shop.findIndex(Boolean) }).ok, true); assert.equal(p.units.length, n + 1);
   assert.equal(act(m, p, { a: "sell", uid: p.units[p.units.length - 1].uid }).ok, true);
+  assert.equal(act(m, p, { a: "lock" }).ok, true); assert.equal(p.shopLocked, true);
   assert.equal(act(m, p, { a: "ready" }).ok, false);
 });
