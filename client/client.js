@@ -223,7 +223,7 @@ function refreshHud() {
         const el = document.createElement("div"); el.className = "sc" + (tier > 0 ? " active" : "");
         el.innerHTML = `${icon(k)}<div><div class="nm">${roleName(k)}</div><div class="cnt"><b>${n}</b>/${next}</div></div>`;
         if (tier > (prev.syn[k] || 0)) { el.classList.add("flash"); } prev.syn[k] = tier;
-        el.onclick = () => showSynDetail(k, icon); el.onmouseenter = () => (hoverTip = { text: `<b style="color:#ffd678">${k}</b> — ${n} active (thresholds ${th.join(" / ")})<br>${DATA.rules.traitDescriptions[k] || ""}` }); el.onmouseleave = () => (hoverTip = null);
+        el.onclick = () => showSynDetail(k, icon); // details open on click, no hover tooltip
         grid.appendChild(el);
       } };
     const have = (k) => (y.traits[k] || 0) > 0, rank = (a, b) => { const ta = thOf(a).filter((t) => y.traits[a] >= t).length, tb = thOf(b).filter((t) => y.traits[b] >= t).length; return tb - ta || y.traits[b] - y.traits[a]; };
