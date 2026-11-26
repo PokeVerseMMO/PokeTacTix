@@ -64,3 +64,4 @@ async function createWindow() {
 }
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => { try { server && server.close(); } catch {} app.quit(); });
+module.exports.resolveRoot = resolveRoot;
