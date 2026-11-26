@@ -1260,7 +1260,12 @@
   "Dark": "Pokémon of this type: 2: +10% crit chance | 4: +20% crit chance | 6: +35% crit chance",
   "Steel": "Pokémon of this type: 2: +15 armour, +15 special defence, +8% opening shield (max HP) | 4: +30 armour, +30 special defence, +14% opening shield (max HP) | 6: +50 armour, +50 special defence, +22% opening shield (max HP)",
   "Fairy": "Team-wide: 2: +10 special defence, +10% healing power | 4: +20 special defence, +20% healing power | 6: +30 special defence, +30% healing power",
-  "Fighter": ""
+  "Fighter": "2/4: Fighters +12%/+24% AD. 6 — Battle Rhythm (retains all 4-unit bonuses): every fourth basic grants that Fighter +20% attack speed and 15% damage reduction for 3s; refreshes.",
+  "Caster": "2/4: Casters +15%/+30% ability power. 6 — Spell Echo (retains all 4-unit bonuses): every third completed damaging cast echoes 35% of its damage to the same surviving targets after 0.25s, without control, mana or item procs.",
+  "Assassin": "2/4: Assassins +10/+20 points crit chance and crit damage. 6 — Chain Hunt (retains all 4-unit bonuses): a direct-damage kill grants that Assassin 20 mana and +25% attack speed for 3s; no mana while casting.",
+  "Support": "2/4: Supports +20%/+30% healing and shielding; their timed buffs, shields and debuffs last +10%/+20%. 6 — Rally (retains all 4-unit bonuses): after each completed Support cast, shield the lowest-HP% ally within 3 hexes for 8% recipient max HP for 3s and grant 10 mana if they are not casting.",
+  "Guardian": "2/4: Guardians +15/+30 armor and MR; adjacent allies start with a 6%/10% Guardian-max-HP shield for 5s (strongest overlap). 6 — Last Bastion (retains all 4-unit bonuses): once per Guardian below 35% HP, shield self and adjacent allies for 15% of each recipient's max HP for 5s.",
+  "Ranger": "2/4: Rangers +10%/+20% attack speed and basic attacks ignore 10%/20% armor. 6 — Crossfire (retains all 4-unit bonuses): every fourth basic fires a 50% AD physical shot at one other enemy in basic range. No crit, mana or item procs."
  },
  "NPCRoundInterval": 4,
  "Columns": 8,
@@ -1684,9 +1689,21 @@
   "xpBuyGold": 1,
   "xpBuyAmount": 1,
   "streaks": [
-   [1, 2, 1],
-   [3, 3, 2],
-   [4, 99, 3]
+   [
+    1,
+    2,
+    1
+   ],
+   [
+    3,
+    3,
+    2
+   ],
+   [
+    4,
+    99,
+    3
+   ]
   ],
   "startLevel": 3,
   "maxLegendaryDeployed": 1,
@@ -1697,7 +1714,48 @@
   "perSurvivor": 1,
   "roundDivisor": 5,
   "ghostMultiplier": 0.5,
-  "table": { "I": [3, 3, 3, 3, 3, 3], "II": [5, 5, 5, 5, 6, 6], "III": [7, 7, 7, 11, 11, 11], "IV": [13, 13, 13, 14, 14, 14], "V": [15, 15, 15, 15, 15, 15] }
+  "table": {
+   "I": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+   ],
+   "II": [
+    5,
+    5,
+    5,
+    5,
+    6,
+    6
+   ],
+   "III": [
+    7,
+    7,
+    7,
+    11,
+    11,
+    11
+   ],
+   "IV": [
+    13,
+    13,
+    13,
+    14,
+    14,
+    14
+   ],
+   "V": [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ]
+  }
  },
  "Stones": [
   {
