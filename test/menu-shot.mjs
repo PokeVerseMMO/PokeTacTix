@@ -1,0 +1,12 @@
+import { chromium } from "/opt/npm-tools/node_modules/playwright/index.mjs";
+const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } }); const errs = []; p.on("pageerror", (e) => errs.push(String(e))); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
+await p.goto("http://localhost:8097/"); await p.waitForSelector(".cmd", { state: "attached" }); await p.waitForTimeout(3000);
+await p.screenshot({ path: "shots/menu2.png" });
+await p.click("#heroPlate"); await p.waitForTimeout(500); await p.screenshot({ path: "shots/menu2-picker.png" }); await p.click("#cmdPickerClose");
+await p.click("#navGallery"); await p.waitForTimeout(800); await p.screenshot({ path: "shots/gal-hero.png" });
+await p.evaluate(() => document.querySelector(".ghp[data-id]").click()); await p.waitForTimeout(400); await p.screenshot({ path: "shots/gal-hero-card.png" });
+await p.click('#glNav button[data-t="equipment"]'); await p.waitForTimeout(600); await p.screenshot({ path: "shots/gal-equip.png" });
+await p.click('#glNav button[data-t="encyclopedia"]'); await p.waitForTimeout(600); await p.screenshot({ path: "shots/gal-ency.png" });
+await p.click('#glNav button[data-t="cards"]'); await p.waitForTimeout(600); await p.screenshot({ path: "shots/gal-cards.png" });
+console.log("errors:", errs.join(" | ").slice(0, 400)); await b.close();

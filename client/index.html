@@ -8,28 +8,35 @@
 <div id="stage">
   <!-- MENU -->
   <section id="menu" class="screen lobbyMenu"><div id="lmRoot">
-    <div class="lm-profile panel"><span class="lm-diamond">&#9670;</span><div><input id="name" maxlength="20" value="Player"><small>TRAINER LOBBY · V1</small></div></div>
+    <div class="lm-profile panel"><div id="lmAvatar" class="lm-avatar"></div><div class="who"><input id="name" maxlength="20" value="Player"><small>TRAINER LOBBY · V1</small></div></div>
     <div id="rankCard" class="lm-rank panel"><b id="rkName">Bronze III</b><span id="rkRP">0 RP</span><small id="rkTitle">Rookie Trainer</small><div class="rkTrack"><i id="rkFill"></i></div><small id="rkNote"></small></div>
     <h1 class="lm-title">POK&Eacute;TACTIX</h1>
     <div class="lm-collection panel">47 POK&Eacute;MON &nbsp;/&nbsp; 18 TYPES</div>
-    <button id="helpBtn" class="lm-btn lm-help">?&nbsp;&nbsp; How to play</button>
+    <button id="menuSettings" class="lm-gear" title="Graphics &amp; sound">&#9881;</button>
+    <div class="lm-side">
+      <button id="helpBtn" class="lm-sb"><i>?</i><span>How to play</span></button>
+      <button id="lbBtn" class="lm-sb lm-lb"><i>&#9813;</i><span>Leaderboard</span></button>
+      <button id="sideGallery" class="lm-sb"><i>&#9638;</i><span>Gallery</span></button>
+    </div>
     <div id="helpPanel" class="lm-help-panel panel hidden"><b>HOW TO PLAY</b><p>Recruit Pok&eacute;mon from the shop.<br>Place them on your hexes.<br>Combine three copies to evolve.<br>Build type synergies.<br>Outlast seven rivals.<br><br>All commanders are available to everyone.</p></div>
-    <button id="lbBtn" class="lm-btn lm-lb">Leaderboard</button>
-    <button id="menuSettings" class="lm-btn lm-gfx">Graphics</button>
     <div id="heroStage" class="lm-stage"><canvas id="heroCanvas" width="700" height="900"></canvas><img id="heroImg" alt="" class="hidden"></div>
     <div class="lm-passive panel"><small>COMMANDER SKILL</small><div id="cmdInfo"></div></div>
-    <div id="heroName" class="lm-heroname"></div>
-    <div class="lm-choose">CHOOSE YOUR COMMANDER</div>
-    <div id="commanders"></div>
-    <div class="lm-footer panel"><div class="lm-tag">BUILD A TEAM.<br>MAKE IT YOURS.</div>
-      <label class="lm-srv">Server <input id="server" size="22" placeholder="ws://host:8080 (blank = this computer)"></label><div id="menuMsg" class="msg"></div>
-      <div class="lm-mode">8 PARTICIPANTS · <span id="modeTxt">PRACTICE</span></div>
-      <button id="online" class="lm-btn lm-online">Ranked</button>
-      <button id="solo" class="lm-play">PLAY &rsaquo;</button></div>
+    <button id="heroPlate" class="lm-plate"><span class="stars">&#9733;&#9733;&#9733;</span><b id="heroName"></b><i>&#8644;</i></button>
+    <div id="cmdPicker" class="lm-picker panel hidden"><div class="ph">Choose your commander<button id="cmdPickerClose">&#10005;</button></div><div id="commanders"></div></div>
+    <div class="lm-nav"><button class="on" id="navPrep"><i>&#9876;</i><span>Preparation</span></button><button id="navCollection"><i>&#10040;</i><span>Commanders</span></button><button id="navGallery"><i>&#9638;</i><span>Gallery</span></button><button id="navEncy"><i>&#9776;</i><span>Encyclopedia</span></button></div>
+    <label class="lm-srv">Server <input id="server" size="22" placeholder="ws://host:8080 (blank = this computer)"></label><div id="menuMsg" class="msg lm-msg"></div>
+    <button id="modeBtn" class="lm-modebtn">Mode &nbsp;<span id="modeTxt">Practice · Intermediate</span> &nbsp;&#9652;</button>
+    <button id="online" class="lm-ranked">Ranked</button>
+    <button id="solo" class="lm-play"><b>PLAY</b><small>8 participants &middot; practice</small></button>
     <div id="modePanel" class="lm-modepanel panel hidden"><small>PRACTICE DIFFICULTY · UNRANKED</small><div id="diffBtns"></div></div>
-    <button id="modeBtn" class="lm-btn lm-modebtn">Practice · Intermediate &nbsp;&#9652;</button>
     <select id="difficulty" class="hidden"><option>Beginner</option><option selected>Intermediate</option><option>Hard</option></select>
     <div id="rankBox" class="hidden"></div>
+  </div></section>
+  <!-- GALLERY -->
+  <section id="gallery" class="screen hidden"><div id="glRoot">
+    <button id="glBack" class="gl-back"><i>&#10094;</i> Gallery</button>
+    <div id="glNav" class="gl-nav"><button data-t="hero">Pok&eacute;mon</button><button data-t="equipment">Items</button><button data-t="encyclopedia">Encyclopedia</button><button data-t="cards">Pok&eacute;mon Cards</button></div>
+    <div id="glBody"></div>
   </div></section>
   <section id="lobby" class="screen hidden"><div class="menuPanel"><h2>Finding players…</h2><div id="lobbyList"></div><div class="sub small">Empty seats are filled with bots after a few seconds.</div></div></section>
   <!-- MATCH HUD -->

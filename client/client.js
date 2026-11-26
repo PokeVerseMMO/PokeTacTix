@@ -1,5 +1,6 @@
 // PokéTactix client: menu, lobby, 3D battle screen (Three.js), mockup-style HUD, drag & drop, combat replay.
 import { Scene3D } from "./scene.js";
+import { initGallery, openGallery } from "./gallery.js";
 import { Audio2 } from "./audio.js";
 import { portrait, avatar, iconSvg, loadArtManifest, artPath, hash } from "./art.js";
 import { Lobby3D } from "./lobby3d.js";
@@ -51,11 +52,11 @@ async function loadData() {
   for (const c of DATA.rules.commanders) {
     const d = document.createElement("div");
     d.className = "cmd" + (c.id === (localStorage.cmd || "Blue") ? " sel" : "");
-    d.style.left = box.children.length * 118 + "px";
-    d.innerHTML = `<b>${c.id}</b>`;
-    d.onclick = () => { localStorage.cmd = c.id; for (const e of box.children) e.classList.remove("sel"); d.classList.add("sel"); setCommanderVisual(c.id); };
+    d.innerHTML = `<i class="cav" style="background-image:url(${avatarUrl({ commander: c.id, human: true })})"></i><div><b>${c.id}</b><span>${c.text}</span></div>`;
+    d.onclick = () => { localStorage.cmd = c.id; for (const e of box.children) e.classList.remove("sel"); d.classList.add("sel"); setCommanderVisual(c.id); $("cmdPicker").classList.add("hidden"); };
     box.appendChild(d);
   }
+  initGallery({ DATA, show, defOf, emb, ric, portraitOf, roleName, prettyName, TIER_COLORS, TIER_NAME, RARITY_COLORS });
   if (!scene) {
     scene = new Scene3D($("view"), localStorage.quality || "High"); scene.setNumberContainer($("numbers")); scene.onEvolve = (v) => { Audio2.sfx("egg_hatch", 0.9); setTimeout(() => { Audio2.jingle("evolved", 0.9); Audio2.cry(v.cryKey || v.id, 1); }, 1100); }; $("quality").value = scene.qname; fit();
     requestAnimationFrame(loop);
@@ -63,15 +64,18 @@ async function loadData() {
   setCommanderVisual(localStorage.cmd || "Blue");
 }
 function setCommanderVisual(cid) {
-  const cm = (DATA.rules.commanders || []).find((c) => c.id === cid); if ($("cmdInfo") && cm) $("cmdInfo").textContent = cm.text; if ($("heroName")) $("heroName").textContent = cid;
+  const cm = (DATA.rules.commanders || []).find((c) => c.id === cid); if ($("cmdInfo") && cm) $("cmdInfo").textContent = cm.text; if ($("heroName")) $("heroName").textContent = cid; if ($("lmAvatar")) $("lmAvatar").style.backgroundImage = `url(${avatarUrl({ commander: cid, human: true })})`;
   if (!lobby3d && $("heroCanvas")) { try { lobby3d = new Lobby3D($("heroCanvas")); } catch (e) { console.warn(e); } } lobby3d && lobby3d.show(cid.toLowerCase());
   const id = cid.toLowerCase(), d = defOf(id) || { role: "Caster", faction: "JJK", name: cid };
   scene && scene.setCommander(id, d, fRGB(d.faction));
 }
 $("name").value = localStorage.name || "Player";
 $("helpBtn").onclick = () => $("helpPanel").classList.toggle("hidden");
+const togglePicker = () => $("cmdPicker").classList.toggle("hidden");
+$("heroPlate").onclick = togglePicker; $("navCollection").onclick = togglePicker; $("cmdPickerClose").onclick = () => $("cmdPicker").classList.add("hidden");
+$("navGallery").onclick = () => openGallery("hero"); $("sideGallery").onclick = () => openGallery("hero"); $("navEncy").onclick = () => openGallery("encyclopedia");
 $("modeBtn").onclick = () => $("modePanel").classList.toggle("hidden");
-for (const v of ["Beginner", "Intermediate", "Hard"]) { const b = document.createElement("button"); b.className = "lm-btn"; b.textContent = v; b.onclick = () => { $("difficulty").value = v; $("modeBtn").innerHTML = `Practice · ${v} &nbsp;&#9652;`; $("modePanel").classList.add("hidden"); }; $("diffBtns").appendChild(b); }
+for (const v of ["Beginner", "Intermediate", "Hard"]) { const b = document.createElement("button"); b.className = "lm-btn"; b.textContent = v; b.onclick = () => { $("difficulty").value = v; $("modeTxt").textContent = `Practice · ${v}`; $("modePanel").classList.add("hidden"); }; $("diffBtns").appendChild(b); }
 $("lbBtn").onclick = () => { $("menuMsg").textContent = "Leaderboards need an online server."; };
 if (localStorage.server) $("server").value = localStorage.server;
 if (qs.get("server")) $("server").value = qs.get("server");
