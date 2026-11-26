@@ -15,6 +15,7 @@ const FACTIONS = ["JJK", "AOT", "CSM", "TG", "SAO"], ROLES = ["Fighter", "Assass
 const thOf = (k) => DATA.synergies?.[k]?.thresholds || THRESH[k] || [2, 4];
 const cryOf = (u) => { const f = formId(u), l = (defOf(u.id) || {}).evolutionLine || [u.id]; for (const k of [u.formArt, f, ...[...l].reverse(), u.id]) if (k && Audio2.CRIES.has(k)) return k; return u.id; };
 const formId = (u) => { const l = (defOf(u.id) || {}).evolutionLine || [u.id]; return l[Math.min(u.stars - 1, l.length - 1)]; };
+const nameOf = (u) => { const d = defOf(u.id), f = formId(u); return !d ? u.id : f === u.id ? d.name : prettyName(f); }; // evolved form name (Froakie -> Greninja)
 const prettyName = (id) => id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const THRESH = { Fighter: [2, 4, 6], Guardian: [2, 4, 6], Caster: [2, 4, 6], Support: [2, 4, 6], Ranger: [2, 4, 6], Assassin: [2, 4, 6], JJK: [2, 4], CSM: [2, 4], SAO: [2, 4], AOT: [2, 4], TG: [2, 4] };
 
@@ -529,11 +530,11 @@ function renderBless() {
   const sig = JSON.stringify([q, state.you.units.map((u) => [u.uid, u.blessing])]); if (el._sig === sig) return; el._sig = sig; el.classList.remove("hidden");
   if (q.uid === null) {
     const cand = state.you.units.filter((u) => !u.blessing).sort((a, b) => b.stars - a.stars);
-    el.innerHTML = `<div class="cap">Blessing Crystal</div><div class="sub">Choose a Pokémon to bless (+1 synergy count)</div>` + cand.map((u) => { const d = defOf(u.id); return `<div class="opt" data-u="${u.uid}"><div class="ic" style="background-image:url(${portraitOf(u.id, u)});background-size:cover;background-position:center top"></div><div><b>${d.name} ${"★".repeat(u.stars)}</b><span>${(d.types || [d.faction]).join(" / ")} · ${u.col === null ? "bench" : "deployed"}</span></div></div>`; }).join("");
+    el.innerHTML = `<div class="cap">Blessing Crystal</div><div class="sub">Choose a Pokémon to bless (+1 synergy count)</div>` + cand.map((u) => { const d = defOf(u.id); return `<div class="opt" data-u="${u.uid}"><div class="ic" style="background-image:url(${portraitOf(u.id, u)});background-size:cover;background-position:center top"></div><div><b>${nameOf(u)} ${"★".repeat(u.stars)}</b><span>${(d.types || [d.faction]).join(" / ")} · ${u.col === null ? "bench" : "deployed"}</span></div></div>`; }).join("");
     for (const b of el.querySelectorAll(".opt")) b.onclick = () => send({ a: "bless", uid: Number(b.dataset.u) });
   } else {
     const u = state.you.units.find((x) => x.uid === q.uid), d = u && defOf(u.id), own = d ? d.types || [d.faction] : [];
-    el.innerHTML = `<div class="cap">${d ? d.name : "Pokémon"}'s Blessing</div><div class="sub">Choose a synergy to gain +1 count${q.left > 1 ? ` · ${q.left - 1} more blessing(s) waiting` : ""}</div>` + (q.options || []).map((t, i) => `<div class="opt" data-t="${t}"><div class="ic">${emb(t)}</div><div><b>${t}${own.includes(t) ? " (original type)" : ""}</b><span>${i < own.length ? "One of its own types counts one extra time." : "Random extra synergy."} ${DATA.rules.traitDescriptions[t] || ""}</span></div></div>`).join("");
+    el.innerHTML = `<div class="cap">${d ? nameOf(u) : "Pokémon"}'s Blessing</div><div class="sub">Choose a synergy to gain +1 count${q.left > 1 ? ` · ${q.left - 1} more blessing(s) waiting` : ""}</div>` + (q.options || []).map((t, i) => `<div class="opt" data-t="${t}"><div class="ic">${emb(t)}</div><div><b>${t}${own.includes(t) ? " (original type)" : ""}</b><span>${i < own.length ? "One of its own types counts one extra time." : "Random extra synergy."} ${DATA.rules.traitDescriptions[t] || ""}</span></div></div>`).join("");
     for (const b of el.querySelectorAll(".opt")) b.onclick = () => send({ a: "blesspick", type: b.dataset.t });
   }
 }
@@ -609,7 +610,7 @@ function renderScout() {
   bar.innerHTML = `<span>🔍 Scouting <b>${o.name}</b> · ${o.hp} HP · Lv ${o.level}</span><button>Return to my board</button>`;
   bar.querySelector("button").onclick = () => { scouting = null; refreshHud(); };
   const dep = o.board.filter((u) => u.col !== null), ben = o.board.filter((u) => u.col === null);
-  const rows = (arr) => arr.length ? arr.map((u) => { const d = defOf(u.id); return `<div class="so"><i style="background-image:url(${portraitOf(u.id, u)})"></i><div><b>${d.name} <em>${"★".repeat(u.stars)}</em></b><span>${(d.types || [d.faction]).join(" / ")} · ${d.role}${u.blessing ? ` · ✦${u.blessing}` : ""}</span></div><div class="it">${u.items.map((k) => { const it = DATA.itemBy[k]; return it && it.icon ? `<img src="${it.icon}" title="${it.id}: ${it.text}" alt="">` : `<u title="${k}"></u>`; }).join("")}</div></div>`; }).join("") : `<div class="none">None</div>`;
+  const rows = (arr) => arr.length ? arr.map((u) => { const d = defOf(u.id); return `<div class="so"><i style="background-image:url(${portraitOf(u.id, u)})"></i><div><b>${nameOf(u)} <em>${"★".repeat(u.stars)}</em></b><span>${(d.types || [d.faction]).join(" / ")} · ${d.role}${u.blessing ? ` · ✦${u.blessing}` : ""}</span></div><div class="it">${u.items.map((k) => { const it = DATA.itemBy[k]; return it && it.icon ? `<img src="${it.icon}" title="${it.id}: ${it.text}" alt="">` : `<u title="${k}"></u>`; }).join("")}</div></div>`; }).join("") : `<div class="none">None</div>`;
   const syn = Object.entries(o.traits || {}).filter(([k, n]) => n > 0).sort((a, b) => b[1] - a[1]).map(([k, n]) => { const th = thOf(k), tier = th.filter((t) => n >= t).length; return `<div class="sy${tier ? " on" : ""}" title="${k} ${n}/${th.join("/")}">${ROLES.includes(k) ? ric(k) : emb(k)}<b>${n}</b></div>`; }).join("");
   panel.innerHTML = `<div class="hd">${o.name}'s team</div><div class="sys">${syn || '<span class="none">No synergies</span>'}</div><h5>Deployed (${dep.length})</h5>${rows(dep)}<h5>Bench (${ben.length})</h5>${rows(ben)}`;
 }
@@ -621,7 +622,7 @@ function renderDmg() {
   if (el._sig === sig) return; el._sig = sig;
   const max = Math.max(1, ...rows.map((r) => r.v)), titles = { dealt: "Ally DMG Dealt", taken: "Ally DMG Taken", heal: "Ally Healing" };
   el.dataset.m = dmgMode;
-  el.innerHTML = `<h4>${titles[dmgMode]}</h4>` + (rows.length ? rows.map((r) => { const d = defOf(r.u.id); return `<div class="row"><img src="${portraitOf(r.u.id, r.u)}" alt=""><div class="col"><div class="nm" style="color:${r.u.stars > 1 ? "#7be0a0" : "#fff"}">${d?.name || r.u.id}</div><div class="bar"><i style="width:${(r.v / max) * 100}%"></i></div></div><div class="val">${r.v}</div></div>`; }).join("") : `<div class="none">Fight a round to see damage numbers.</div>`)
+  el.innerHTML = `<h4>${titles[dmgMode]}</h4>` + (rows.length ? rows.map((r) => { const d = defOf(r.u.id); return `<div class="row"><img src="${portraitOf(r.u.id, r.u)}" alt=""><div class="col"><div class="nm" style="color:${r.u.stars > 1 ? "#7be0a0" : "#fff"}">${nameOf(r.u)}</div><div class="bar"><i style="width:${(r.v / max) * 100}%"></i></div></div><div class="val">${r.v}</div></div>`; }).join("") : `<div class="none">Fight a round to see damage numbers.</div>`)
     + `<div class="tabs">${[["dealt", "⚔"], ["taken", "🛡"], ["heal", "✚"]].map(([m, g]) => `<button data-m="${m}" class="${m === dmgMode ? "on" : ""}" title="${titles[m]}">${g}</button>`).join("")}</div>`;
   for (const b of el.querySelectorAll(".tabs button")) b.onclick = () => { dmgMode = b.dataset.m; el._sig = null; renderDmg(); };
 }
@@ -632,7 +633,7 @@ function renderBagPanel() {
   const sig = JSON.stringify([y.units.map((u) => [u.uid, u.col === null, u.stars, u.items, u.blessing]), y.items.includes("blessing_transfer"), xferFrom, items, stones, bagPick, selItem, selUid, prep]);
   if (el._sig === sig) return; el._sig = sig;
   const row = (u) => { const d = defOf(u.id); const slots = [0, 1, 2].map((i) => { const k = u.items[i], it = k && DATA.itemBy[k]; return it ? `<button class="sl fill" data-u="${u.uid}" data-i="${i}" title="${it.id}: ${it.text} (click to unequip)">${it.icon ? `<img src="${it.icon}" alt="">` : it.id.slice(0, 2)}</button>` : `<button class="sl" data-u="${u.uid}" data-add="1" title="Equip an item">+</button>`; }).join("");
-    return `<div class="hr${u.blessing ? " blessed" : ""}${xferFrom === u.uid ? " xfer" : ""}" data-u="${u.uid}"><div class="pt" style="background-image:url(${portraitOf(u.id, u)})"></div><div class="nm" style="color:${u.stars > 1 ? "#7be0a0" : "#fff"}">${d?.name || u.id}<br><small>${"★".repeat(u.stars)}${u.blessing ? ` · ✦${u.blessing}` : ""}</small></div>${slots}</div>`; };
+    return `<div class="hr${u.blessing ? " blessed" : ""}${xferFrom === u.uid ? " xfer" : ""}" data-u="${u.uid}"><div class="pt" style="background-image:url(${portraitOf(u.id, u)})"></div><div class="nm" style="color:${u.stars > 1 ? "#7be0a0" : "#fff"}">${nameOf(u)}<br><small>${"★".repeat(u.stars)}${u.blessing ? ` · ✦${u.blessing}` : ""}</small></div>${slots}</div>`; };
   const dep = y.units.filter((u) => u.col !== null), und = y.units.filter((u) => u.col === null);
   const pick = bagPick != null || selItem
     ? `<div class="pick"><span>${items.length ? "Choose an item:" : "No equipment in your bag."}</span>${[...new Set(items)].map((k) => { const it = DATA.itemBy[k], n = items.filter((x) => x === k).length; return `<button data-k="${k}" class="${k === selItem ? "sel" : ""}" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}${it.id}${n > 1 ? " ×" + n : ""}</button>`; }).join("")}</div>`
