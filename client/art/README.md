@@ -105,4 +105,12 @@ Sprites: creeps are drawn ~3 world units tall and bosses ~4.2, so give them 768 
 - `client/art/environment/ground.png` - 2048 x 1740, top-down painted grass with a stone battlefield in the middle
 - `client/art/environment/sky.png` - 2048 x 1024, painted sky
 
+### Bonus cards
+
+- `client/art/bonus-cards/<card id>.webp` provides the full illustration for the draw and the Pokémon Cards gallery. Use the ID from `data/pokemon/cards.json`. If the illustration is unavailable, the card uses its existing icon.
+
+### Synergy crests
+
+- Put a transparent square WebP in `client/art/ui/synergies/<trait key>.webp` to add a crest. Use the lowercase type or role key, such as `grass.webp` or `fighter.webp` for Striker. The client uses the existing type or role icon when the crest is unavailable.
+
 Check progress any time with `node tools/check-art.mjs`. Use only art you own or are licensed to use.

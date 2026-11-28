@@ -1,9 +1,9 @@
 // Gallery: Hero grid (type x role), Equipment, Encyclopedia and Go Go Cards, reachable from the main menu.
+import { createBonusCardFace } from "./card-draw.js";
+
 let C = null, tab = "hero", sub = { equipment: "All", cards: "All", ency: "rules" }, sel = { hero: null, item: null };
 const $ = (id) => document.getElementById(id);
 const ROLE_ROWS = ["Fighter", "Assassin", "Ranger", "Caster", "Guardian", "Support"];
-const CARD_COLOR = { Common: "Blue", Epic: "Purple", Legendary: "Orange" };
-const CARD_PAL = { Legendary: ["#ffb23e", "#7a3b12", "#fff0c6"], Epic: ["#b36bff", "#3d1a6e", "#efe0ff"], Common: ["#4aa3ff", "#14346e", "#dff0ff"] };
 const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
 
 export function initGallery(ctx) {
@@ -73,6 +73,7 @@ function renderEncy(el) {
 function renderCards(el) {
   const names = { All: "All", Legendary: "Orange Cards", Epic: "Purple Cards", Common: "Blue Cards" }, cur = sub.cards;
   const cards = (C.DATA.gogoCards || []).filter((c) => cur === "All" || c.rarity === cur).sort((a, b) => ["Legendary", "Epic", "Common"].indexOf(a.rarity) - ["Legendary", "Epic", "Common"].indexOf(b.rarity));
-  el.innerHTML = tabs(Object.entries(names), cur) + `<div class="cdgrid">${cards.map((c) => { const p = CARD_PAL[c.rarity] || CARD_PAL.Common; return `<div class="glcard" style="--a:${p[0]};--b:${p[1]};--c:${p[2]}"><div class="art">${c.icon ? `<img src="${c.icon}" alt="">` : ""}</div><div class="nm">${esc(c.name)}</div><div class="tx">${esc(c.text)}</div></div>`; }).join("")}</div>`;
+  el.innerHTML = tabs(Object.entries(names), cur) + '<div class="cdgrid"></div>';
+  el.querySelector(".cdgrid").replaceChildren(...cards.map(createBonusCardFace));
   bindTabs(el, "cards");
 }

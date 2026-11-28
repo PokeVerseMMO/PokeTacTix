@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>PokéTactix</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="interface.css?v=2"></head>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=2"><link rel="stylesheet" href="interface.css?v=5"></head>
 <body>
 <canvas id="view"></canvas>
 <div id="numbers"></div>
@@ -68,16 +68,42 @@
       <button id="settings" class="rbtn dark" aria-label="Settings" title="Settings"><span>&#9881;</span></button>
     </div>
     <div id="toolbar">
-      <button data-tool="synergies" class="tb-btn on" title="Synergies"><img src="art/ui/toolbar/synergies.png" alt="Synergies"></button>
+      <button data-tool="synergies" class="tb-btn on" title="Synergies" aria-controls="synergies" aria-expanded="true"><img src="art/ui/toolbar/synergies.png" alt="Synergies"></button>
       <button data-tool="damage" class="tb-btn" title="Damage"><img src="art/ui/toolbar/damage.png" alt="Damage"></button>
       <button data-tool="equipment" class="tb-btn" title="Bag: equip items"><img src="art/ui/toolbar/equipment.png" alt="Bag"></button>
       <button data-tool="emotes" class="tb-btn" title="Emotes"><img src="art/ui/toolbar/emotes.png" alt="Emotes"></button>
       <button data-tool="statistics" class="tb-btn on" title="Standings"><img src="art/ui/toolbar/statistics.png" alt="Standings"></button>
       <div id="emoteMenu" class="hidden"><button>😀</button><button>👍</button><button>😢</button><button>🔥</button><button>❤️</button></div>
     </div>
-    <section id="synergies" aria-labelledby="synergyHeading"><h2 id="synergyHeading">Synergies</h2><div class="sgrid" id="facGrid"></div><div class="sgrid" id="roleGrid"></div><div id="synEmpty" class="hidden">Deploy Pokémon to activate bonuses.</div></section>
+    <section id="synergies" aria-labelledby="synergyHeading">
+      <header class="synergy-heading"><h2 id="synergyHeading">Synergies</h2><span id="synActive">0 active</span></header>
+      <div class="synergy-group" hidden><h3>Types</h3><div class="sgrid" id="facGrid"></div></div>
+      <div class="synergy-group" hidden><h3>Roles</h3><div class="sgrid" id="roleGrid"></div></div>
+      <p id="synEmpty">Deploy Pokémon to activate bonuses.</p>
+    </section>
     <div id="emoteBubble" class="hidden"></div>
-    <div id="synDetail" class="hidden"></div><div id="pickPanel" class="hidden"></div><div id="blessPanel" class="hidden"></div><div id="supplyPanel" class="hidden"></div><div id="cardPanel" class="hidden"></div><button id="cardStack" title="Pokémon Cards"></button><div id="cardDetails" class="hidden"></div><button id="cmdSkill" title="Commander skill"></button><div id="cmdDetails" class="hidden"></div><div id="joy"><i id="joyKnob"></i></div><button id="jumpBtn" title="Jump (Space)">⤒</button><div id="scoutBar" class="hidden"></div><div id="scoutPanel" class="hidden"></div><div id="dmgPanel" class="lpanel hidden"></div>
+    <section id="synDetail" class="hidden" aria-labelledby="synDetailTitle"></section><div id="pickPanel" class="hidden"></div><div id="blessPanel" class="hidden"></div><div id="supplyPanel" class="hidden"></div>
+    <div id="cardPanel" class="hidden" role="dialog" aria-modal="true" aria-labelledby="cardDrawTitle" aria-describedby="cardDrawHelp">
+      <div class="draw-table">
+        <header>
+          <p class="draw-rarity"></p>
+          <h2 id="cardDrawTitle">Choose a Pokémon Card</h2>
+          <p id="cardDrawHelp">Take one bonus. Each card has two rerolls.</p>
+        </header>
+        <div class="draw-offers"></div>
+        <p class="draw-status" role="status"></p>
+      </div>
+      <template>
+        <article class="draw-slot">
+          <button class="draw-card" type="button"></button>
+          <button class="draw-reroll" type="button">
+            <span class="draw-dice" aria-hidden="true"><i class="draw-die"></i><i class="draw-die"></i></span>
+            <span class="draw-reroll-copy"><strong>Reroll</strong><small></small></span>
+          </button>
+        </article>
+      </template>
+    </div>
+    <button id="cardStack" title="Pokémon Cards"></button><div id="cardDetails" class="hidden"></div><button id="cmdSkill" title="Commander skill"></button><div id="cmdDetails" class="hidden"></div><div id="joy"><i id="joyKnob"></i></div><button id="jumpBtn" title="Jump (Space)">⤒</button><div id="scoutBar" class="hidden"></div><div id="scoutPanel" class="hidden"></div><div id="dmgPanel" class="lpanel hidden"></div>
     <div id="bagPanel" class="lpanel hidden"></div>
     <div id="bag" class="hidden"></div>
     <section id="standings2" aria-labelledby="standingsHeading"><h2 id="standingsHeading">Standings</h2><div id="standingRows"></div></section>
@@ -107,6 +133,14 @@
     <h2 id="overTitle"></h2><div id="rankResult" class="sub"></div><div id="standings"></div><button id="again" class="gold">Play again</button>
   </div></section>
 </div>
-<script type="module" src="client.js?v=3"></script>
+<template id="bonusCardFace">
+  <span class="bonus-card-face">
+    <span class="draw-crest" aria-hidden="true"></span>
+    <span class="draw-tier"></span>
+    <span class="draw-art" aria-hidden="true"><img alt="" hidden><span>✦</span></span>
+    <span class="draw-copy"><strong class="draw-name"></strong><span class="draw-effect"></span></span>
+  </span>
+</template>
+<script type="module" src="client.js?v=6"></script>
 <script type="module" src="blossom-background.js?v=3"></script>
 </body></html>
