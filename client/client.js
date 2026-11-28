@@ -6,7 +6,11 @@ import { portrait, iconSvg, loadArtManifest, artPath } from "./art.js";
 import { Lobby3D } from "./lobby3d.js";
 import { createCardDraw } from "./card-draw.js";
 import { createShopShowcase } from "./shop-showcase.js?v=2";
+import { createDuelBanners } from "./duel-banners.js";
 const $ = (id) => document.getElementById(id);
+const duelCue = $("duelCue");
+const duelBanners = createDuelBanners(duelCue, $("duelAnnouncement"));
+const COMBAT_LEAD_IN = .9;
 const qs = new URLSearchParams(location.search);
 let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, lastCombat = null, dmgMode = "dealt", bagPick = null;
 let DATA = null, ws = null, state = null, combat = null, spec = null, watchKey = "", scene = null, lastMode = "solo";
@@ -34,6 +38,7 @@ const show = (id) => {
   if (id !== "match") {
     cardDraw.update(null);
     shopShowcase.clear();
+    duelBanners.clear();
   }
   if (id === "menu") Audio2.music("title");
   else setCommanderPicker(false);
@@ -185,13 +190,18 @@ function onMessage(m) {
     if ($("match").classList.contains("hidden")) { show("match"); }
     const now = performance.now();
     const phaseChanged = !state || state.phase !== m.phase;
-    if (phaseChanged) phaseAt = now;
+    if (phaseChanged) {
+      phaseAt = now;
+      duelBanners.clear();
+      if (m.phase === "Combat") $("banner").className = "";
+    }
     syncPhaseClock(m, now, phaseChanged);
     state = m;
     if (m.phase === "Preparation") { combat = null; Audio2.music("route101"); } else if (m.phase === "Supply") combat = null;
     setCommanderVisual(m.you.commander);
     refreshHud();
     cardDraw.update(m);
+    if (m.phase === "Combat" && combat?.done && scouting === null && !duelCue.hidden) duelBanners.update(duelMatchup(combat.m));
     if (m.phase === "Preparation" && m.round !== lastRound) { lastRound = m.round; banner(`Round ${m.round}`, m.npc ? (m.npc.boss ? `BOSS · ${m.npc.name}` : "Creep encounter") : "Preparation phase"); }
   } else if (m.t === "avatars") {
     avatars = new Map(m.list.map((a) => [a.seat, a]));
@@ -398,7 +408,7 @@ const sellValue = (d, u) => d.tier * 3 ** (u.stars - 1);
 function makeCombat(m, spectate) {
   const units = {};
   for (const u of m.start) units[u.uid] = { ...u, formArt: null, maxHp: u.hp, alive: true, tc: u.col, tr: u.row, mana: u.mana ?? 0, maxMana: u.maxMana ?? 0, statuses: new Map() };
-  const c = { m, units, idx: 0, t0: performance.now() - (m.elapsed || 0) * 1000, done: false, banner: false, stats: {}, spectate };
+  const c = { m, units, idx: 0, t0: performance.now() - (m.elapsed || 0) * 1000, done: false, openerShown: false, stats: {}, spectate };
   if (spectate !== undefined && m.elapsed > 1) stepCombat(performance.now(), c, true); // late joiner: catch up silently
   return c;
 }
@@ -409,12 +419,35 @@ function startCombat(m) {
   combat = makeCombat(m); lastCombat = combat;
   selUid = null; renderInspector(); phaseAt = performance.now();
 }
+function duelMatchup(m) {
+  const own = m.duel?.[m.you], other = m.duel?.[1 - m.you];
+  const opponent = state.players.find((p) => p.seat === (other?.seat ?? state.opponent));
+  const left = {
+    name: own?.name || state.you.name || "You",
+    portrait: trainerAvatar(own?.commander ?? state.you.commander),
+    hp: Math.max(0, state.you.hp ?? own?.hp), loss: own?.loss,
+  };
+  if (m.npc) {
+    const enemy = m.start.find((u) => u.side !== m.you && u.boss) || m.start.find((u) => u.side !== m.you);
+    return [left, {
+      name: m.vs || "Wild Pokémon",
+      portrait: enemy ? `url("${portraitOf(enemy.id, enemy)}")` : "none",
+      label: state.npc?.boss || enemy?.boss ? "Boss encounter" : "Wild encounter",
+    }];
+  }
+  return [left, {
+    name: m.vs || other?.name || opponent?.name || "Rival",
+    portrait: trainerAvatar(other?.commander ?? opponent?.commander),
+    hp: opponent?.hp ?? other?.hp, loss: other?.loss,
+    label: other?.ghost ? "Ghost team" : "",
+  }];
+}
 function stepCombat(now, c, silent) {
   if (silent) { const sv = [scene.fxEvent, Audio2.sfx, Audio2.cry, Audio2.music]; scene.fxEvent = () => {}; Audio2.sfx = () => {}; Audio2.cry = () => {}; Audio2.music = () => {}; try { return stepCombat2(now, c, true); } finally { [scene.fxEvent, Audio2.sfx, Audio2.cry, Audio2.music] = sv; } }
   return stepCombat2(now, c, false);
 }
 function stepCombat2(now, c, silent) {
-  const t = (now - c.t0) / 1000 - 0.9;
+  const t = (now - c.t0) / 1000 - COMBAT_LEAD_IN;
   while (c.idx < c.m.events.length && c.m.events[c.idx].t <= t) {
     const e = c.m.events[c.idx++], u = c.units[e.u], tg = e.tg && c.units[e.tg], K = (id) => "c" + id;
     if (e.k === "move") { u.tc = e.col; u.tr = e.row; }
@@ -445,8 +478,14 @@ function stepCombat2(now, c, silent) {
     else if (e.k === "buff") scene.fxEvent("buff", K(e.u), undefined, { name: e.name });
   }
   if (!c.done && t > c.m.duration + 0.5) {
-    c.done = true; if (silent) return; scene.setWeatherFx("none"); if (c.spectate !== undefined) return; const won = c.m.winner === c.m.you, drew = c.m.winner === -1;
-    Audio2.music(won ? "victory_trainer" : "too_bad"); banner(drew ? "DRAW" : won ? "VICTORY" : "DEFEAT", c.m.npc ? c.m.vs : `vs ${c.m.vs}`, drew ? "" : won ? "win" : "lose"); if (!won && !drew) scene.shake(0.3);
+    c.done = true;
+    if (silent) return;
+    scene.setWeatherFx("none");
+    if (c.spectate !== undefined) return;
+    const won = c.m.winner === c.m.you, drew = c.m.winner === -1;
+    Audio2.music(won ? "victory_trainer" : "too_bad");
+    duelBanners.show(drew ? "draw" : won ? "win" : "loss", c.m.round, duelMatchup(c.m), 2300);
+    if (!won && !drew && !reduceHudMotion.matches) scene.shake(0.3);
   }
 }
 
@@ -572,7 +611,7 @@ function renderPhaseClock(now) {
     left = Math.max(0, timerBase.remaining - (now - timerBase.at) * timerBase.rate / 1000);
     display = String(Math.ceil(left));
   } else if (replay) {
-    duration = Math.max(1, replay.m.duration + .9);
+    duration = Math.max(1, replay.m.duration + COMBAT_LEAD_IN);
     left = Math.max(0, duration - (now - replay.t0) / 1000);
     display = replay.done ? "✓" : String(Math.ceil(left));
   }
@@ -603,7 +642,15 @@ function loop(now) {
   const inMatch = state && !$("match").classList.contains("hidden");
   if (inMatch && state.players) updateWalkers(now);
   const cv = inMatch ? viewCombat() : null;
-  if (scene.setCombatView(cv) && cv) scene.sync(buildList(now, cv));
+  if (scene.setCombatView(cv)) {
+    duelBanners.clear();
+    if (cv) scene.sync(buildList(now, cv));
+    if (cv && cv === combat && !cv.openerShown) {
+      cv.openerShown = true;
+      const remaining = COMBAT_LEAD_IN * 1000 - (now - cv.t0);
+      if (remaining > 180) duelBanners.show("start", cv.m.round, duelMatchup(cv.m), remaining);
+    }
+  }
   if (inMatch && state.phase === "Combat") { if (combat && combat !== cv) stepCombat(now, combat, true); if (spec && spec !== cv) stepCombat(now, spec, true); if (cv) stepCombat(now, cv, false); }
   scene.sync(buildList(now, cv));
   const dragging = drag && drag.moved;

@@ -19,10 +19,26 @@ const SPEED = Number(process.env.SPEED ?? 1); // test hook: >1 shortens waits
 const BOSSES: { id: string; name: string; stars: number }[] = TRANSFORM.pve.bosses;
 const CREEP_SETS: string[][] = TRANSFORM.pve.creepSets;
 
+interface DuelSide { seat: number; name: string; commander: string; hp: number; loss: number; ghost?: boolean }
+interface Fight { you: 0 | 1; result: CombatResult; vs: string; duel?: [DuelSide, DuelSide] }
+
+function duelDamage(base: number, result: CombatResult, side: 0 | 1, ghost: boolean): number | null {
+  if (result.winner === side || (ghost && side === 1)) return null;
+  const damage = base + result.stars[side === 0 ? 1 : 0];
+  return ghost ? Math.max(1, Math.round(damage * RULES.damage.ghostMultiplier)) : damage;
+}
+
+function duelSide(p: Player, damage: number | null, ghost = false): DuelSide {
+  return {
+    seat: p.seat, name: p.name, commander: p.commander, hp: Math.max(0, p.hp),
+    loss: damage === null ? 0 : absorb(p, damage, false), ghost: ghost || undefined,
+  };
+}
+
 export class Room {
   id: string; match: Match; conns = new Map<number, Conn>(); started = false; finished = false;
   timer: ReturnType<typeof setTimeout> | null = null; prepEndsAt = 0; difficulty: "Beginner" | "Intermediate" | "Hard";
-  placements = 0; fights = new Map<number, { you: 0 | 1; result: CombatResult; vs: string }>();
+  placements = 0; fights = new Map<number, Fight>();
   onFinish?: () => void; log: string[] = []; ranked = false; npcMeta: { name: string; boss: boolean } | null = null; rewards = new Map<number, string>();
 
   constructor(id: string, difficulty: "Beginner" | "Intermediate" | "Hard" = "Intermediate", seed = Date.now()) {
@@ -144,7 +160,7 @@ export class Room {
   watch(seat: number, target: number) {
     const m = this.match, f = this.fights.get(target);
     if (m.phase !== "Combat" || !f || !this.conns.get(seat)) return;
-    this.conns.get(seat)!.send({ t: "combat", you: f.you, vs: f.vs, round: m.round, npc: f.vs === this.npcMeta?.name || undefined, spectate: target, elapsed: (Date.now() - this.combatAt) / 1000, ...f.result });
+    this.conns.get(seat)!.send({ t: "combat", you: f.you, vs: f.vs, duel: f.duel, round: m.round, npc: f.vs === this.npcMeta?.name || undefined, spectate: target, elapsed: (Date.now() - this.combatAt) / 1000, ...f.result });
   }
 
   checkAllReady() {
@@ -187,16 +203,21 @@ export class Room {
     this.fights.clear(); this.combatAt = Date.now();
     let longest = 0;
     const slots = (p: Player) => this.slotsOf(p);
+    const base = roundDamage(m.round);
     const results: { a: Player; b: Player; res: CombatResult; ghost: boolean }[] = [];
     for (const [a, b, ghost] of pairs) {
       const res = simulate(slots(a), slots(b), Math.floor(m.rng() * 1e9), { commanders: [a.commander, b.commander], trap: [a.cmd?.trap, b.cmd?.trap], stage: stageOf(m.round) });
       results.push({ a, b, res, ghost });
       longest = Math.max(longest, res.duration);
-      this.fights.set(a.seat, { you: 0, result: res, vs: b.name });
-      if (!ghost) this.fights.set(b.seat, { you: 1, result: res, vs: a.name });
+      const duel: [DuelSide, DuelSide] = [
+        duelSide(a, duelDamage(base, res, 0, ghost)),
+        duelSide(b, duelDamage(base, res, 1, ghost), ghost),
+      ];
+      this.fights.set(a.seat, { you: 0, result: res, vs: b.name, duel });
+      if (!ghost) this.fights.set(b.seat, { you: 1, result: res, vs: a.name, duel });
     }
     for (const [seat, f] of this.fights) {
-      this.conns.get(seat)?.send({ t: "combat", you: f.you, vs: f.vs, round: m.round, ...f.result });
+      this.conns.get(seat)?.send({ t: "combat", you: f.you, vs: f.vs, duel: f.duel, round: m.round, ...f.result });
     }
     this.pushAll();
     const waitMs = ((longest + 1) * 1000 + COMBAT_PAD_MS) / SPEED;
@@ -255,25 +276,17 @@ export class Room {
   resolve(results: { a: Player; b: Player; res: CombatResult; ghost: boolean }[]) {
     const m = this.match;
     const dead: Player[] = [];
+    const base = roundDamage(m.round);
     for (const { a, b, res, ghost } of results) {
       trapReward(m, a, res.trapHit?.[0]); if (!ghost) trapReward(m, b, res.trapHit?.[1]);
-      const D = RULES.damage, base = roundDamage(m.round);
-      if (res.winner === -1) { // draw: both commanders take the round's base damage + the other side's surviving stars
-        for (const [pl, foe] of [[a, 1], [b, 0]] as [Player, number][]) {
-          if (ghost && pl === b) continue;
-          const dm = base + res.stars[foe];
-          pl.hp -= absorb(pl, ghost ? Math.max(1, Math.round(dm * D.ghostMultiplier)) : dm);
-          if (pl.hp <= 0 && !dead.includes(pl)) dead.push(pl);
-        }
-        continue;
+      for (const [side, player] of [[0, a], [1, b]] as const) {
+        if (ghost && side === 1) continue;
+        if (res.winner !== -1) recordResult(player, res.winner === side);
+        const damage = duelDamage(base, res, side, ghost);
+        if (damage === null) continue;
+        player.hp -= absorb(player, damage);
+        if (player.hp <= 0 && !dead.includes(player)) dead.push(player);
       }
-      const loser = res.winner === 0 ? b : a, winner = res.winner === 0 ? a : b;
-      if (!(ghost && winner === b)) recordResult(winner, true);
-      if (!(ghost && loser === b)) recordResult(loser, false);
-      if (ghost && loser === b) continue;
-      const dmg = base + res.stars[res.winner]; // base by round + star levels of every surviving enemy unit
-      loser.hp -= absorb(loser, ghost ? Math.max(1, Math.round(dmg * D.ghostMultiplier)) : dmg); // Commander shield soaks damage first
-      if (loser.hp <= 0) dead.push(loser);
     }
     // placement: those dying together share the order by remaining board strength (lowest first)
     dead.sort((x, y) => x.hp - y.hp);

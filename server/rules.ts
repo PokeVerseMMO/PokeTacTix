@@ -13,11 +13,13 @@ export interface Player {
 export interface Perks { shield: number; fortune: number; fortuneLeft: number; hpRerolls: number; freeReroll: number; fastPromo: number; paydayLeft: number; paydayAmt: number; trustFund: boolean; festive: boolean; allyCall: boolean; merrier: boolean; interestCap: number; xpMul: number; shopMod: number[]; fountain: boolean }
 export const pk = (p: Player): Perks => (p.perks ||= { shield: 0, fortune: 0, fortuneLeft: 0, hpRerolls: 0, freeReroll: 0, fastPromo: 0, paydayLeft: 0, paydayAmt: 0, trustFund: false, festive: false, allyCall: false, merrier: false, interestCap: 0, xpMul: 1, shopMod: [0, 0, 0, 0, 0], fountain: false });
 // Commander shield soaks battle damage (Shield of Fortune first); returns the damage that gets through.
-export function absorb(p: Player, dmg: number): number {
-  const k = pk(p); let d = dmg;
-  const f = Math.min(k.fortune, d); k.fortune -= f; d -= f;
-  const s = Math.min(k.shield, d); k.shield -= s; d -= s;
-  return d;
+export function absorb(p: Player, dmg: number, consume = true): number {
+  const k = consume ? pk(p) : p.perks;
+  if (!k) return dmg;
+  const fortune = Math.min(k.fortune, dmg);
+  const shield = Math.min(k.shield, dmg - fortune);
+  if (consume) { k.fortune -= fortune; k.shield -= shield; }
+  return dmg - fortune - shield;
 }
 export interface Match {
   round: number; phase: "Preparation" | "Combat" | "Supply" | "Finished"; pool: Record<string, number>;

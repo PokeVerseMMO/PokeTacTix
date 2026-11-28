@@ -969,14 +969,151 @@ body:is(.scouting,.carding) #shopEffects { visibility: hidden; }
   letter-spacing: .045em;
   text-shadow: none;
 }
-#banner.win { color: var(--champagne); border-color: #f0d197; }
-#banner.lose { color: #ffc5b4; border-color: #d28471; }
 #banner small { color: var(--ui-muted); letter-spacing: normal; font: 600 13px / 1.2 "Segoe UI", system-ui, sans-serif; text-shadow: none; }
 #banner.show { animation: match-banner 2s ease-out; }
 @keyframes match-banner {
   0% { opacity: 0; transform: translateY(9px); }
   15%, 78% { opacity: 1; transform: none; }
   100% { opacity: 0; transform: translateY(-5px); }
+}
+
+/* Duel Banners share the normal combat lead-in and the round result window. */
+#duelCue {
+  --duel-accent: #ffdea3;
+  --duel-duration: 900ms;
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  pointer-events: none !important;
+  animation: duel-result var(--duel-duration) ease-out both;
+}
+#duelCue[hidden] { display: none; }
+#duelCue[data-mode="start"] { animation-name: duel-start; }
+#duelCue[data-mode="loss"] { --duel-accent: #ffc0ae; }
+#duelCue[data-mode="draw"] { --duel-accent: #e7d0ff; }
+#duelCue::before {
+  content: "";
+  position: absolute;
+  inset: 65px 0 90px;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 51%, #25173562, #191126ba 77%);
+  mask-image: linear-gradient(transparent, #000 19% 78%, transparent);
+}
+.duel-shell {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  width: min(510px, 86%);
+  margin-top: -24px;
+  text-align: center;
+}
+.duel-round {
+  margin-bottom: 5px;
+  color: var(--duel-accent);
+  font: 850 12px / 1.2 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 3px #201529;
+}
+.duel-heading {
+  margin-bottom: 13px;
+  color: var(--duel-accent);
+  font: 700 49px / 1.04 var(--ui-heading);
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  text-shadow: 0 3px 3px #221629, 0 0 18px #24162d;
+}
+.duel-pair { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr); align-items: stretch; }
+.duel-side {
+  --duel-team: #d6b4f1;
+  --duel-slide: -32px;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  padding: 13px 12px;
+  color: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--duel-team) 52%, #412c49);
+  border-radius: 7px;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--duel-team) 20%, #34263e), transparent 68%), linear-gradient(145deg, #3b2a4d, #24192f 75%);
+  box-shadow: 0 10px 22px #160c23ab, inset 0 0 0 3px #c5a8cb19;
+}
+.duel-side[data-duel-side="rival"] { --duel-team: #eeb2a5; --duel-slide: 32px; }
+#duelCue[data-mode="start"] .duel-side { animation: duel-slide calc(var(--duel-duration) * .34) cubic-bezier(.21, .77, .26, 1) both; }
+.duel-side::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  background: #2b1e37;
+  border: solid color-mix(in srgb, var(--duel-team) 60%, #382441);
+  border-width: 0 1px 1px 0;
+  transform: translateX(-50%) rotate(45deg);
+}
+.duel-side strong {
+  width: 100%;
+  overflow: hidden;
+  color: #fff2e9;
+  font: 850 19px / 1.1 "Segoe UI", system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.duel-portrait {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 3px;
+  color: #fbebf9;
+  background-color: #3a2b48;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--duel-team);
+  border-radius: 50%;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--duel-team) 44%, transparent), 0 0 0 3px #1e152b;
+  font: 800 22px / 1 "Segoe UI", system-ui, sans-serif;
+}
+.duel-detail { color: #f0dced; font: 700 13px / 1.2 "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.duel-detail[data-damaged="true"] { color: #ffc1b0; }
+.duel-vs {
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: #ffe0a9;
+  background: #30213d;
+  border: 1px solid #e2b486;
+  border-radius: 50%;
+  box-shadow: 0 3px 10px #200e28a0;
+  font: italic 800 13px / 1 var(--ui-heading);
+}
+.duel-side[data-winner="true"] {
+  --duel-team: #ffdda0;
+  border-color: #f6d9a7;
+  box-shadow: 0 0 22px #e7b96760, 0 10px 22px #160c23ab, inset 0 0 0 3px #f5d2982b;
+  animation: duel-winner 580ms cubic-bezier(.22, .79, .28, 1) both;
+}
+#duelCue:is([data-mode="win"], [data-mode="loss"]) .duel-side[data-winner="false"] .duel-portrait { filter: saturate(.63); }
+.duel-winner { color: #ffe2a4; font: 850 12px / 1 "Segoe UI", system-ui, sans-serif; }
+.duel-winner::before { content: "✦"; margin-right: 5px; }
+.duel-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+body:is(.carding, .scouting, .supplying, .modalpick) #duelCue { visibility: hidden; }
+
+@keyframes duel-start { 0% { opacity: 0; } 16%, 72% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes duel-result { 0% { opacity: 0; } 12%, 84% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes duel-slide { from { opacity: 0; transform: translateX(var(--duel-slide)); } to { opacity: 1; transform: none; } }
+@keyframes duel-winner { 0% { transform: scale(.96); } 40% { transform: scale(1.035); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  #duelCue, #duelCue .duel-side { animation: none !important; }
 }
 
 /* Gallery, matchmaking, settings and final standings. */

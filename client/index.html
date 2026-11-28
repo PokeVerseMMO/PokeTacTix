@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>PokéTactix</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="interface.css?v=7"></head>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="interface.css?v=8"></head>
 <body>
 <canvas id="view"></canvas>
 <div id="numbers"></div>
@@ -110,6 +110,28 @@
     <div id="inspector" class="closed"></div>
     <div id="sellZone" class="hidden">Drop here to sell</div>
     <div id="banner"></div>
+    <div id="duelCue" hidden aria-hidden="true">
+      <div class="duel-shell">
+        <span class="duel-round" data-duel-round></span>
+        <strong class="duel-heading" data-duel-heading></strong>
+        <div class="duel-pair">
+          <div class="duel-side" data-duel-side="you">
+            <span class="duel-portrait" data-duel-portrait></span>
+            <strong data-duel-name></strong>
+            <span class="duel-detail" data-duel-detail></span>
+            <span class="duel-winner" data-duel-winner hidden>Winner</span>
+          </div>
+          <span class="duel-vs">VS</span>
+          <div class="duel-side" data-duel-side="rival">
+            <span class="duel-portrait" data-duel-portrait></span>
+            <strong data-duel-name></strong>
+            <span class="duel-detail" data-duel-detail></span>
+            <span class="duel-winner" data-duel-winner hidden>Winner</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="duelAnnouncement" class="duel-sr" role="status" aria-live="polite"></div>
     <div id="msg" class="msg"></div>
     <div id="tray">
       <div id="trayLeft">
@@ -146,6 +168,6 @@
     <span class="draw-copy"><strong class="draw-name"></strong><span class="draw-effect"></span></span>
   </span>
 </template>
-<script type="module" src="client.js?v=10"></script>
+<script type="module" src="client.js?v=11"></script>
 <script type="module" src="blossom-background.js?v=3"></script>
 </body></html>
