@@ -6,6 +6,29 @@ import { UnitVisual, Effects, uiTex } from "./units.js";
 import { styleOf, artPath, ART } from "./art.js";
 import { GLTFLoader } from "./vendor/GLTFLoader.js";
 const TRAINER_LOADER = new GLTFLoader(), MOTION_CACHE = new Map();
+
+function benchMarkTexture(engraving) {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.strokeStyle = "white";
+  ctx.beginPath();
+  if (engraving) {
+    ctx.moveTo(64, 35); ctx.lineTo(95, 64); ctx.lineTo(64, 93); ctx.lineTo(33, 64);
+    ctx.closePath();
+    ctx.lineWidth = 4;
+  } else {
+    ctx.roundRect(10, 10, 108, 108, 11);
+    ctx.fillStyle = "rgba(255,255,255,.25)";
+    ctx.fill();
+    ctx.lineWidth = 6;
+    ctx.shadowColor = "white";
+    ctx.shadowBlur = 9;
+  }
+  ctx.stroke();
+  return new THREE.CanvasTexture(canvas);
+}
+
 // Loads a fresh trainer model (own skeleton per instance) plus its stand/walk motions.
 async function loadTrainer(id) {
   try {
@@ -80,12 +103,25 @@ export class Scene3D {
       const mark = new THREE.Mesh(markGeo, new THREE.MeshBasicMaterial({ map: uiTex("effects/valid"), transparent: true, opacity: 0, depthWrite: false })); mark.position.set(x, 0.06, z);
       this.tileGroup.add(fill, line, mark); this.tiles.push({ col, row, fill, line, mark });
     }
-    this.benchHi = []; for (let i = 0; i < BENCH; i++) {
-      const p = this.benchXZ(i); const m = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.35), new THREE.MeshBasicMaterial({ color: 0x9fffd0, transparent: true, opacity: 0, depthWrite: false }));
-      m.rotation.x = -Math.PI / 2; m.position.set(p.x, BENCH_TOP + 0.08, p.z); this.scene.add(m); this.benchHi.push(m);
+    const benchGeo = new THREE.PlaneGeometry(1.48, 1.18);
+    const pad = benchMarkTexture(false), engraving = benchMarkTexture(true);
+    this.benchHi = [];
+    this.benchEtch = [];
+    for (let i = 0; i < BENCH; i++) {
+      const p = this.benchXZ(i);
+      const mark = new THREE.Mesh(benchGeo, new THREE.MeshBasicMaterial({ map: pad, color: 0xffd486, transparent: true, opacity: 0, depthWrite: false }));
+      const etch = new THREE.Mesh(benchGeo, new THREE.MeshBasicMaterial({ map: engraving, color: 0x4c3143, transparent: true, opacity: .32, depthWrite: false }));
+      for (const mesh of [mark, etch]) {
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.position.set(p.x, BENCH_TOP + 0.08, p.z);
+        mesh.visible = false;
+        this.scene.add(mesh);
+      }
+      this.benchHi.push(mark);
+      this.benchEtch.push(etch);
     }
   }
-  setGrid({ mode, hoverCell, hoverBench, flip }) { // mode: 'prep' | 'drag' | 'combat'
+  setGrid({ mode, hoverCell, hoverBench, flip, shop }) { // mode: 'prep' | 'drag' | 'combat'
     this.tileGroup.visible = mode !== "combat";
     for (const t of this.tiles) {
       const mine = t.row < 4, hov = hoverCell && hoverCell.col === t.col && hoverCell.row === t.row;
@@ -96,8 +132,22 @@ export class Scene3D {
       const mk = t.mark.material; mk.map = uiTex(mode === "drag" ? (mine ? "effects/valid" : "effects/invalid") : "effects/hover");
       mk.opacity = mode === "drag" ? (mine ? (hov ? 1 : 0.5) : hov ? 1 : 0) : mode === "prep" && mine && hov ? 0.9 : 0;
       t.fill.material.opacity = 0; t.line.visible = t.line.visible && mk.opacity < 0.3;
+      const match = mode === "prep" && shop?.board.has(`${t.col},${t.row}`);
+      t.line.material.color.setHex(match ? 0xffd486 : 0xe8fbff);
+      if (match) {
+        t.line.visible = true;
+        t.line.material.opacity = 1;
+        t.fill.material.color.set(0xffc980);
+        t.fill.material.opacity = .19;
+      }
     }
-    this.benchHi.forEach((m, i) => { m.visible = mode !== "combat"; m.material.opacity = mode === "drag" ? (hoverBench === i ? 0.4 : 0.12) : 0; });
+    this.benchHi.forEach((mark, i) => {
+      const match = shop?.matches.has(i);
+      const free = shop && i >= shop.occupied;
+      mark.material.opacity = match ? 1 : shop?.landing === i ? .64 : mode === "drag" ? (hoverBench === i ? .93 : free ? .38 : 0) : 0;
+      mark.visible = mark.material.opacity > 0;
+      this.benchEtch[i].visible = Boolean(free && !mark.visible);
+    });
     void flip;
   }
   worldOf(cell, flip) { // cell: {col,row} board | {bench:i}
@@ -133,10 +183,16 @@ export class Scene3D {
         if (v.artKey !== artKey) { const evolving = !u.noEvo && !!want && v.sprMat; v.artKey = artKey; if (evolving) { v.cryKey = u.art; v.onEvolve = this.onEvolve; v.startEvolve(want); } else if (want) v.setSprite(want); }
         else if (want) { if (v.evo) v.evo.want = want; else v.setSprite(want); }
       }
-      v.stars = v.stars || 0; v.setStars(u.stars);
+      v.stars = v.stars || 0; v.setStars(u.stars, !u.noUpgradeFx);
       const w = u.world || this.worldOf(u.cell, u.flip); v.place(w.x, w.z, w.y, !!u.instant);
       if (u.lift) v.ty = w.y + 1.0;
       v.setBars(u.hp ?? 1, u.mana ?? 0, !!u.showMana); v.setItems(u.items || []); v.selected = !!u.selected;
+      if (u.shopArrival || v.shopArrival) {
+        v.shopArrival = Boolean(u.shopArrival);
+        v.body.visible = !v.shopArrival;
+        v.ui.visible = !v.shopArrival && !v.dead;
+        if (v.icons) v.icons.visible = v.ui.visible;
+      }
       v.root.visible = !u.hidden && !(v.dead && v.deathT > 0.6);
     }
     for (const [k, v] of this.units) if (!seen.has(k)) { v.dispose(); this.units.delete(k); }

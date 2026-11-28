@@ -134,7 +134,8 @@ export class Room {
       this.supplyTake(p, e); S.idx++; this.supplyTurn(); return;
     }
     const res = act(m, p, action);
-    this.push(seat, res.ok ? "" : res.error);
+    const shopPurchase = action.a === "buy" ? { slot: action.slot, ok: res.ok } : undefined;
+    this.push(seat, res.ok ? "" : res.error, shopPurchase);
     if (res.ok && action.a === "ready") this.checkAllReady();
   }
 
@@ -307,7 +308,7 @@ export class Room {
     this.onFinish?.();
   }
 
-  snapshot(seat: number, message = "") {
+  snapshot(seat: number, message = "", shopPurchase?: { slot: number; ok: boolean }) {
     const m = this.match, p = m.players[seat];
     const counts = traitCounts(deployed(p));
     const need = xpNeed(p);
@@ -322,10 +323,10 @@ export class Room {
       t: "state", round: m.round, phase: m.phase,
       timeLeft: Math.round(phaseClock?.remaining ?? 0), phaseClock,
       supply: m.phase === "Supply" && this.supply ? { stage: this.supply.stage, entries: this.supply.entries, order: this.supply.order, turn: this.supply.order[this.supply.idx] ?? null } : null,
-      message, seat, npc: this.npcMeta, opponent: this.opponentOf(seat), ranked: this.ranked, pool: this.poolInfo(p),
+      message, shopPurchase, seat, npc: this.npcMeta, opponent: this.opponentOf(seat), ranked: this.ranked, pool: this.poolInfo(p),
       you: {
         name: p.name, hp: p.hp, gold: p.gold, level: p.level, xp: p.xp, xpNeed: need, commander: p.commander, cmd: p.cmd ?? { used: 0 },
-        units: p.units, shop: p.shop, shopLocked: p.shopLocked, rerollCost: rerollCost(p), ready: p.ready,
+        units: p.units, shop: p.shop, shopLocked: p.shopLocked, rerollCost: rerollCost(p), fastPromotions: pk(p).fastPromo, ready: p.ready,
         traits: counts, eliminated: p.eliminated, placement: p.placement ?? null,
         items: p.items, card: p.card ? { rarity: p.card.rarity, rerolls: p.card.rerolls, options: p.card.options.map((id) => GOGO.cards.find((c) => c.id === id)) } : null, cardBuff: p.cardBuff ?? null, cardsTaken: (p.cardsTaken ?? []).map((id) => GOGO.cards.find((c) => c.id === id)).filter(Boolean), bless: p.bless?.[0] ? { uid: p.bless[0].uid, options: p.bless[0].options ?? null, left: p.bless.length } : null, picks: p.picks?.[0] ?? null, picksLeft: p.picks?.length ?? 0, reward: this.rewards.get(seat) ?? "",
       },
@@ -350,9 +351,9 @@ export class Room {
     return out;
   }
 
-  push(seat: number, message = "") {
+  push(seat: number, message = "", shopPurchase?: { slot: number; ok: boolean }) {
     const c = this.conns.get(seat);
-    if (c) c.send(this.snapshot(seat, message));
+    if (c) c.send(this.snapshot(seat, message, shopPurchase));
   }
   pushAll() { for (const seat of this.conns.keys()) this.push(seat); }
 }

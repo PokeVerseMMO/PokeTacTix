@@ -168,11 +168,11 @@ export class UnitVisual {
     this.armR = new THREE.Group(); this.armL = new THREE.Group(); this.head = new THREE.Group(); B.add(this.head);
   }
 
-  setStars(n) {
+  setStars(n, animate = true) {
     if (n === this.stars) return; const up = this.stars && n > this.stars; this.stars = n;
     for (const c of [...this.starGroup.children]) this.starGroup.remove(c);
     for (let i = 0; i < n; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTexture(), depthTest: false, transparent: true })); s.scale.set(0.3, 0.3, 1); s.position.set((i - (n - 1) / 2) * 0.28, 0, 0); s.renderOrder = 21; this.starGroup.add(s); }
-    if (up) { this.fx.burst(this.worldPos(1.2), 0xffe066, 26, 2.4); this.fx.ring(this.worldPos(0.1), 0xffe066, 2.4); this.pop = 0.0001; this.flash = 0.6; }
+    if (up && animate) { this.fx.burst(this.worldPos(1.2), 0xffe066, 26, 2.4); this.fx.ring(this.worldPos(0.1), 0xffe066, 2.4); this.pop = 0.0001; this.flash = 0.6; }
   }
   setItems(list) {
     const key = list.join(","); if (key === this._itemKey) return; this._itemKey = key;

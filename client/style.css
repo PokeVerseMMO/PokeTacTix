@@ -123,7 +123,6 @@ img{-webkit-user-drag:none;pointer-events:none}
 .card.poor{filter:grayscale(.6) brightness(.72) drop-shadow(0 4px 6px #000a)}.card.poor .cost{color:#ff7e7e}
 .card.poor:hover{transform:translateY(-2px)}
 .card.empty{cursor:default;animation:none;filter:none;opacity:.55;background:rgba(5,10,28,.45);border:2px dashed rgba(240,198,96,.28);border-radius:14px;height:160px;margin-top:0;align-self:center}.card.empty:hover{transform:none;filter:none}
-.card.bought{animation:bought .38s forwards;pointer-events:none}@keyframes bought{40%{transform:translateY(-14px) scale(1.08);filter:brightness(2)}to{transform:translateY(-40px) scale(.7);opacity:0}}
 @keyframes cardIn{from{transform:rotateY(90deg) scale(.9);opacity:0}}
 .card.deny{animation:shake .3s}
 #tip{position:absolute;pointer-events:none!important;background:url(art/ui/hud/tooltip.png) 0 0/100% 100% no-repeat;border:solid transparent;border-width:14px 18px;border-image:url(art/ui/hud/tooltip.png) 36 fill/14px 18px stretch;font-size:13px;max-width:310px;z-index:9}

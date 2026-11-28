@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>PokéTactix</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=2"><link rel="stylesheet" href="interface.css?v=5"></head>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=2"><link rel="stylesheet" href="interface.css?v=7"></head>
 <body>
 <canvas id="view"></canvas>
 <div id="numbers"></div>
@@ -116,15 +116,20 @@
         <button id="xp" class="rbtn blue"><span>Buy XP</span><em><img src="art/ui/icons/gold.png" alt=""><span id="xpCost">1</span></em></button>
         <button id="reroll" class="rbtn blue"><span>Reroll</span><em><img src="art/ui/icons/gold.png" alt=""><b id="rerollCost">2</b></em></button>
       </div>
-      <div id="shopWrap"><div id="shop"></div></div>
+      <section id="shopWrap" aria-labelledby="shopHeading">
+        <header class="shop-heading"><h2 id="shopHeading">Shop</h2><span id="shopReceipt" role="status"></span><span id="shopBenchCount"></span></header>
+        <div id="shop"></div>
+      </section>
       <div id="trayRight"><button id="lock" class="rbtn dark" title="Lock shop (L)" aria-label="Lock shop" aria-pressed="false"><span class="lk" aria-hidden="true">&#128275;</span></button><button id="ready" class="wbtn gold"><span>Ready</span></button></div>
     </div>
+    <div id="shopEffects" aria-hidden="true"></div>
     <div id="tip" class="hidden"></div>
   </section>
   <section id="settingsPanel" class="screen hidden" aria-label="Settings"><div class="menuPanel narrow">
     <h2>Settings</h2>
     <div class="row"><label>Graphics <select id="quality"><option>Low</option><option>Medium</option><option selected>High</option></select></label></div>
     <div class="row"><label>Scenery motion <select id="backgroundMotion"><option value="system">Use system setting</option><option value="on">On</option><option value="off">Off</option></select></label></div>
+    <div class="row"><label>Shop animations <select id="shopMotion"><option value="system">Use system setting</option><option value="on">On</option><option value="off">Off</option></select></label></div>
     <div class="row"><label>Master <input id="volMaster" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="volMusic" type="range" min="0" max="1" step="0.05"></label><label>SFX <input id="volSfx" type="range" min="0" max="1" step="0.05"></label></div>
     <div class="row"><button id="fullscreen">Toggle fullscreen</button><button id="leave" class="alt">Leave match</button></div>
     <div class="row"><button id="settingsClose" class="gold">Close</button></div>
@@ -141,6 +146,6 @@
     <span class="draw-copy"><strong class="draw-name"></strong><span class="draw-effect"></span></span>
   </span>
 </template>
-<script type="module" src="client.js?v=6"></script>
+<script type="module" src="client.js?v=8"></script>
 <script type="module" src="blossom-background.js?v=3"></script>
 </body></html>

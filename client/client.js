@@ -1,15 +1,16 @@
 // PokéTactix client: menu, lobby, 3D battle screen (Three.js), mockup-style HUD, drag & drop, combat replay.
-import { Scene3D } from "./scene.js";
+import { Scene3D } from "./scene.js?v=2";
 import { initGallery, openGallery } from "./gallery.js";
 import { Audio2 } from "./audio.js";
 import { portrait, iconSvg, loadArtManifest, artPath } from "./art.js";
 import { Lobby3D } from "./lobby3d.js";
 import { createCardDraw } from "./card-draw.js";
+import { createShopShowcase } from "./shop-showcase.js?v=2";
 const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(location.search);
 let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, lastCombat = null, dmgMode = "dealt", bagPick = null;
 let DATA = null, ws = null, state = null, combat = null, spec = null, watchKey = "", scene = null, lastMode = "solo";
-let timerBase = null, selItem = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, shopSig: [], hp: {} };
+let timerBase = null, selItem = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, hp: {} };
 const TIER_COLORS = ["#9aa3b8", "#59c27a", "#4aa3ff", "#b36bff", "#ffb23e"];
 const RARITY_COLORS = { Rare: "#4aa3ff", Epic: "#b36bff", Legendary: "#ffb23e" };
 const hexNum = (s) => parseInt(s.slice(1), 16);
@@ -30,7 +31,10 @@ function fit() {
 }
 addEventListener("resize", fit);
 const show = (id) => {
-  if (id !== "match") cardDraw.update(null);
+  if (id !== "match") {
+    cardDraw.update(null);
+    shopShowcase.clear();
+  }
   if (id === "menu") Audio2.music("title");
   else setCommanderPicker(false);
   if (id === "over") Audio2.music("victory_trainer");
@@ -155,6 +159,9 @@ $("name").addEventListener("change", showRank); setTimeout(showRank, 300);
 // settings
 const openSettings = () => { $("settingsPanel").classList.remove("hidden"); $("leave").style.display = state ? "" : "none"; };
 $("settings").onclick = openSettings; $("menuSettings").onclick = openSettings; $("settingsClose").onclick = () => $("settingsPanel").classList.add("hidden");
+const shopMotion = $("shopMotion");
+shopMotion.value = ["on", "off"].includes(localStorage.shopMotion) ? localStorage.shopMotion : "system";
+shopMotion.onchange = () => { localStorage.shopMotion = shopMotion.value; };
 $("quality").onchange = () => { localStorage.quality = $("quality").value; if (!state) location.reload(); else $("msg").textContent = "Graphics change applies when you start the next match."; };
 for (const [id, k] of [["volMaster", "master"], ["volMusic", "music"], ["volSfx", "sfx"]]) { $(id).value = Audio2.vol[k]; $(id).oninput = () => { Audio2.vol[k] = +$(id).value; Audio2.save(); Audio2.sfx("click"); }; }
 $("fullscreen").onclick = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
@@ -265,7 +272,30 @@ const emb = (f) => {
 };
 const ROLE_LABEL = { Fighter: "Striker" }, roleName = (r) => ROLE_LABEL[r] || r;
 const ric = (r) => `<i class="ric" style="background-image:url(${crestPath(r) || UI + "roles/" + r.toLowerCase() + ".png"})" title="${roleName(r)}" aria-hidden="true"></i>`;
-const hasIcon = (k) => DATA.rules.factionColors[k] !== undefined;
+const shopShowcase = createShopShowcase({
+  grid: $("shop"), effects: $("shopEffects"), count: $("shopBenchCount"), receipt: $("shopReceipt"),
+  sendBuy(slot) {
+    if (ws?.readyState !== WebSocket.OPEN) return false;
+    send({ a: "buy", slot });
+    return true;
+  },
+  getDef: defOf, unitName: nameOf, portrait: (id, unit) => portraitOf(id, unit),
+  crest: emb, roleCrest: ric, roleName, color: factionColor, coin: COIN,
+  benchSize: () => DATA.rules.benchSize || 10,
+  project: (cell, lift) => scene?.cellScreen(cell, lift),
+  isLocalBoard: () => scouting === null && !cardDraw.active,
+  motionEnabled: () => shopMotion.value === "on" || (shopMotion.value === "system" && !reduceHudMotion.matches),
+  onHover(id) {
+    if (id) hoverTip = { id, shop: true };
+    else if (hoverTip?.shop) hoverTip = null;
+  },
+  onUpgrade: () => Audio2.sfx("success", .72),
+  onUnaffordable() {
+    const chip = $("goldChip");
+    chip.classList.add("nogold");
+    setTimeout(() => chip.classList.remove("nogold"), 320);
+  }
+});
 function trainerAvatar(commander) {
   const id = commander?.toLowerCase();
   const url = id && artPath("trainers", `${id}_head`);
@@ -297,29 +327,7 @@ function refreshHud() {
   $("ready").disabled = !prep || y.ready;
   $("ready").firstElementChild.textContent = y.eliminated ? "Eliminated" : state.phase === "Combat" ? "In battle" : state.phase === "Supply" ? "Drafting" : y.ready ? "Waiting…" : "Ready";
   $("ready").classList.toggle("sel", !!y.ready);
-  // shop
-  const shop = $("shop"); shop.innerHTML = "";
-  y.shop.forEach((id, slot) => {
-    const d = id && defOf(id), el = document.createElement(d ? "button" : "div");
-    if (!d) { el.className = "card empty"; shop.appendChild(el); prev.shopSig[slot] = null; return; }
-    el.type = "button";
-    el.disabled = !live;
-    const same = prev.shopSig[slot] === id; prev.shopSig[slot] = id;
-    const pi = (state.pool || {})[id], left = pi ? pi[0] : null, ratio = pi && pi[1] ? pi[0] / pi[1] : 1, heat = ratio <= 0.15 ? " scarce" : ratio <= 0.35 ? " hot" : "";
-    el.className = "card t" + d.tier + (y.gold < d.tier ? " poor" : "") + heat;
-    if (pi) el.title = `${pi[0]} of ${pi[1]} copies left in the shared pool · ${pi[2]} owned by players${heat ? " — heavily contested!" : ""}`;
-    if (same) el.classList.add("steady");
-    else el.style.animationDelay = slot * 0.05 + "s";
-    el.innerHTML = `<span class="pic" style="background-image:url(${artPath("portraits", id) || portrait(id, d, fRGB(d.faction))})"></span>${hasIcon(d.faction) ? emb(d.faction) : ""}${ric(d.role)}${pi ? `<span class="left">${heat ? "⚠ " : ""}${pi[0]}<small>/${pi[1]}</small></span>` : ""}<span class="nm">${d.name}</span><span class="cost">${COIN}${d.tier}</span>`;
-    el.setAttribute("aria-label", `Buy ${d.name} for ${d.tier} gold`);
-    el.onclick = () => {
-      if (!live) return;
-      if (y.gold < d.tier) { el.classList.remove("deny"); void el.offsetWidth; el.classList.add("deny"); $("goldChip").classList.add("nogold"); setTimeout(() => $("goldChip").classList.remove("nogold"), 320); return; }
-      el.classList.add("bought"); send({ a: "buy", slot });
-    };
-    el.onmouseenter = () => (hoverTip = { id }); el.onmouseleave = () => (hoverTip = null);
-    shop.appendChild(el);
-  });
+  shopShowcase.update(state);
   renderSynergyGrid(y.traits || {});
   // standings
   const st = $("standingRows"); st.innerHTML = "";
@@ -430,6 +438,16 @@ function stepCombat2(now, c, silent) {
 
 // ---------------- scene sync + frame loop ----------------
 const MENU_SHOW = [["charmander", 2, 3], ["squirtle", 3, 3], ["pikachu", 4, 3], ["eevee", 3, 2], ["gastly", 4, 2]];
+function shopUnitVisual(entry, unit, now) {
+  const effect = entry.cell && shopShowcase.presentation(unit.uid, now, entry.cell);
+  if (effect) {
+    entry.shopArrival = effect.hide;
+    entry.noEvo = entry.noPop = entry.noUpgradeFx = true;
+    entry.spawnFx = false;
+  }
+  return entry;
+}
+
 function buildList(now) {
   const inMatch = state && !$("match").classList.contains("hidden");
   if (!inMatch) {
@@ -445,7 +463,14 @@ function buildList(now) {
       const d = defOf(u.id);
       list.push({ key: "c" + u.uid, id: u.id, art: u.formArt || formId(u), def: u.npc ? { ...d, npc: true, boss: !!u.boss } : d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), cell: { col: u.tc, row: u.tr }, flip, mine: u.side === c0.m.you, hp: u.hp / u.maxHp, mana: u.maxMana ? u.mana / u.maxMana : 0, showMana: u.maxMana > 0, noPop: true, noEvo: true, instant: false, hidden: false, world: null });
     }
-    if (!cv.spectate) { const bn = state.you.units.filter((u) => u.col === null); bn.forEach((u, i) => { const d = defOf(u.id); list.push({ key: "u" + u.uid, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: true, selected: u.uid === selUid, spawnFx: false, noPop: true, cell: { bench: i } }); }); } // bench stays visible (and sellable) during battle
+    if (!cv.spectate) {
+      const bench = state.you.units.filter((u) => u.col === null);
+      bench.forEach((u, i) => {
+        const d = defOf(u.id);
+        const entry = { key: "u" + u.uid, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: true, selected: u.uid === selUid, spawnFx: false, noPop: true, cell: { bench: i } };
+        list.push(shopUnitVisual(entry, u, now));
+      });
+    }
     return list;
   }
   if (scouting !== null) { // view-only scouting of another player's board
@@ -463,7 +488,7 @@ function buildList(now) {
     const e = { key: "u" + u.uid, id: u.id, art: formId(u), def: d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), hp: 1, mine: true, selected: u.uid === selUid, spawnFx: !fresh, noPop: fresh };
     if (isDrag) { const p = scene.groundPoint(ptr.x, ptr.y, 0.9); if (p) { e.world = { x: p.x, z: p.z, y: 0.9 }; e.instant = true; } else e.cell = { col: u.col ?? 0, row: u.row ?? 0 }; }
     else e.cell = u.col !== null ? { col: u.col, row: u.row } : { bench: bench.indexOf(u) };
-    list.push(e);
+    list.push(shopUnitVisual(e, u, now));
   }
   return list;
 }
@@ -474,7 +499,7 @@ addEventListener("keydown", (e) => {
   const k = KEYMAP[e.key];
   if (k) { walkKeys[k] = 1; e.preventDefault(); }
   if (e.key === " " || e.code === "Space") {
-    if (e.target.closest?.('#synergies button, #synDetail button, [data-tool="synergies"]')) return;
+    if (e.target.closest?.('#shop button, #synergies button, #synDetail button, [data-tool="synergies"]')) return;
     walkKeys.jump = true;
     e.preventDefault();
   }
@@ -569,7 +594,11 @@ function loop(now) {
   const dragging = drag && drag.moved;
   const placing = !dragging && inMatch && state.phase === "Preparation" && selUid != null && document.elementFromPoint(ptr.x, ptr.y) === view; // click-to-place preview
   const hc = dragging ? drag.hoverCell : placing ? scene.pickCell(ptr.x, ptr.y, false) : null, hb = dragging ? drag.hoverBench : placing ? scene.pickBench(ptr.x, ptr.y) : null;
-  scene.setGrid({ mode: inMatch && viewCombat() ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat", hoverCell: hc, hoverBench: hb });
+  scene.setGrid({
+    mode: inMatch && viewCombat() ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat",
+    hoverCell: hc, hoverBench: hb,
+    shop: inMatch && scouting === null && !cardDraw.active ? shopShowcase.marks : null
+  });
   scene.frame();
   if (inMatch) { renderDmg(); renderBagPanel(); renderRoundStrip(); renderPick(); renderBless(); renderSupply(); renderCardStack(); renderCmdSkill(); renderScout(); }
   if (inMatch) {
@@ -623,6 +652,7 @@ addEventListener("pointermove", (e) => {
   if (!state) return;
   if (e.target === view) { const v = scene.pickUnit(e.clientX, e.clientY); hoverTip = v && v.id ? { id: v.id, key: v.key } : null; }
 });
+view.addEventListener("pointerleave", () => { if (hoverTip?.key) hoverTip = null; });
 addEventListener("pointerup", (e) => {
   if (!drag) return;
   const d = drag; drag = null;
@@ -652,7 +682,11 @@ function updateTip() {
   tip.classList.remove("hidden");
   const sc = stageScale, W = innerWidth / sc, H = innerHeight / sc;
   const tw = tip.offsetWidth || 300, th = tip.offsetHeight || 120;
-  tip.style.left = Math.max(8, Math.min(W - tw - 8, ptr.x / sc + 16)) + "px"; tip.style.top = Math.max(8, Math.min(H - th - 8, ptr.y / sc - th - 12)) + "px";
+  const x = ptr.x / sc, y = ptr.y / sc, gap = 14, margin = 8;
+  const left = x + gap + tw <= W - margin ? x + gap : x - gap - tw;
+  const top = y + gap + th <= H - margin ? y + gap : y - gap - th;
+  tip.style.left = Math.max(margin, Math.min(W - tw - margin, left)) + "px";
+  tip.style.top = Math.max(margin, Math.min(H - th - margin, top)) + "px";
 }
 
 Object.defineProperty(window, "__scene", { get: () => scene });
