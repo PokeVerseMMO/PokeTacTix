@@ -1,5 +1,5 @@
 // PokéTactix client: menu, lobby, 3D battle screen (Three.js), mockup-style HUD, drag & drop, combat replay.
-import { Scene3D } from "./scene.js?v=3";
+import { Scene3D } from "./scene.js?v=4";
 import { initGallery, openGallery } from "./gallery.js";
 import { Audio2 } from "./audio.js";
 import { portrait, iconSvg, loadArtManifest, artPath } from "./art.js";
@@ -397,7 +397,7 @@ const sellValue = (d, u) => d.tier * 3 ** (u.stars - 1);
 // ---------------- combat replay ----------------
 function makeCombat(m, spectate) {
   const units = {};
-  for (const u of m.start) { const d = defOf(u.id); units[u.uid] = { ...u, formArt: null, maxHp: u.hp, alive: true, tc: u.col, tr: u.row, mana: u.mana ?? 0, maxMana: u.maxMana ?? 0 }; }
+  for (const u of m.start) units[u.uid] = { ...u, formArt: null, maxHp: u.hp, alive: true, tc: u.col, tr: u.row, mana: u.mana ?? 0, maxMana: u.maxMana ?? 0, statuses: new Map() };
   const c = { m, units, idx: 0, t0: performance.now() - (m.elapsed || 0) * 1000, done: false, banner: false, stats: {}, spectate };
   if (spectate !== undefined && m.elapsed > 1) stepCombat(performance.now(), c, true); // late joiner: catch up silently
   return c;
@@ -419,14 +419,28 @@ function stepCombat2(now, c, silent) {
     const e = c.m.events[c.idx++], u = c.units[e.u], tg = e.tg && c.units[e.tg], K = (id) => "c" + id;
     if (e.k === "move") { u.tc = e.col; u.tr = e.row; }
     else if (e.k === "atk") { if (u) Audio2.sfx("click", 0.25, 120); scene.fxEvent("atk", K(e.u), K(e.tg)); }
-    else if (e.k === "dmg") { const S = (id) => (c.stats[id] ||= { dealt: 0, taken: 0, heal: 0 }); S(e.u).dealt += e.v; S(e.tg).taken += e.v; Audio2.sfx(e.crit ? "super_effective" : "effective", e.crit ? 0.8 : 0.45, 90); tg.hp = Math.max(0, tg.hp - e.v); scene.fxEvent("dmg", K(e.u), K(e.tg), { v: e.v, crit: e.crit, magic: e.name === "magic" }); }
+    else if (e.k === "dmg") {
+      const S = (id) => (c.stats[id] ||= { dealt: 0, taken: 0, heal: 0 });
+      S(e.u).dealt += e.v; S(e.tg).taken += e.v;
+      Audio2.sfx(e.crit ? "super_effective" : "effective", e.crit ? 0.8 : 0.45, 90);
+      tg.hp = Math.max(0, tg.hp - e.v);
+      const legacyCast = !e.damageKind && e.name === "magic" && u?.lastCast && e.t - u.lastCast.t < 2;
+      scene.fxEvent("dmg", K(e.u), K(e.tg), { v: e.v, crit: e.crit, kind: e.damageKind ?? (legacyCast ? "ability" : "basic"), ability: e.ability ?? (legacyCast ? u.lastCast.name : undefined) });
+    }
     else if (e.k === "mana") u.mana = e.v;
     else if (e.k === "heal") { (c.stats[e.u] ||= { dealt: 0, taken: 0, heal: 0 }).heal += e.v; Audio2.sfx("eb_heal", 0.5, 200); tg.hp = Math.min(tg.maxHp, tg.hp + e.v); scene.fxEvent("heal", K(e.u), K(e.tg), { v: e.v }); }
     else if (e.k === "shield") scene.fxEvent("shield", K(e.u), K(e.tg));
-    else if (e.k === "die") { Audio2.sfx("faint", 0.7, 100); u.alive = false; scene.fxEvent("die", K(e.u)); }
-    else if (e.k === "cast") { if (u) Audio2.cry(cryOf(u), 0.7); scene.fxEvent("cast", K(e.u), e.tg ? K(e.tg) : undefined, { name: e.name }); }
+    else if (e.k === "die") { Audio2.sfx("faint", 0.7, 100); u.alive = false; u.statuses.clear(); scene.fxEvent("die", K(e.u)); }
+    else if (e.k === "cast") { if (u) { u.lastCast = e; Audio2.cry(cryOf(u), 0.7); } scene.fxEvent("cast", K(e.u), e.tg ? K(e.tg) : undefined, { name: e.name }); }
     else if (e.k === "form") { if (e.name === "mega") { Audio2.sfx("mega_flash", 1); setTimeout(() => Audio2.sfx("mega_refresh", 0.9), 350); Audio2.cry(cryOf(u), 1); } else if (e.x === 1) { Audio2.sfx("mega_harden", 1); Audio2.cry(cryOf(u), 1); } u.formArt = e.art || null; if (e.v) { if (e.v > u.maxHp) u.hp += e.v - u.maxHp; u.maxHp = e.v; u.hp = Math.min(u.hp, u.maxHp); } scene.fxEvent(e.name === "mega" ? "mega" : e.name === "gmax" ? "gmax" : "buff", K(e.u), undefined, { name: "control", on: e.x === 1 }); }
-    else if (e.k === "status") { if (e.on) Audio2.sfx({ burn: "eb_burn", poison: "eb_poison", paralysis: "eb_paralysis", freeze: "eb_frozen", sleep: "eb_sleep", confusion: "eb_confused", slow: "eb_stat_down", flinch: "bang" }[e.name] ?? "eb_stat_down", 0.6, 150); scene.fxEvent("status", K(e.u), undefined, { name: e.name, on: e.on }); }
+    else if (e.k === "status" && u?.alive) {
+      if (e.on) {
+        const stacks = e.v || 1, previous = u.statuses.get(e.name);
+        u.statuses.set(e.name, { stacks, time: e.t });
+        Audio2.sfx({ burn: "eb_burn", poison: "eb_poison", paralysis: "eb_paralysis", freeze: "eb_frozen", sleep: "eb_sleep", confusion: "eb_confused", slow: "eb_stat_down", flinch: "bang" }[e.name] ?? "eb_stat_down", 0.6, 150);
+        if (!previous || stacks !== previous.stacks || e.t - previous.time >= .6) scene.fxEvent("status", K(e.u), undefined, { name: e.name });
+      } else u.statuses.delete(e.name);
+    }
     else if (e.k === "weather") scene.fxEvent("weather", undefined, undefined, { name: e.name });
     else if (e.k === "buff") scene.fxEvent("buff", K(e.u), undefined, { name: e.name });
   }
@@ -448,22 +462,21 @@ function shopUnitVisual(entry, unit, now) {
   return entry;
 }
 
-function buildList(now) {
+function buildList(now, cv) {
   const inMatch = state && !$("match").classList.contains("hidden");
   if (!inMatch) {
     if (!DATA) return [];
     return MENU_SHOW.map(([id, col, row]) => { const d = defOf(id); return { key: "m" + id, id, def: d, fcolor: fRGB(d.faction), stars: 1 + (col % 3), cell: { col, row }, hp: 1 }; });
   }
   const list = [], fresh = now - phaseAt < 450;
-  const cv = viewCombat();
   if (state.phase === "Combat" && scouting !== null && !cv) return []; // waiting for the scouted player's battle to arrive
   if (cv) {
     const c0 = cv, flip = cv.m.you === 1;
     for (const u of Object.values(cv.units)) {
       const d = defOf(u.id);
-      list.push({ key: "c" + u.uid, id: u.id, art: u.formArt || formId(u), def: u.npc ? { ...d, npc: true, boss: !!u.boss } : d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), cell: { col: u.tc, row: u.tr }, flip, mine: u.side === c0.m.you, hp: u.hp / u.maxHp, mana: u.maxMana ? u.mana / u.maxMana : 0, showMana: u.maxMana > 0, noPop: true, noEvo: true, instant: false, hidden: false, world: null });
+      list.push({ key: "c" + u.uid, id: u.id, art: u.formArt || formId(u), def: u.npc ? { ...d, npc: true, boss: !!u.boss } : d, fcolor: fRGB(d.faction), stars: u.stars, items: itemList(u.items), cell: { col: u.tc, row: u.tr }, flip, mine: u.side === c0.m.you, hp: u.hp / u.maxHp, mana: u.maxMana ? u.mana / u.maxMana : 0, showMana: u.maxMana > 0, noPop: true, noEvo: true, statuses: u.statuses, fainted: !u.alive });
     }
-    if (!cv.spectate) {
+    if (cv.spectate === undefined) {
       const bench = state.you.units.filter((u) => u.col === null);
       bench.forEach((u, i) => {
         const d = defOf(u.id);
@@ -589,13 +602,15 @@ function loop(now) {
   if (!scene) return;
   const inMatch = state && !$("match").classList.contains("hidden");
   if (inMatch && state.players) updateWalkers(now);
-  if (inMatch && state.phase === "Combat") { const cv = viewCombat(); if (combat && combat !== cv) stepCombat(now, combat, true); if (spec && spec !== cv) stepCombat(now, spec, true); if (cv) stepCombat(now, cv, false); }
-  scene.sync(buildList(now));
+  const cv = inMatch ? viewCombat() : null;
+  if (scene.setCombatView(cv) && cv) scene.sync(buildList(now, cv));
+  if (inMatch && state.phase === "Combat") { if (combat && combat !== cv) stepCombat(now, combat, true); if (spec && spec !== cv) stepCombat(now, spec, true); if (cv) stepCombat(now, cv, false); }
+  scene.sync(buildList(now, cv));
   const dragging = drag && drag.moved;
   const placing = !dragging && inMatch && state.phase === "Preparation" && selUid != null && document.elementFromPoint(ptr.x, ptr.y) === view; // click-to-place preview
   const hc = dragging ? drag.hoverCell : placing ? scene.pickCell(ptr.x, ptr.y, false) : null, hb = dragging ? drag.hoverBench : placing ? scene.pickBench(ptr.x, ptr.y) : null;
   scene.setGrid({
-    mode: inMatch && viewCombat() ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat",
+    mode: cv ? "combat" : dragging || placing ? "drag" : inMatch ? "prep" : "combat",
     hoverCell: hc, hoverBench: hb,
     shop: inMatch && scouting === null && !cardDraw.active ? shopShowcase.marks : null
   });

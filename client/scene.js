@@ -3,6 +3,7 @@ import * as THREE from "./vendor/three.module.min.js";
 import { buildArena, boardXZ, benchXZ, BENCH_TOP, COLS, ROWS, BENCH, R } from "./arena.js";
 import { buildVerdantTerrace, frameTerrace, loadTerraceArt, terraceTarget } from "./verdant-terrace.js";
 import { UnitVisual, Effects, uiTex, measureSprite } from "./units.js?v=2";
+import { CombatFeedback } from "./combat-feedback.js";
 import { styleOf, artPath, ART } from "./art.js";
 import { GLTFLoader } from "./vendor/GLTFLoader.js";
 const TRAINER_LOADER = new GLTFLoader(), MOTION_CACHE = new Map();
@@ -83,14 +84,12 @@ export class Scene3D {
     this.cameraUp = new THREE.Vector3();
     this.fx = new Effects(this.scene);
     this.units = new Map(); this.clock = new THREE.Clock(); this.t = 0;
-    this.hover = null; this.dragging = false; this.showGrid = true; this.nums = []; this.numCursor = 0;
+    this.hover = null; this.dragging = false; this.showGrid = true; this.combatView = null;
     this.ray = new THREE.Raycaster(); this.ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     this.buildTiles(); this.resize(); this.commanderVisual = null;
     this.shakeT = 0;
   }
-  setNumberContainer(el) {
-    this.numEl = el; for (let i = 0; i < 48; i++) { const d = document.createElement("div"); d.className = "dmg"; d.style.display = "none"; el.appendChild(d); this.nums.push({ el: d, life: 0, pos: new THREE.Vector3(), vy: 0 }); }
-  }
+  setNumberContainer(el) { this.feedback = new CombatFeedback(el); }
   buildTiles() {
     this.tiles = [];
     const hex = new THREE.Shape(); for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (60 * i - 30); const x = Math.cos(a) * (R * 0.96), y = Math.sin(a) * (R * 0.96); i ? hex.lineTo(x, y) : hex.moveTo(x, y); } hex.closePath();
@@ -169,6 +168,7 @@ export class Scene3D {
       seen.add(u.key);
       let v = this.units.get(u.key);
       if (!v) {
+        if (u.fainted) continue;
         const terrace = this.useTerraceCamera && !u.key.startsWith("m") ? TERRACE_ROWS : null;
         const sprite = this.spriteFor(u.art ?? u.id, !!u.mine);
         v = new UnitVisual(u.key, u.id, u.def, styleOf(u.id, u.def, u.fcolor), this.fx, sprite, terrace);
@@ -195,6 +195,7 @@ export class Scene3D {
         v.shadowFloor = u.lift ? w.y : u.world && u.instant ? (overBench ? BENCH_TOP : 0) : null;
       }
       v.setBars(u.hp ?? 1, u.mana ?? 0, !!u.showMana); v.setItems(u.items || []); v.selected = !!u.selected;
+      v.statuses = u.statuses;
       if (u.shopArrival || v.shopArrival) {
         v.shopArrival = Boolean(u.shopArrival);
         v.body.visible = !v.shopArrival;
@@ -234,28 +235,70 @@ export class Scene3D {
     if (anim) texture.userData.anim = anim;
     return texture;
   }
-  clearUnits() { for (const v of this.units.values()) v.dispose(); this.units.clear(); }
+  clearUnits() {
+    for (const v of this.units.values()) v.dispose();
+    this.units.clear();
+    this.combatView = null;
+    this.feedback?.clear();
+  }
+  setCombatView(view) {
+    if (this.combatView === view) return false;
+    this.combatView = view;
+    for (const [key, v] of this.units) {
+      if (!key.startsWith("c")) continue;
+      v.dispose();
+      this.units.delete(key);
+    }
+    this.feedback?.clear();
+    return true;
+  }
+  combatAnchors(v) {
+    const track = v.barBg;
+    const bar = track.getWorldPosition(new THREE.Vector3());
+    const size = new THREE.Vector3().setFromMatrixScale(track.matrixWorld).x;
+    const half = new THREE.Vector3(size / 2, 0, 0).applyQuaternion(this.camera.quaternion);
+    const base = v.root.getWorldPosition(new THREE.Vector3());
+    return { bar, left: bar.clone().sub(half), right: bar.clone().add(half), body: base.lerp(bar, .48) };
+  }
   fxEvent(kind, key, tgKey, data = {}) {
     const v = this.units.get(key), tg = tgKey !== undefined ? this.units.get(tgKey) : null;
-    if (kind === "atk" && v && tg) { v.play("atk", tg.x - v.x, tg.z - v.z); this.moveFx(v, tg, false); }
-    else if (kind === "cast" && v) { v.play("cast", tg ? tg.x - v.x : 0, tg ? tg.z - v.z : 0); if (tg) this.moveFx(v, tg, true); if (data.name) this.number(v.worldPos(3.0), data.name, "cast"); }
-    else if (kind === "dmg" && tg) { tg.play("hit", v ? tg.x - v.x : 0, v ? tg.z - v.z : 0); tg.flash = Math.max(tg.flash || 0, data.crit ? 1 : 0.6); this.fx.burst(tg.worldPos(1.0), data.magic ? 0x9fd0ff : 0xffffff, data.crit ? 14 : 5, data.crit ? 3 : 1.6); this.number(tg.worldPos(2.3), String(data.v), data.crit ? "crit" : data.magic ? "magic" : "phys"); }
-    else if (kind === "heal" && tg) { this.fx.burst(tg.worldPos(1.0), 0x7dffa8, 8, 1.2); this.number(tg.worldPos(2.3), "+" + data.v, "heal"); }
+    if (kind === "atk" && v && tg) { v.play("atk", tg.x - v.x, tg.z - v.z); if ((v.def?.range ?? 1) > 1) this.moveFx(v, tg, false); }
+    else if (kind === "cast" && v) {
+      v.play("cast", tg ? tg.x - v.x : 0, tg ? tg.z - v.z : 0);
+      if (tg) this.moveFx(v, tg, true);
+      if (data.name) this.feedback?.number(this.combatAnchors(v).bar, key, "cast", "", data.name);
+    }
+    else if (kind === "dmg" && tg) {
+      const ability = data.kind === "ability";
+      const hit = data.v <= 0 ? "tick" : data.crit ? "crit" : ability ? "ability" : data.kind === "basic" ? "hit" : "tick";
+      const { bar, body } = this.combatAnchors(tg);
+      if (ability && data.ability && hit !== "tick") this.feedback?.clearCast(key, data.ability);
+      if (hit !== "tick") {
+        const flash = tg.flash || 0;
+        tg.play("hit", v ? tg.x - v.x : 0, v ? tg.z - v.z : 0);
+        tg.flash = Math.max(flash, data.crit ? .9 : ability ? .58 : .37);
+        this.feedback?.impact(hit, body, tgKey);
+        if (data.crit && ability) this.feedback?.impact("ability", body, tgKey);
+      }
+      const label = hit === "crit" ? (data.ability ? "CRIT · " + data.ability : "CRIT") : hit === "ability" ? data.ability || "Ability" : "";
+      this.feedback?.number(bar, tgKey, hit, String(data.v), label);
+    }
+    else if (kind === "heal" && tg) { this.fx.burst(tg.worldPos(1.0), 0x7dffa8, 8, 1.2); this.feedback?.number(this.combatAnchors(tg).bar, tgKey, "heal", "+" + data.v); }
     else if (kind === "shield" && tg) { this.fx.ring(tg.worldPos(0.2), 0x9fd8ff, 1.6); }
     else if (kind === "die" && v) v.play("die");
-    else if (kind === "status" && v) { const C = { burn: 0xff7a3a, poison: 0xb05cff, paralysis: 0xffe14a, freeze: 0x8fe8ff, sleep: 0x9aa4ff, confusion: 0xff8ad8, flinch: 0xffffff, slow: 0x8ab0ff }; if (data.on) { this.fx.burst(v.worldPos(1.2), C[data.name] ?? 0xffffff, 10, 1.4); this.number(v.worldPos(2.8), data.name.toUpperCase(), "cast"); } }
+    else if (kind === "status" && v) this.feedback?.impact(data.name, null, key, true);
     else if (kind === "mega" && v) {
       const c = v.worldPos(1.4), n = 14;
       for (let i = 0; i < n; i++) { const a = (i / n) * 6.283, r = 3.2; this.fx.missile(i % 2 ? "ebMega001" : "ebMega003", new THREE.Vector3(c.x + Math.cos(a) * r, c.y + 0.2 + Math.sin(i) * 0.8, c.z + Math.sin(a) * r * 0.6), c, { size: 0.55, dur: 0.55, delay: i * 0.02, add: true, spin: 0 }); }
       this.fx.stamp("ebMega006", c, { size: 1, grow: 3, dur: 0.6, delay: 0.4, add: true }); this.fx.stamp("ebMegaImpact", c, { size: 7, dur: 0.45, delay: 0.5, add: true });
-      this.fx.burst(c, 0xffffff, 30, 3.5); this.fx.ring(v.worldPos(0.1), 0xff9bf0, 3.4); this.shake(0.12); this.number(v.worldPos(3.2), "MEGA EVOLUTION!", "crit");
+      this.fx.burst(c, 0xffffff, 30, 3.5); this.fx.ring(v.worldPos(0.1), 0xff9bf0, 3.4); this.shake(0.12); this.feedback?.number(v.worldPos(3.2), key, "callout", "", "Mega Evolution!");
     }
     else if (kind === "gmax" && v) {
       const c = v.worldPos(1.6);
       if (data.on) {
         v.giantT = 1.5; this.fx.stamp("ebMegaImpact", c, { size: 9, dur: 0.6, add: true, tint: 0xff2a55 }); this.fx.stamp("ebMega006", c, { size: 1, grow: 6, dur: 0.8, add: true, tint: 0xff4d6d });
         for (let i = 0; i < 16; i++) { const a = (i / 16) * 6.283; this.fx.missile("ebMega003", c, new THREE.Vector3(c.x + Math.cos(a) * 3.6, c.y + 1 + Math.sin(i * 2) * 1.2, c.z + Math.sin(a) * 2.4), { size: 0.6, dur: 0.5, add: true, tint: 0xff3b6b }); }
-        this.fx.burst(c, 0xff2a55, 40, 4.5); this.fx.ring(v.worldPos(0.1), 0xff2a55, 4.5); this.shake(0.3); this.number(v.worldPos(4.6), "GIGANTAMAX!", "crit");
+        this.fx.burst(c, 0xff2a55, 40, 4.5); this.fx.ring(v.worldPos(0.1), 0xff2a55, 4.5); this.shake(0.3); this.feedback?.number(v.worldPos(4.6), key, "callout", "", "Gigantamax!");
       } else { v.giantT = 1; this.fx.burst(c, 0xff7a9a, 22, 3); this.fx.ring(v.worldPos(0.1), 0xff7a9a, 2.5); }
     }
     else if (kind === "weather") this.setWeatherFx(data.name);
@@ -267,22 +310,17 @@ export class Scene3D {
     if (!el) { el = document.createElement("div"); el.id = "weatherTint"; el.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:4;transition:background .6s;font:700 14px system-ui;color:#fff;text-shadow:0 1px 3px #000;text-align:center;padding-top:64px"; document.body.appendChild(el); }
     const on = name && name !== "none"; el.style.background = on ? T[name] ?? "transparent" : "transparent"; el.textContent = on ? "Weather: " + name.toUpperCase() : "";
   }
-  // Showdown-style move art by the attacker's type (art/fx): ranged units fire a missile, melee units stamp a slash/fist on the target
+  // Showdown-style move art by the attacker's type (art/fx).
   moveFx(v, tg, big) {
     const T = { Fire: ["fireball", "flareball"], Electric: ["electroball", "lightning"], Water: ["waterwisp", "waterwisp"], Grass: ["leaf1", "petal"], Ice: ["iceball", "icicle"], Poison: ["poisonwisp", "poisonwisp"], Ghost: ["shadowball", "shadowball"], Dark: ["shadowball", "stare"], Psychic: ["mistball", "mistball"], Fairy: ["shine", "rainbow"], Dragon: ["bluefireball", "flareball"], Rock: ["rock1", "rock2"], Ground: ["mudwisp", "rock2"], Steel: ["greenmetal1", "sword"], Fighting: ["fist", "foot"], Flying: ["feather", "feather"], Bug: ["web", "leaf2"], Normal: ["impact", "impact"] };
     const ty = v.def?.types?.[0] ?? v.def?.faction ?? "Normal", pair = T[ty] ?? T.Normal, melee = (v.def?.range ?? 1) <= 1;
-    const a = v.worldPos(1.5), b = tg.worldPos(1.3); this._alt = !this._alt;
+    const a = v.worldPos(1.5), b = tg.worldPos(1.3);
     if (big) { // ability cast: bigger payload plus an impact stamp at the target
       if (melee) this.fx.stamp(pair[1], b, { size: 1.8, dur: 0.5, grow: 0.4, spin: 0 }); else this.fx.missile(pair[1], a, b, { size: 1.3, dur: 0.32, arc: 0.6, spin: 4 });
       this.fx.stamp(pair[0], b, { size: 1.5, dur: 0.45, grow: 0.5, delay: melee ? 0 : 0.3, add: ty !== "Normal" });
       return;
     }
-    if (melee) { const m = { Fighting: "fist", Normal: this._alt ? "rightslash" : "leftslash", Bug: "sword", Steel: "sword", Flying: "feather", Dragon: "leftclaw", Dark: "leftclaw", Ground: "fist", Rock: "fist" }[ty]; this.fx.stamp(m ?? (this._alt ? "leftslash" : "rightslash"), b, { size: 1.5, dur: 0.28, grow: 0.3 }); }
-    else this.fx.missile(pair[0], a, b, { size: 0.95, dur: 0.22, arc: 0.35, spin: pair[0] === "feather" ? 0 : 5 });
-  }
-  number(pos, text, cls) {
-    if (!this.nums.length) return; const n = this.nums[this.numCursor++ % this.nums.length];
-    n.el.textContent = text; n.el.className = "dmg " + cls; n.el.style.display = "block"; n.life = 0.9; n.pos.copy(pos); n.pos.x += (Math.random() - 0.5) * 0.6; n.vy = 1.4;
+    this.fx.missile(pair[0], a, b, { size: .70, dur: 0.22, arc: 0.35, spin: pair[0] === "feather" ? 0 : 5 });
   }
   shake(amount = 0.15) { this.shakeT = amount; }
   // ---- camera / resize ----
@@ -343,7 +381,7 @@ export class Scene3D {
     return best;
   }
   cellScreen(cell, lift = 0.9) { const w = this.worldOf(cell, false); return this.screenOf(new THREE.Vector3(w.x, w.y + lift, w.z)); } // used by UI tests
-  screenOf(v3) { const r = this.canvas.getBoundingClientRect(), p = v3.clone().project(this.camera); return { x: r.left + (p.x * 0.5 + 0.5) * r.width, y: r.top + (-p.y * 0.5 + 0.5) * r.height }; }
+  screenOf(v3, r = this.canvas.getBoundingClientRect()) { const p = v3.clone().project(this.camera); return { x: r.left + (p.x * 0.5 + 0.5) * r.width, y: r.top + (-p.y * 0.5 + 0.5) * r.height }; }
   // ---- commander on the podium ----
   setCommander(id, def, fcolor) {
     if (this.commanderId === id) return; this.commanderId = id;
@@ -393,16 +431,13 @@ export class Scene3D {
       V.mv = moving; w.y = this.groundY(w.x, w.z) + V.lift; w.group.position.set(w.x, w.y, w.z); w.group.rotation.y = w.yaw; w.pose(dt, moving && V.lift < 0.05);
     }
     if (this.remote) for (const r of this.remote.values()) { const w = r.walker; if (!w) continue; const t = r.tgt, k = Math.min(1, dt * 10); w.x += (t.x - w.x) * k; w.z += (t.z - w.z) * k; w.y += (t.y - w.y) * k; w.yaw = angLerp(w.yaw, t.yaw, dt * 12); w.group.position.set(w.x, w.y, w.z); w.group.rotation.y = w.yaw; w.pose(dt, !!t.mv); }
-    // billboard-ish: sprites handle themselves; damage numbers follow world points
-    for (const n of this.nums) if (n.life > 0) {
-      n.life -= dt; n.pos.y += n.vy * dt; n.vy *= 0.96;
-      if (n.life <= 0) { n.el.style.display = "none"; continue; }
-      const s = this.screenOf(n.pos), r = this.canvas.getBoundingClientRect();
-      n.el.style.transform = `translate(${s.x - r.left}px,${s.y - r.top}px) translate(-50%,-50%)`; n.el.style.opacity = Math.min(1, n.life * 2.2);
-    }
     if (this.shakeT > 0) { this.shakeT -= dt; const a = this.shakeT; this.camera.position.set(this.basePos.x + (Math.random() - 0.5) * a, this.basePos.y + (Math.random() - 0.5) * a, this.basePos.z); } else if (this.basePos) this.camera.position.copy(this.basePos);
     this.camera.lookAt(this.cameraTarget);
     this.renderer.render(this.scene, this.camera);
+    if (this.combatView && this.feedback) {
+      const rect = this.canvas.getBoundingClientRect();
+      this.feedback.draw(this.units, (p) => this.screenOf(p, rect), (v) => this.combatAnchors(v), rect);
+    }
     return dt;
   }
 }

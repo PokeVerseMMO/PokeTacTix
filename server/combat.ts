@@ -5,7 +5,8 @@ import { tierOf, traitCounts, typeBonuses, typeMultiplier, crystalTypes } from "
 import { ABILITY_FNS, ARCHETYPES, type Ctx } from "./abilities.ts";
 
 export interface Slot { id: string; stars: number; col: number; row: number; items?: string[]; blessing?: string; water?: boolean; love?: boolean; hpMul?: number; adMul?: number; npc?: boolean; boss?: boolean }
-export interface CombatEvent { t: number; k: string; u: number; tg?: number; v?: number; col?: number; row?: number; crit?: boolean; name?: string; x?: number; art?: string | null }
+type DamageKind = "basic" | "ability" | "item" | "dot";
+export interface CombatEvent { t: number; k: string; u: number; tg?: number; v?: number; col?: number; row?: number; crit?: boolean; name?: string; x?: number; art?: string | null; on?: boolean; damageKind?: DamageKind; ability?: string }
 export interface CombatResult {
   winner: 0 | 1 | -1; survivors: [number, number]; stars: [number, number]; trapHit?: (string | undefined)[]; duration: number;
   start: { uid: number; id: string; side: number; stars: number; col: number; row: number; hp: number; items: string[]; mana: number; maxMana: number; art?: string; npc?: boolean; boss?: boolean }[];
@@ -239,7 +240,7 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
     applyStatus(src, tgt, name, base * (1 + STATUS_DATA.synergyScale * tier));
   }
 
-  function deal(src: any, tgt: any, raw: number, type: "physical" | "magic", kind: "basic" | "ability" | "item" | "dot", o: { crit?: boolean; area?: boolean; pen?: number } = {}) {
+  function deal(src: any, tgt: any, raw: number, type: "physical" | "magic", kind: DamageKind, o: { crit?: boolean; area?: boolean; pen?: number; ability?: string } = {}) {
     if (!tgt.alive || raw <= 0) return 0;
     let defense = type === "physical" ? armorOf(tgt) : mrOf(tgt);
     if (defense > 0) {
@@ -276,7 +277,7 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
       shield(tgt, tgt, tgt.maxHp * 0.15, 2); healOver(tgt, tgt, tgt.maxHp * 0.1, 2);
     }
     tgt.hp -= actual;
-    events.push({ t, k: "dmg", u: src.uid, tg: tgt.uid, v: Math.round(actual), crit: !!o.crit, name: type });
+    events.push({ t, k: "dmg", u: src.uid, tg: tgt.uid, v: Math.round(actual), crit: !!o.crit, name: type, damageKind: kind, ability: kind === "ability" ? o.ability ?? BY_ID[src.id]?.ability : undefined });
     tgt.dmgMana = tgt.dmgMana.filter((m: any) => t - m.t < 1);
     const used = tgt.dmgMana.reduce((s: number, m: any) => s + m.v, 0);
     const gain = Math.max(0, Math.min(RULES.damageManaCap - used, (actual / tgt.maxHp) * 100));
@@ -572,7 +573,7 @@ export function simulate(a: Slot[], b: Slot[], seed: number, opts: SimOptions = 
       for (const v of units) {
         if (!v.alive || v === u) continue; const px = cx(v) - ax, py = cy(v) - ay, along = px * dx + py * dy, off = Math.abs(px * dy - py * dx);
         if (along < 0 || along > 12 || off > 0.7) continue;
-        if (v.cside === u.cside) heal(u, v, v.maxHp * 0.05); else deal(u, v, dmg * u.power, "magic", "ability", { area: true });
+        if (v.cside === u.cside) heal(u, v, v.maxHp * 0.05); else deal(u, v, dmg * u.power, "magic", "ability", { area: true, ability: "love_energy" });
       }
     }
     // Blue: Copy Trap - an enemy hero stepping onto the trap cell is copied (once per battle)
