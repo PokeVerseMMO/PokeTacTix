@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>PokéTactix</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="interface.css?v=8"></head>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=4"><link rel="stylesheet" href="interface.css?v=9"><link rel="stylesheet" href="finals-broadcast.css"></head>
 <body>
 <canvas id="view"></canvas>
 <div id="numbers"></div>
@@ -156,9 +156,35 @@
     <div class="row"><button id="fullscreen">Toggle fullscreen</button><button id="leave" class="alt">Leave match</button></div>
     <div class="row"><button id="settingsClose" class="gold">Close</button></div>
   </div></section>
-  <section id="over" class="screen hidden"><div class="menuPanel">
-    <h2 id="overTitle"></h2><div id="rankResult" class="sub"></div><div id="standings"></div><button id="again" class="gold">Play again</button>
-  </div></section>
+  <section id="over" class="screen hidden" aria-labelledby="overTitle">
+    <div class="finals-window">
+      <header class="finals-header">
+        <div><p>Match complete</p><h2 id="overTitle" tabindex="-1"></h2></div>
+        <div id="rankResult" class="finals-rating" hidden><span></span><strong></strong><small></small></div>
+      </header>
+      <div class="finals-main">
+        <section class="finals-stage" aria-labelledby="finalsPodiumTitle">
+          <h3 id="finalsPodiumTitle">Podium</h3>
+          <div class="finals-spotlight" aria-hidden="true"></div>
+          <div id="finalsPodium" class="finals-podium"></div>
+          <div class="finals-sparks" aria-hidden="true"></div>
+        </section>
+        <section class="finals-standings" aria-labelledby="finalsStandingsTitle">
+          <header><h3 id="finalsStandingsTitle">Final standings</h3><span id="finalsCount"></span></header>
+          <ol id="standings" class="finals-list"></ol>
+        </section>
+      </div>
+      <footer class="finals-footer">
+        <div class="finals-selection" aria-label="Selected trainer"><span class="finals-avatar" aria-hidden="true"></span><div><strong></strong><small></small></div></div>
+        <div class="finals-actions">
+          <button type="button" id="finalsYourFinish">Your finish</button>
+          <button type="button" id="finalsReplay">Replay ceremony</button>
+          <button type="button" id="again" class="gold">Play again</button>
+        </div>
+      </footer>
+      <p id="finalsAnnouncement" class="finals-sr" role="status" aria-live="polite"></p>
+    </div>
+  </section>
 </div>
 <template id="bonusCardFace">
   <span class="bonus-card-face">
@@ -168,6 +194,6 @@
     <span class="draw-copy"><strong class="draw-name"></strong><span class="draw-effect"></span></span>
   </span>
 </template>
-<script type="module" src="client.js?v=11"></script>
+<script type="module" src="client.js?v=12"></script>
 <script type="module" src="blossom-background.js?v=3"></script>
 </body></html>

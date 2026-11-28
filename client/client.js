@@ -7,9 +7,11 @@ import { Lobby3D } from "./lobby3d.js";
 import { createCardDraw } from "./card-draw.js";
 import { createShopShowcase } from "./shop-showcase.js?v=2";
 import { createDuelBanners } from "./duel-banners.js";
+import { createFinalsBroadcast } from "./finals-broadcast.js";
 const $ = (id) => document.getElementById(id);
 const duelCue = $("duelCue");
 const duelBanners = createDuelBanners(duelCue, $("duelAnnouncement"));
+const finalsBroadcast = createFinalsBroadcast($("over"));
 const COMBAT_LEAD_IN = .9;
 const qs = new URLSearchParams(location.search);
 let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, lastCombat = null, dmgMode = "dealt", bagPick = null;
@@ -35,6 +37,7 @@ function fit() {
 }
 addEventListener("resize", fit);
 const show = (id) => {
+  if (id !== "over") finalsBroadcast.clear();
   if (id !== "match") {
     cardDraw.update(null);
     shopShowcase.clear();
@@ -209,19 +212,7 @@ function onMessage(m) {
     if (m.spectate !== undefined) spec = makeCombat(m, m.spectate); else startCombat(m);
   } else if (m.t === "over") {
     show("over");
-    $("overTitle").textContent = m.placement === 1 ? "VICTORY — 1st place!" : `You placed #${m.placement}`;
-    const r = m.rank;
-    $("rankResult").innerHTML = r ? (r.ranked ? `Rank: <b>${r.label}</b> · ${r.rp} RP (${r.delta >= 0 ? "+" : ""}${r.delta})` : `Practice match — rank unchanged (${r.label}, ${r.rp} RP). Online matches are ranked.`) : "";
-    $("standings").replaceChildren(...m.standings.map((player) => {
-      const row = document.createElement("div"), position = document.createElement("b");
-      const name = document.createElement("span"), commander = document.createElement("small");
-      row.classList.toggle("me", player.placement === m.placement);
-      position.textContent = player.placement <= 8 ? `#${player.placement}` : "—";
-      name.textContent = player.name;
-      commander.textContent = player.commander;
-      row.append(position, name, commander);
-      return row;
-    }));
+    finalsBroadcast.show(m);
     lastRound = -1;
   }
 }
@@ -638,7 +629,7 @@ function renderPhaseClock(now) {
 }
 function loop(now) {
   requestAnimationFrame(loop);
-  if (!scene) return;
+  if (!scene || !$("over").classList.contains("hidden")) return;
   const inMatch = state && !$("match").classList.contains("hidden");
   if (inMatch && state.players) updateWalkers(now);
   const cv = inMatch ? viewCombat() : null;

@@ -161,8 +161,6 @@ img{-webkit-user-drag:none;pointer-events:none}
 .card.deny{animation:shake .3s}
 #tip{position:absolute;pointer-events:none!important;background:url(art/ui/hud/tooltip.png) 0 0/100% 100% no-repeat;border:solid transparent;border-width:14px 18px;border-image:url(art/ui/hud/tooltip.png) 36 fill/14px 18px stretch;font-size:13px;max-width:310px;z-index:9}
 body.inspecting #tip{display:none!important}
-#standings{width:520px;margin:12px auto;font-size:20px}#standings div{display:flex;justify-content:space-between;padding:6px 14px;border-bottom:1px solid #3a4a80}
-#standings .me{color:var(--gold);font-weight:700}#over{text-align:center}#rankResult{font-size:18px}
 #rankBox b{color:#ffd678}
 .tipico{width:48px;height:48px;border-radius:7px;object-fit:cover;box-shadow:0 0 0 2px #e9c46a;display:block}
 

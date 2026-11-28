@@ -1,0 +1,322 @@
+#over {
+  --finals-gold: #ffdda5;
+  --finals-ink: #fff1e7;
+  --finals-muted: #decee2;
+  --finals-line: #846184;
+  container-type: size;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: auto;
+  pointer-events: auto;
+  color: var(--finals-ink);
+  background: radial-gradient(ellipse at 43% 24%, #49345e86, transparent 63%), #1c142b;
+  text-align: left;
+}
+
+.finals-window {
+  width: min(1160px, 100%);
+  overflow: hidden;
+  border: 1px solid #a97b87;
+  border-radius: 10px;
+  box-shadow: 0 24px 70px #0f0919ad;
+  background: #22182f;
+}
+.finals-header, .finals-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 19px;
+}
+.finals-header {
+  min-height: 85px;
+  border-bottom: 1px solid #a07785;
+  background: linear-gradient(115deg, #412d4c, #281d37 62%, #241b33);
+}
+.finals-header p {
+  margin: 0 0 4px;
+  color: var(--finals-gold);
+  font: 850 12px / 1.2 "Segoe UI", system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+}
+.finals-header h2 {
+  margin: 0;
+  color: var(--finals-ink);
+  font: 700 46px / 1 var(--ui-heading);
+  text-shadow: 0 2px 2px #1a1027;
+}
+#rankResult {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 3px 12px;
+  padding: 7px 11px;
+  border: 1px solid #b18b7d;
+  border-radius: 5px;
+  background: #281d36;
+  text-align: right;
+}
+#rankResult[hidden], .finals-selection[hidden] { display: none; }
+.finals-rating span { color: var(--finals-muted); font-size: 13px; }
+.finals-rating strong { color: var(--finals-gold); font-size: 21px; font-weight: 870; font-variant-numeric: tabular-nums; }
+.finals-rating strong[data-loss="true"] { color: #ffc2ae; }
+.finals-rating small { grid-column: 1 / -1; color: var(--finals-muted); font-size: 12px; }
+
+.finals-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.67fr) minmax(0, 1fr);
+  height: min(520px, calc(100cqh - 144px));
+  min-height: 441px;
+}
+.finals-stage {
+  --finals-light-x: 50%;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #2c223e url("art/environment/verdant-blossom-terrace.webp") center 44% / cover;
+}
+.finals-stage::before, .finals-spotlight, .finals-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.finals-stage::before {
+  content: "";
+  background: linear-gradient(180deg, #201634bd, #2419355c 55%, #1a1126ef), linear-gradient(130deg, #3a2e646b, #24182e32 72%);
+}
+.finals-stage[data-empty="true"] .finals-spotlight { display: none; }
+.finals-spotlight {
+  background: radial-gradient(ellipse at var(--finals-light-x) 50%, #ffd9ac57, transparent 34%),
+    conic-gradient(from 161deg at var(--finals-light-x) -27%, transparent, #dac0fc36 4%, #ead0fc12 8%, transparent 12%);
+}
+.finals-stage h3, .finals-standings h3 { margin: 0; color: var(--finals-gold); }
+.finals-stage h3 {
+  position: absolute;
+  top: 16px;
+  left: 17px;
+  font: 850 14px / 1.2 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px #160e22, 0 0 10px #241735;
+}
+.finals-podium {
+  position: absolute;
+  inset: 45px 4% 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.16fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: end;
+  gap: 13px;
+}
+.finals-seat {
+  --metal: #dbdaf1;
+  --chassis: #382d47;
+  --glow: #d4bff14d;
+  --lift: 7px;
+  --seat-height: 255px;
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  min-height: 0;
+  height: min(100%, var(--seat-height));
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--finals-ink);
+  text-align: left;
+  transform: translateY(calc(-1 * var(--lift)));
+}
+.finals-seat[data-place="1"] { --metal: var(--finals-gold); --chassis: #503343; --glow: #ffdc9c8b; --lift: 31px; --seat-height: 332px; grid-area: 1 / 2; }
+.finals-seat[data-place="2"] { grid-area: 1 / 1; }
+.finals-seat[data-place="3"] { --metal: #f8b299; --chassis: #432d3c; --glow: #f8b09955; --lift: 0px; --seat-height: 228px; grid-area: 1 / 3; }
+.finals-figure {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-items: end;
+  min-height: 0;
+  pointer-events: none;
+}
+.finals-figure::before {
+  content: "";
+  position: absolute;
+  inset: auto 17% -8px;
+  height: 21px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #1b0f2399, transparent 69%);
+}
+.finals-trainer {
+  position: relative;
+  display: block;
+  height: 100%;
+  min-height: 0;
+  max-width: 96%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 5px 6px #180f2a9c);
+}
+.finals-figure[data-art="sprite"] .finals-trainer { image-rendering: pixelated; }
+.finals-figure[data-art="portrait"] .finals-trainer, .finals-initial {
+  width: min(78%, 146px);
+  height: auto;
+  aspect-ratio: 1;
+  margin-bottom: 15px;
+  border: 1px solid var(--metal);
+  border-radius: 50%;
+  background: #49354d;
+  object-fit: cover;
+}
+.finals-initial { display: grid; place-items: center; color: var(--metal); font: 850 38px / 1 var(--ui-heading); }
+.finals-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 57px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--metal) 62%, #483047);
+  border-top: 2px solid var(--metal);
+  border-radius: 4px 4px 5px 5px;
+  box-shadow: 0 6px #21152e, 0 10px 18px #130d2280, inset 0 0 0 2px #c0a3c025;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--chassis) 84%, var(--metal)), var(--chassis));
+}
+.finals-seat[data-place="1"] .finals-step { min-height: 68px; }
+.finals-step::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -10px 0 auto;
+  height: 11px;
+  clip-path: polygon(9% 0, 91% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--metal), var(--chassis));
+  opacity: .76;
+}
+.finals-seat[aria-pressed="true"] .finals-step {
+  border-color: var(--metal);
+  box-shadow: 0 6px #281a34, 0 0 20px var(--glow), inset 0 0 0 2px #ecd2e533;
+}
+.finals-caption { display: grid; gap: 3px; min-width: 0; }
+.finals-caption strong { font-size: 16px; font-weight: 850; }
+.finals-caption small { color: var(--metal); font-size: 13px; }
+.finals-caption :is(strong, small), .finals-name, .finals-commander {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.finals-medal {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--metal, #8c6e92);
+  border-radius: 50%;
+  color: var(--metal, var(--finals-muted));
+  background: #2b1e39;
+  font: 850 14px / 1 "Segoe UI", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.finals-seat[data-place="1"] .finals-medal { border-radius: 7px; box-shadow: inset 0 0 0 2px #654958, 0 0 11px #ffd58965; }
+.finals-spark {
+  position: absolute;
+  top: 29%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--spark);
+  opacity: 0;
+  box-shadow: 0 0 10px var(--spark);
+}
+
+.finals-standings {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  padding: 12px 14px 13px;
+  border-left: 1px solid #a67595;
+  background: linear-gradient(145deg, #30213e, #21192f 75%);
+}
+.finals-standings header { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 9px; }
+.finals-standings h3 { font: 700 24px / 1.06 var(--ui-heading); }
+#finalsCount { color: var(--finals-muted); font-size: 12px; white-space: nowrap; }
+.finals-list { display: grid; grid-auto-rows: 1fr; gap: 5px; padding: 0; margin: 0; list-style: none; }
+.finals-place { min-width: 0; min-height: 0; }
+.finals-row {
+  display: grid;
+  grid-template-columns: 25px 26px minmax(50px, 1fr) minmax(40px, auto) auto;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  gap: 7px;
+  padding: 4px 7px;
+  border: 1px solid #7e5d7d;
+  border-radius: 4px;
+  color: var(--finals-ink);
+  background: #332540;
+  text-align: left;
+}
+.finals-row:is(:hover, [aria-pressed="true"]) { border-color: #e6b995; background: #49354e; }
+.finals-row.me { box-shadow: inset 2px 0 #f3cc9a; }
+.finals-row .finals-medal { width: 24px; height: 24px; font-size: 12px; }
+.finals-row[data-place="1"] { --metal: var(--finals-gold); }
+.finals-row[data-place="2"] { --metal: #dbdaf1; }
+.finals-row[data-place="3"] { --metal: #f8b299; }
+.finals-avatar {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid #a6819b;
+  background: #523952 center / cover;
+  color: #ffe9e5;
+  font-size: 10px;
+  font-weight: 850;
+}
+.finals-name { font-size: 14px; font-weight: 800; }
+.finals-commander { color: var(--finals-muted); font-size: 13px; }
+.finals-you {
+  padding: 3px 4px;
+  border-radius: 3px;
+  background: #64505f;
+  color: #fff1dd;
+  font-size: 11px;
+  font-weight: 750;
+}
+.finals-footer { min-height: 57px; padding-block: 7px; border-top: 1px solid #886683; background: #291e36; }
+.finals-selection { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.finals-selection .finals-avatar { width: 33px; height: 33px; }
+.finals-selection div { display: grid; gap: 2px; }
+.finals-selection strong { font-size: 14px; font-weight: 850; }
+.finals-selection small { color: var(--finals-muted); font-size: 12px; }
+.finals-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: 7px; }
+.finals-actions button {
+  min-height: 39px;
+  padding: 6px 12px;
+  border: 1px solid #936c91;
+  border-radius: 5px;
+  background: #3d2c4a;
+  color: #fff0f6;
+  font: 780 14px / 1.2 "Segoe UI", system-ui, sans-serif;
+}
+.finals-actions button:hover { background: #543b55; border-color: #ecc4a3; }
+.finals-actions #again { background: #f4d29b; color: #2b1f30; border-color: #f4d6ab; }
+.finals-actions #again:hover { background: #ffe2b2; }
+.finals-actions button:disabled { opacity: .5; cursor: default; }
+.finals-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+@media (max-width: 680px) {
+  #over { display: block; padding: 20px; }
+  .finals-main { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .finals-stage { height: 440px; }
+  .finals-standings { border-left: 0; border-top: 1px solid #a67595; }
+  .finals-list { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, 48px); grid-auto-flow: column; }
+  .finals-footer { flex-wrap: wrap; }
+}

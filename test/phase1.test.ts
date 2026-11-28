@@ -111,3 +111,23 @@ test("eight players, bots, ghost battles: match runs to a single winner", async 
   assert.ok(ghosts > 0, "at least one ghost battle occurred (odd player count)");
   assert.ok(m.players.every((p) => p.placement !== undefined), "every player has a placement");
 });
+
+test("final standings preserve eliminations and rank survivors when a room closes early", () => {
+  const room = new Room("early-finish", "Intermediate", 4);
+  const players = [0, 1, 2, 3, 4, 5, 6, 7].map((seat) => rules.addPlayer(room.match, "Player " + seat, false, "Blue"));
+  for (const [seat, hp] of [43, 70, 70, 80, 20].entries()) players[seat].hp = hp;
+  for (let seat = 5; seat < players.length; seat++) {
+    players[seat].hp = 0;
+    players[seat].eliminated = true;
+    players[seat].placement = seat + 1;
+  }
+  const packets: unknown[] = [];
+  room.conns.set(7, { send: (packet) => packets.push(packet), close: () => {} });
+  room.finish();
+  assert.deepEqual(players.map((p) => p.placement), [4, 2, 3, 1, 5, 6, 7, 8]);
+  const results = packets[0] as { seat: number; placement: number; standings: { seat: number; placement: number }[] };
+  assert.equal(results.seat, 7);
+  assert.equal(results.placement, 8);
+  assert.deepEqual(results.standings.slice(0, 3).map((p) => p.seat), [3, 1, 2]);
+  assert.deepEqual(results.standings.map((p) => p.placement), [1, 2, 3, 4, 5, 6, 7, 8]);
+});

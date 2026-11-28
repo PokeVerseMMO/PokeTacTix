@@ -1116,8 +1116,8 @@ body:is(.carding, .scouting, .supplying, .modalpick) #duelCue { visibility: hidd
   #duelCue, #duelCue .duel-side { animation: none !important; }
 }
 
-/* Gallery, matchmaking, settings and final standings. */
-#gallery, #lobby, #over {
+/* Gallery, matchmaking and settings. */
+#gallery, #lobby {
   background: linear-gradient(160deg, #0c1828ec, #0a1426f8), url("art/environment/blossom-overlook.webp") center / cover;
 }
 
@@ -1133,9 +1133,9 @@ body:is(.carding, .scouting, .supplying, .modalpick) #duelCue { visibility: hidd
 .hgrid .hlab, .hgrid .hgh { color: var(--ui-muted); }
 .glit.on i, .ghp.on { box-shadow: 0 0 0 2px var(--champagne), 0 0 14px #e5be6d57; }
 
-#lobby .menuPanel, #over .menuPanel { width: min(600px, 86%); max-height: calc(100% - 42px); overflow: auto; }
-#lobbyList, #standings { display: grid; gap: 5px; width: 100%; margin: 10px auto 18px; }
-#lobbyList div, #standings div {
+#lobby .menuPanel { width: min(600px, 86%); max-height: calc(100% - 42px); overflow: auto; }
+#lobbyList { display: grid; gap: 5px; width: 100%; margin: 10px auto 18px; }
+#lobbyList div {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -1148,10 +1148,8 @@ body:is(.carding, .scouting, .supplying, .modalpick) #duelCue { visibility: hidd
   font-size: 15px;
 }
 
-#lobbyList small, #lobbyList span, #standings small { color: var(--ui-muted); font-size: 12px; }
-#standings div { grid-template-columns: 38px 1fr auto; }
-#standings div.me { border-color: #e2c78d; color: var(--champagne); }
-#rankResult, #lobby .sub { color: var(--ui-muted); font-size: 14px; line-height: 1.4; }
+#lobbyList small, #lobbyList span { color: var(--ui-muted); font-size: 12px; }
+#lobby .sub { color: var(--ui-muted); font-size: 14px; line-height: 1.4; }
 #cardPanel {
   --draw-tier: #c7dcff;
   position: absolute;

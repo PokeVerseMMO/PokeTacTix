@@ -296,7 +296,7 @@ export class Room {
     }
     const left = m.players.filter((p) => !p.eliminated);
     if (left.length <= 1 || (this.humans.length > 0 && this.humans.every((p) => p.eliminated || !p.connected))) {
-      if (left[0]) left[0].placement = 1;
+      if (left.length === 1) left[0].placement = 1;
       this.finish();
       return;
     }
@@ -306,8 +306,17 @@ export class Room {
   finish() {
     this.finished = true; this.match.phase = "Finished";
     if (this.timer) clearTimeout(this.timer);
-    const standings = [...this.match.players]
-      .map((p) => ({ name: p.name, placement: p.placement ?? 99, human: p.human, commander: p.commander }))
+    const players = this.match.players;
+    // A room can finish as soon as all humans are out. Rank the trainers still standing by HP.
+    const unplaced = players.filter((p) => p.placement === undefined).sort((a, b) => b.hp - a.hp || a.seat - b.seat);
+    const placed = new Set(players.map((p) => p.placement));
+    let place = 1;
+    for (const p of unplaced) {
+      while (placed.has(place)) place++;
+      p.placement = place++;
+    }
+    const standings = players
+      .map((p) => ({ seat: p.seat, name: p.name, placement: p.placement!, human: p.human, commander: p.commander }))
       .sort((a, b) => a.placement - b.placement);
     for (const [seat, c] of this.conns) {
       const me = this.match.players[seat];
@@ -316,7 +325,7 @@ export class Room {
         const r = recordMatch(me.name, me.placement ?? 8, this.ranked);
         rank = { delta: r.delta, ranked: this.ranked, ...r.rank, matches: r.profile.matches, wins: r.profile.wins, best: r.profile.best };
       }
-      c.send({ t: "over", placement: me?.placement ?? 8, standings, rank });
+      c.send({ t: "over", seat, placement: me?.placement ?? 8, standings, rank });
     }
     this.onFinish?.();
   }
