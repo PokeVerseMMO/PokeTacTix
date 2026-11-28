@@ -22,12 +22,68 @@ export function faceTexture(eye, ahoge) {
   g.strokeStyle = "#a0525a"; g.lineWidth = 4; g.beginPath(); g.arc(128, 128, 9, 0.2 * Math.PI, 0.8 * Math.PI); g.stroke();
   const t = mk(c); texCache.set(key, t); void ahoge; return t;
 }
-function shadowTexture() {
-  if (texCache.has("shadow")) return texCache.get("shadow");
+function shadowTexture(terrace) {
+  const key = terrace ? "terrace-shadow" : "shadow";
+  if (texCache.has(key)) return texCache.get(key);
   const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"), gr = g.createRadialGradient(32, 32, 2, 32, 32, 32);
-  gr.addColorStop(0, "rgba(10,20,10,.65)"); gr.addColorStop(0.6, "rgba(10,20,10,.3)"); gr.addColorStop(1, "rgba(10,20,10,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
-  const t = new THREE.CanvasTexture(c); texCache.set("shadow", t); return t;
+  if (terrace) {
+    gr.addColorStop(0, "rgba(58,39,42,.53)");
+    gr.addColorStop(.31, "rgba(58,39,42,.39)");
+    gr.addColorStop(.66, "rgba(58,39,42,.12)");
+    gr.addColorStop(1, "rgba(58,39,42,0)");
+  } else {
+    gr.addColorStop(0, "rgba(10,20,10,.65)"); gr.addColorStop(0.6, "rgba(10,20,10,.3)"); gr.addColorStop(1, "rgba(10,20,10,0)");
+  }
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  const t = terrace ? mk(c) : new THREE.CanvasTexture(c);
+  texCache.set(key, t); return t;
 }
+
+// Sprite sheets reserve transparent room above the Pokémon for animation.
+// Measure each frame once after loading, at reduced resolution.
+export function measureSprite(image, anim) {
+  const cols = anim?.cols ?? 1, rows = anim?.rows ?? 1;
+  const width = Math.min(64, anim?.cw ?? image.width), height = Math.min(96, anim?.ch ?? image.height);
+  if (!width || !height) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = cols * width;
+  canvas.height = rows * height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  let pixels;
+  try {
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  } catch {
+    return null;
+  }
+  const frames = [];
+  for (let i = 0; i < (anim?.n ?? 1); i++) {
+    const offsetX = (i % cols) * width, offsetY = Math.floor(i / cols) * height;
+    let left = width, right = -1, top = height, bottom = -1;
+    for (let y = 0; y < height; y++) {
+      const row = (offsetY + y) * canvas.width + offsetX;
+      for (let x = 0; x < width; x++) {
+        if (pixels[(row + x) * 4 + 3] < 24) continue;
+        left = Math.min(left,x); right = Math.max(right,x);
+        top = Math.min(top,y); bottom = Math.max(bottom,y);
+      }
+    }
+    frames.push(right < left ? null : { top: top / height, bottom: (bottom + 1) / height, width: (right - left + 1) / width });
+  }
+  const visible = frames.filter(Boolean);
+  if (!visible.length) return null;
+  const median = (values) => values.sort((a,b) => a-b)[Math.floor(values.length / 2)];
+  const rest = { top: median(visible.map(f => f.top)), bottom: median(visible.map(f => f.bottom)), width: median(visible.map(f => f.width)) };
+  return { frames, rest };
+}
+
+const defaultSilhouette = { top: .40, bottom: .96, width: .80 };
+// Sizes chosen in the Natural Perspective study. Other Pokémon retain their art's proportions.
+const terraceSizes = { pikachu: .77, charmeleon: 1, venusaur: 1.15, bulbasaur: .78, machop: .95, vulpix: .81 };
+const terraceHealth = [0xa7dc8e, 0xeeb875, 0xf37172];
+const classicHealth = [0x58e070, 0xe8c84a, 0xff5a4a];
+
 function starTexture() {
   if (texCache.has("star")) return texCache.get("star");
   const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
@@ -55,8 +111,9 @@ const geo = {
 const add = (parent, g, mat, p = [0, 0, 0], s = [1, 1, 1], rot) => { const m = new THREE.Mesh(g, mat); m.position.set(...p); m.scale.set(...s); if (rot) m.rotation.set(...rot); parent.add(m); return m; };
 
 export class UnitVisual {
-  constructor(key, id, def, style, fx, sprite) {
+  constructor(key, id, def, style, fx, sprite, terraceRows = null) {
     this.key = key; this.sprite = sprite || null; this.id = id; this.def = def; this.style = style; this.fx = fx;
+    this.terraceRows = sprite ? terraceRows : null;
     this.root = new THREE.Group(); this.body = new THREE.Group(); this.root.add(this.body);
     this.phase = (hash(id + key) % 628) / 100; this.tx = this.x = 0; this.tz = this.z = 0; this.ty = this.y = 0; this.yaw = 0; this.tilt = 0;
     this.anim = { kind: null, t: 0 }; this.pop = 0; this.dead = false; this.deathT = 0; this.flash = 0; this.hp = 1; this.mana = 0; this.stars = 0; this.items = [];
@@ -64,7 +121,7 @@ export class UnitVisual {
     this.mats = [];
     if (this.sprite) this.buildSprite(); else if (style.npc) this.buildMonster(); else this.buildChibi();
     // contact shadow
-    this.shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.7), new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false }));
+    this.shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.7), new THREE.MeshBasicMaterial({ map: shadowTexture(this.terraceRows), transparent: true, depthWrite: false }));
     this.shadow.rotation.x = -Math.PI / 2; this.shadow.position.y = 0.03; this.shadow.scale.setScalar(this.baseScale); this.root.add(this.shadow);
     // selection ring
     this.ring = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 2.3), new THREE.MeshBasicMaterial({ map: uiTex("effects/selection"), transparent: true, opacity: 0, depthWrite: false }));
@@ -73,10 +130,17 @@ export class UnitVisual {
     const top = this.sprite ? this.spriteH + 0.15 : (style.npc ? 2.1 : 2.15) * this.baseScale * (style.boss ? 0.9 : 1);
     this.ui = new THREE.Group(); this.ui.position.y = top; this.root.add(this.ui);
     const spr = (color, w, h, y, z = 0) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ color, depthTest: false, transparent: true })); s.scale.set(w, h, 1); s.position.set(0, y, z); s.renderOrder = 20; this.ui.add(s); return s; };
-    this.barBg = spr(0x0b0820, 1.18, 0.2, 0); this.hpBar = spr(0x58e070, 1.08, 0.12, 0, 0.001); this.hpBar.renderOrder = 21; this.hpBar.center.set(0, 0.5); this.hpBar.position.x = -0.54;
-    this.manaBg = spr(0x0b0820, 1.18, 0.12, -0.17); this.manaBar = spr(0x4aa8ff, 1.08, 0.065, -0.17, 0.001); this.manaBar.renderOrder = 21; this.manaBar.center.set(0, 0.5); this.manaBar.position.x = -0.54;
-    this.starGroup = new THREE.Group(); this.starGroup.position.y = 0.3; this.ui.add(this.starGroup);
-    this.pips = new THREE.Group(); this.pips.position.set(-0.7, 0, 0); this.ui.add(this.pips);
+    const grounded = Boolean(this.terraceRows), track = grounded ? 1.12 : 1.18, barColor = grounded ? 0x271d32 : 0x0b0820;
+    const manaY = grounded ? -.12 : -.17;
+    this.barFillWidth = track - .10;
+    this.barBg = spr(barColor, track, grounded ? .13 : .20, 0);
+    this.hpBar = spr(0x58e070, this.barFillWidth, grounded ? .078 : .12, 0, .001);
+    this.hpBar.renderOrder = 21; this.hpBar.center.set(0, .5); this.hpBar.position.x = -this.barFillWidth / 2;
+    this.manaBg = spr(barColor, track, grounded ? .08 : .12, manaY);
+    this.manaBar = spr(0x4aa8ff, this.barFillWidth, grounded ? .045 : .065, manaY, .001);
+    this.manaBar.renderOrder = 21; this.manaBar.center.set(0, .5); this.manaBar.position.x = -this.barFillWidth / 2;
+    this.starGroup = new THREE.Group(); this.starGroup.position.y = grounded ? 0 : .3; this.ui.add(this.starGroup);
+    this.pips = new THREE.Group(); this.pips.position.set(grounded ? .70 : -.70, grounded ? .30 : 0, 0); this.ui.add(this.pips);
     if (!style.npc) {
       this.icons = new THREE.Group(); this.icons.position.set(0, 0.12, 0.62); this.root.add(this.icons);
       for (const [i, nm] of [[-1, def?.role], [1, def?.faction]]) {
@@ -99,6 +163,7 @@ export class UnitVisual {
   ownTex(src) { const t = src.clone(); t.userData = { anim: src.userData.anim }; t.colorSpace = src.colorSpace; t.needsUpdate = true; return t; }
   setSprite(src) {
     if (!this.sprMat || src === this.srcTex) return; this.srcTex = src;
+    this.spriteFrame = 0;
     let t = this.texCache.get(src); if (!t) { t = src.userData?.anim ? this.ownTex(src) : src; this.texCache.set(src, t); }
     this.sprMat.map = t; this.sprMat.needsUpdate = true;
   }
@@ -110,7 +175,53 @@ export class UnitVisual {
   tickSprite(time) {
     const t = this.sprMat?.map, a = t?.userData?.anim; if (!a) return;
     const f = Math.floor((time + this.phase * 0.7) * a.fps) % a.n, r = Math.floor(f / a.cols), c = f % a.cols;
+    this.spriteFrame = f;
     t.offset.set(c / a.cols, 1 - (r + 1) / a.rows);
+  }
+  updateSpriteAspect() {
+    const source = this.srcTex;
+    const anim = source.userData.anim;
+    const aspect = anim ? anim.cw / anim.ch : (source.image?.width || 1) / (source.image?.height || 1);
+    if (this.spriteAspect === aspect) return;
+    this.spriteAspect = aspect;
+    this.spr.scale.x = this.spriteH * aspect;
+  }
+
+  terraceScale() {
+    const [near, far] = this.terraceRows;
+    const depth = THREE.MathUtils.clamp((near - this.z) / (near - far), 0, 1);
+    const layout = this.srcTex.userData.layout;
+    const rest = layout?.rest ?? defaultSilhouette;
+    const height = Math.max(.24, rest.bottom - rest.top);
+    const authoredSize = !this.style.npc && terraceSizes[this.srcTex.userData.pokemon];
+    const width = Math.max(.15, rest.width * this.spriteAspect * this.spriteH);
+    const size = authoredSize ? Math.min(2.12 * authoredSize / (this.spriteH * height), 3.15 / width) : 1;
+    // The camera already diminishes distant units. This brings the total size change close to the study's 75%.
+    this.rowScale = 1 - .16 * depth;
+    return size * this.rowScale;
+  }
+
+  positionTerraceHud(dt, cameraUp) {
+    const layout = this.srcTex.userData.layout;
+    const loaded = !this.srcTex.userData.loading;
+    this.ui.visible = loaded && !this.shopArrival && !this.dead;
+    if (this.icons) this.icons.visible = this.ui.visible;
+    this.shadow.visible = loaded;
+    const frame = layout?.frames[this.spriteFrame ?? 0] ?? layout?.rest ?? defaultSilhouette;
+    this.spr.center.y = 1 - frame.bottom;
+    const height = (frame.bottom - frame.top) * this.spriteH * this.body.scale.y;
+    const width = (layout?.rest.width ?? frame.width) * this.spriteH * this.spriteAspect * this.body.scale.x;
+    this.pickRise = height * .47;
+    const barScale = Math.max(.84, this.rowScale * Math.min(1.13, .84 + height * .09));
+    this.ui.scale.setScalar(barScale);
+    const anchor = height + .15 + (this.manaBg.visible ? .11 * barScale : 0);
+    // Follow the silhouette as it rises, with a short settle when a frame is shorter.
+    this.hudRise = Math.max(anchor, THREE.MathUtils.lerp(this.hudRise ?? anchor, anchor, Math.min(1, dt * 18)));
+    this.ui.position.copy(cameraUp).multiplyScalar(this.hudRise);
+    this.ui.position.y += this.body.position.y;
+    const footprint = Math.max(.75, width * .84) / 1.7;
+    this.shadow.scale.set(footprint, footprint * .75, 1);
+    this.shadow.position.y = .038 + (this.shadowFloor == null ? 0 : this.shadowFloor - this.y);
   }
   buildChibi() {
     const st = this.style, B = this.body, skin = std(st.skin, { roughness: 0.6 }), hair = std(st.hair, { roughness: 0.55 }), outfit = std(st.outfit), trim = std(st.trim, { metalness: 0.3, roughness: 0.4 });
@@ -171,7 +282,10 @@ export class UnitVisual {
   setStars(n, animate = true) {
     if (n === this.stars) return; const up = this.stars && n > this.stars; this.stars = n;
     for (const c of [...this.starGroup.children]) this.starGroup.remove(c);
-    for (let i = 0; i < n; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTexture(), depthTest: false, transparent: true })); s.scale.set(0.3, 0.3, 1); s.position.set((i - (n - 1) / 2) * 0.28, 0, 0); s.renderOrder = 21; this.starGroup.add(s); }
+    const size = this.terraceRows ? .18 : .30;
+    const step = this.terraceRows ? .16 : .28;
+    if (this.terraceRows) this.starGroup.position.x = -.70 - (n - 1) * step / 2;
+    for (let i = 0; i < n; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTexture(), depthTest: false, transparent: true })); s.scale.set(size, size, 1); s.position.set((i - (n - 1) / 2) * step, 0, 0); s.renderOrder = 21; this.starGroup.add(s); }
     if (up && animate) { this.fx.burst(this.worldPos(1.2), 0xffe066, 26, 2.4); this.fx.ring(this.worldPos(0.1), 0xffe066, 2.4); this.pop = 0.0001; this.flash = 0.6; }
   }
   setItems(list) {
@@ -188,7 +302,7 @@ export class UnitVisual {
     this.anim = { kind, t: 0, dx, dz };
     if (kind === "cast") { this.fx.ring(this.worldPos(0.1), this.style.npc ? 0xff5a4a : new THREE.Color(this.style.trim).getHex(), 2.2); this.fx.burst(this.worldPos(1.3), new THREE.Color(this.style.trim).getHex(), 18, 2); }
   }
-  update(dt, t, camQuat) {
+  update(dt, t, cameraUp) {
     this.tickSprite(t);
     const k = Math.min(1, dt * 11), px = this.x, pz = this.z;
     this.x += (this.tx - this.x) * k; this.z += (this.tz - this.z) * k; this.y += (this.ty - this.y) * Math.min(1, dt * 14);
@@ -210,9 +324,13 @@ export class UnitVisual {
     // face the enemy a little, mostly the camera
     const want = moving ? Math.max(-0.7, Math.min(0.7, (this.tx - px) * 0.9)) : (a.kind === "atk" ? Math.max(-0.7, Math.min(0.7, a.dx * 0.5)) : 0);
     const goal = this.away ? Math.PI - want : want; this.yaw += (goal - this.yaw) * Math.min(1, dt * 8); this.body.rotation.y = this.yaw;
-    if (this.spr && !this._aspectOk && !this.sprite.userData?.anim && this.sprite.image && this.sprite.image.width) { this._aspectOk = true; this.spr.scale.set(this.spriteH * this.sprite.image.width / this.sprite.image.height, this.spriteH, 1); }
+    if (this.terraceRows) this.updateSpriteAspect();
+    else if (this.spr && !this._aspectOk && !this.sprite.userData?.anim && this.sprite.image && this.sprite.image.width) { this._aspectOk = true; this.spr.scale.set(this.spriteH * this.sprite.image.width / this.sprite.image.height, this.spriteH, 1); }
     if (this.spr) { const dir = Math.abs(this.tx - px) > 0.003 ? Math.sign(this.tx - px) : (a.kind === "atk" ? Math.sign(a.dx) : 0); if (dir) this.flipTo = dir; this.spr.scale.x = Math.abs(this.spr.scale.x) * (this.flipTo || 1) * (this.spriteFlip || 1); }
-    this.body.position.y = by; this.giant = (this.giant ?? 1) + ((this.giantT ?? 1) - (this.giant ?? 1)) * Math.min(1, dt * 5); { const k = this.baseScale * sc * this.giant; this.body.scale.set(k / Math.sqrt(sq), k * sq, k); }
+    this.body.position.y = by;
+    this.giant = (this.giant ?? 1) + ((this.giantT ?? 1) - (this.giant ?? 1)) * Math.min(1, dt * 5);
+    const size = this.baseScale * sc * this.giant * (this.terraceRows ? this.terraceScale() : 1);
+    this.body.scale.set(size / Math.sqrt(sq), size * sq, size);
     this.root.position.set(this.x + ox, this.y, this.z + oz);
     if (this.armR) this.armR.rotation.x = armSwing + (moving ? Math.sin(ph) * 0.5 : Math.sin(ph) * 0.04);
     if (this.armL) this.armL.rotation.x = moving ? -Math.sin(ph) * 0.5 : -Math.sin(ph) * 0.04;
@@ -230,11 +348,13 @@ export class UnitVisual {
       this.sprMat.color.setScalar(b); if (T > 1.7) { this.evo = null; this.sprMat.color.setScalar(1); }
     }
     // ui
-    this.hpBar.scale.x = Math.max(0.001, 1.08 * this.hp); this.hpBar.material.color.set(this.hp > 0.5 ? 0x58e070 : this.hp > 0.25 ? 0xe8c84a : 0xff5a4a);
-    this.manaBar.scale.x = Math.max(0.001, 1.08 * this.mana);
+    if (this.terraceRows) this.positionTerraceHud(dt, cameraUp);
+    const colors = this.terraceRows ? terraceHealth : classicHealth;
+    this.hpBar.scale.x = Math.max(.001, this.barFillWidth * this.hp);
+    this.hpBar.material.color.set(colors[this.hp > .5 ? 0 : this.hp > .25 ? 1 : 2]);
+    this.manaBar.scale.x = Math.max(.001, this.barFillWidth * this.mana);
     this.ring.material.opacity += ((this.selected ? 0.95 : 0) - this.ring.material.opacity) * Math.min(1, dt * 12);
     if (this.selected) this.ring.scale.setScalar(1 + Math.sin(performance.now() / 260) * 0.05);
-    void camQuat;
   }
   dispose() { this.root.parent && this.root.parent.remove(this.root); }
 }

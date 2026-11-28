@@ -1,5 +1,5 @@
 // PokéTactix client: menu, lobby, 3D battle screen (Three.js), mockup-style HUD, drag & drop, combat replay.
-import { Scene3D } from "./scene.js?v=2";
+import { Scene3D } from "./scene.js?v=3";
 import { initGallery, openGallery } from "./gallery.js";
 import { Audio2 } from "./audio.js";
 import { portrait, iconSvg, loadArtManifest, artPath } from "./art.js";

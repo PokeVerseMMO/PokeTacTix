@@ -2,10 +2,11 @@
 import * as THREE from "./vendor/three.module.min.js";
 import { buildArena, boardXZ, benchXZ, BENCH_TOP, COLS, ROWS, BENCH, R } from "./arena.js";
 import { buildVerdantTerrace, frameTerrace, loadTerraceArt, terraceTarget } from "./verdant-terrace.js";
-import { UnitVisual, Effects, uiTex } from "./units.js";
+import { UnitVisual, Effects, uiTex, measureSprite } from "./units.js?v=2";
 import { styleOf, artPath, ART } from "./art.js";
 import { GLTFLoader } from "./vendor/GLTFLoader.js";
 const TRAINER_LOADER = new GLTFLoader(), MOTION_CACHE = new Map();
+const TERRACE_ROWS = [boardXZ(0, 0).z, boardXZ(0, ROWS - 1).z];
 
 function benchMarkTexture(engraving) {
   const canvas = document.createElement("canvas");
@@ -79,6 +80,7 @@ export class Scene3D {
     this.benchXZ = this.arena.benchXZ || benchXZ;
     this.cameraTarget = terraceArt ? terraceTarget : new THREE.Vector3(0.2, 0, 1.0);
     this.useTerraceCamera = !!terraceArt;
+    this.cameraUp = new THREE.Vector3();
     this.fx = new Effects(this.scene);
     this.units = new Map(); this.clock = new THREE.Clock(); this.t = 0;
     this.hover = null; this.dragging = false; this.showGrid = true; this.nums = []; this.numCursor = 0;
@@ -167,7 +169,9 @@ export class Scene3D {
       seen.add(u.key);
       let v = this.units.get(u.key);
       if (!v) {
-        v = new UnitVisual(u.key, u.id, u.def, styleOf(u.id, u.def, u.fcolor), this.fx, this.spriteFor(u.art ?? u.id));
+        const terrace = this.useTerraceCamera && !u.key.startsWith("m") ? TERRACE_ROWS : null;
+        const sprite = this.spriteFor(u.art ?? u.id, !!u.mine);
+        v = new UnitVisual(u.key, u.id, u.def, styleOf(u.id, u.def, u.fcolor), this.fx, sprite, terrace);
         if (u.opponentReserve) v.root.scale.setScalar(this.arena.opponentReserveScale ?? 1);
         this.units.set(u.key, v);
         this.scene.add(v.root);
@@ -186,6 +190,10 @@ export class Scene3D {
       v.stars = v.stars || 0; v.setStars(u.stars, !u.noUpgradeFx);
       const w = u.world || this.worldOf(u.cell, u.flip); v.place(w.x, w.z, w.y, !!u.instant);
       if (u.lift) v.ty = w.y + 1.0;
+      if (v.terraceRows) {
+        const overBench = Math.abs(w.z - this.benchXZ(0).z) < .65 && Math.abs(w.x - .6) < 8.1;
+        v.shadowFloor = u.lift ? w.y : u.world && u.instant ? (overBench ? BENCH_TOP : 0) : null;
+      }
       v.setBars(u.hp ?? 1, u.mana ?? 0, !!u.showMana); v.setItems(u.items || []); v.selected = !!u.selected;
       if (u.shopArrival || v.shopArrival) {
         v.shopArrival = Boolean(u.shopArrival);
@@ -202,15 +210,29 @@ export class Scene3D {
     this._sprites ??= new Map();
     if (ak) {
       if (this._sprites.has("a:" + ak)) return this._sprites.get("a:" + ak);
-      const t = new THREE.TextureLoader().load((ART.base || "") + "/art/anim/" + ak + ".png", (tex) => { tex.colorSpace = THREE.SRGBColorSpace; });
-      t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; t.userData.anim = A[ak];
+      const t = this.loadUnitSprite((ART.base || "") + "/art/anim/" + ak + ".png", id, A[ak]);
+      t.magFilter = THREE.NearestFilter; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
       t.repeat.set(1 / A[ak].cols, 1 / A[ak].rows); this._sprites.set("a:" + ak, t); return t;
     }
     const url = artPath("sprites", key) || artPath("sprites", id); if (!url) return null;
-    id = artPath("sprites", key) ? key : id;
-    if (this._sprites.has(id)) return this._sprites.get(id);
-    const t = new THREE.TextureLoader().load(url, (tex) => { tex.colorSpace = THREE.SRGBColorSpace; }); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; this._sprites.set(id, t);
+    const spriteKey = artPath("sprites", key) ? key : id;
+    if (this._sprites.has(spriteKey)) return this._sprites.get(spriteKey);
+    const t = this.loadUnitSprite(url, id);
+    t.anisotropy = 4; this._sprites.set(spriteKey, t);
     return t;
+  }
+  loadUnitSprite(url, id, anim) {
+    const texture = new THREE.TextureLoader().load(url, (loaded) => {
+      if (this.useTerraceCamera) loaded.userData.layout = measureSprite(loaded.image, anim);
+      loaded.userData.loading = false;
+    }, undefined, () => {
+      texture.userData.loading = false;
+    });
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.userData.loading = true;
+    texture.userData.pokemon = id;
+    if (anim) texture.userData.anim = anim;
+    return texture;
   }
   clearUnits() { for (const v of this.units.values()) v.dispose(); this.units.clear(); }
   fxEvent(kind, key, tgKey, data = {}) {
@@ -309,7 +331,12 @@ export class Scene3D {
     const v3 = new THREE.Vector3();
     for (const v of this.units.values()) {
       if (!v.root.visible || v.dead) continue;
-      v3.set(v.x, v.y + 0.9 * v.baseScale * v.root.scale.y, v.z).project(this.camera);
+      if (v.pickRise !== undefined) {
+        v3.setFromMatrixPosition(v.spr.matrixWorld).addScaledVector(this.cameraUp, v.pickRise * v.root.scale.y);
+      } else {
+        v3.set(v.x, v.y + 0.9 * v.baseScale * v.root.scale.y, v.z);
+      }
+      v3.project(this.camera);
       const sx = r.left + (v3.x * 0.5 + 0.5) * r.width, sy = r.top + (-v3.y * 0.5 + 0.5) * r.height, d = Math.hypot(sx - cx, sy - cy);
       if (d < bd) { bd = d; best = v; }
     }
@@ -354,7 +381,8 @@ export class Scene3D {
     const elapsed = this.clock.getDelta();
     const dt = Math.min(0.05, elapsed); this.t += dt;
     this.arena.update(this.t, this.useTerraceCamera ? Math.min(elapsed, 1) : dt); this.fx.update(dt);
-    for (const v of this.units.values()) v.update(dt, this.t);
+    if (this.useTerraceCamera) this.cameraUp.set(0, 1, 0).applyQuaternion(this.camera.quaternion);
+    for (const v of this.units.values()) v.update(dt, this.t, this.cameraUp);
     if (this.commanderVisual) this.commanderVisual.update(dt, this.t);
     if (this.me) { // local trainer: walk with the joystick/keys, jump with space
       const w = this.me, V = this.meV, inp = this.input || { ix: 0, iz: 0, jump: false }, len = Math.hypot(inp.ix, inp.iz), sp = 4.4;
