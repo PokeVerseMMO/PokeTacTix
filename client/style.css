@@ -98,9 +98,6 @@ img{-webkit-user-drag:none;pointer-events:none}
 .ric{width:38px;height:38px;flex:none;background-size:contain;background-repeat:no-repeat;background-position:center}
 .syn .nm{font-size:15px;font-weight:800;line-height:1.1;text-shadow:0 1px 2px #000}.syn .cnt{margin-left:auto;font-size:20px;font-weight:800;color:#fff;text-shadow:0 2px 2px #000}
 .syn .th{font-size:13px;color:#8b98c8;letter-spacing:.5px;font-weight:600}.syn .th i{font-style:normal;margin-right:5px}.syn .th i.on{color:#ffd678;font-weight:800}.syn .th i.cur{color:#fff;font-weight:800;text-decoration:underline}
-#bag{position:absolute;left:10px;bottom:104px;display:flex;flex-wrap:wrap;gap:4px;width:300px}
-#bag .item{padding:3px 9px;border-radius:10px;border:2px solid #888;font-size:12px;cursor:pointer;background:rgba(12,18,40,.85);color:#fff}
-#bag .item.sel{outline:2px solid var(--gold);background:#3a3a6a}#bag .hint{font-size:11px;color:#dfe8ff;text-shadow:0 1px 3px #000}
 /* standings */
 #standings2{position:absolute;right:10px;top:74px;width:246px;display:flex;flex-direction:column;gap:2px}
 .pl{height:44px;display:grid;grid-template-columns:40px 1fr auto;grid-template-rows:1fr 8px;column-gap:8px;row-gap:1px;padding:3px 16px 4px 8px;align-items:center;font-size:14px;background:url(art/ui/hud/standing.png) 0 0/100% 100% no-repeat;transition:transform .35s,opacity .35s,filter .35s;position:relative}
@@ -248,7 +245,6 @@ body.inspecting #tip{display:none!important}
 .lm-stage canvas{height:450px;width:350px}
 
 /* item icons (pokesprite 32px pixel art) */
-#bag .item{display:inline-flex;align-items:center;gap:4px}#bag .item img{width:28px;height:28px;image-rendering:pixelated}
 .slot.fill img{width:24px;height:24px;image-rendering:pixelated;display:block;margin:auto}
 
 /* click-to-place: the inspector must not swallow clicks meant for the hexes behind it */
@@ -268,20 +264,6 @@ body.inspecting #tip{display:none!important}
 #dmgPanel .tabs{display:flex;border-top:1px solid #4a6275;margin-top:4px}
 #dmgPanel .tabs button{flex:1;border:0;border-radius:0;background:rgba(0,0,0,.18);padding:10px 0;font-size:20px;cursor:pointer;color:#cfe0ea}
 #dmgPanel .tabs button.on{background:#c9e3f1;color:#23323c}
-#bagPanel{width:640px;display:grid;grid-template-columns:1fr}
-#bagPanel .cols{display:grid;grid-template-columns:1fr 1fr}
-#bagPanel .col h4{font-size:16px}#bagPanel .col+.col{border-left:1px solid #4a6275}
-#bagPanel .list{max-height:430px;overflow:auto}
-#bagPanel .hr{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
-#bagPanel .hr .pt{width:46px;height:46px;border-radius:50%;border:2px solid #8fb6c9;background:#1b2a36 center/cover;flex:none}
-#bagPanel .hr .nm{width:74px;font-size:14px;font-weight:600;flex:none;line-height:1.1}
-#bagPanel .hr .sl{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:20px;color:#7d93a3;cursor:pointer;flex:none;padding:0}
-#bagPanel .hr .sl.fill{border-color:#f0c660;background:rgba(240,198,96,.12)}#bagPanel .hr .sl img{width:26px;height:26px;image-rendering:pixelated}
-#bagPanel .hr .sl:hover{filter:brightness(1.4)}
-#bagPanel .empty{padding:30px 12px;color:#8aa0af;text-align:center;font-size:14px}
-#bagPanel .pick{padding:8px 12px;border-top:1px solid #4a6275;background:rgba(0,0,0,.22);display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:50px;font-size:13px;color:#cfe0ea}
-#bagPanel .pick button{display:flex;align-items:center;gap:5px;padding:3px 8px;font-size:12px;border-radius:8px;background:rgba(12,18,40,.85);border:2px solid #888;color:#fff;cursor:pointer}#bagPanel .pick button img{width:24px;height:24px;image-rendering:pixelated}
-#bagPanel .pick button.sel{outline:2px solid var(--gold)}
 
 #roundStrip{position:absolute;left:50%;top:6px;transform:translateX(-50%);width:440px;height:130px;pointer-events:none}
 #rIcons{position:absolute;left:0;right:0;top:100px;display:flex;justify-content:center;gap:5px}
@@ -309,7 +291,6 @@ body.inspecting #tip{display:none!important}
 #blessPanel .opt .ic{width:58px;height:58px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px #ff9de2,0 0 14px #ff9de2;background:#0b1230}#blessPanel .opt .ic .emb{width:46px;height:46px}
 #blessPanel .opt b{font-size:18px;display:block}#blessPanel .opt span{font-size:12.5px;color:#d5def8;line-height:1.25;display:block}
 #inspector .bless{margin:6px 0 0;font-size:13px;color:#ffd8f4;display:flex;align-items:center;gap:6px}#inspector .bless .emb{width:22px;height:22px}
-#bagPanel .hr.blessed .pt{box-shadow:0 0 0 2px #ff9de2,0 0 8px #ff9de2}#bagPanel .hr.xfer{outline:2px solid #ff9de2}#bagPanel .hr{cursor:pointer}
 body.modalpick #synergies,body.modalpick #synDetail,body.modalpick #dmgPanel,body.modalpick #bagPanel{visibility:hidden}
 
 body.supplying #synergies,body.supplying #synDetail,body.supplying #dmgPanel,body.supplying #bagPanel,body.supplying #inspector{visibility:hidden}

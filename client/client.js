@@ -8,15 +8,16 @@ import { createCardDraw } from "./card-draw.js";
 import { createShopShowcase } from "./shop-showcase.js?v=2";
 import { createDuelBanners } from "./duel-banners.js";
 import { createFinalsBroadcast } from "./finals-broadcast.js";
+import { createLoadoutBench, heldItemIndices } from "./loadout-bench.js";
 const $ = (id) => document.getElementById(id);
 const duelCue = $("duelCue");
 const duelBanners = createDuelBanners(duelCue, $("duelAnnouncement"));
 const finalsBroadcast = createFinalsBroadcast($("over"));
 const COMBAT_LEAD_IN = .9;
 const qs = new URLSearchParams(location.search);
-let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, xferFrom = null, lastCombat = null, dmgMode = "dealt", bagPick = null;
+let avatars = new Map(), lastViewed = null, lastAvatarSent = 0, walkKeys = { l: 0, r: 0, u: 0, d: 0, jump: false }, joy = { ix: 0, iz: 0 }, scouting = null, lastCombat = null, dmgMode = "dealt";
 let DATA = null, ws = null, state = null, combat = null, spec = null, watchKey = "", scene = null, lastMode = "solo";
-let timerBase = null, selItem = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, hp: {} };
+let timerBase = null, selUid = null, drag = null, ptr = { x: 0, y: 0 }, hoverTip = null, phaseAt = 0, lastRound = -1, prev = { gold: null, hp: {} };
 const TIER_COLORS = ["#9aa3b8", "#59c27a", "#4aa3ff", "#b36bff", "#ffb23e"];
 const RARITY_COLORS = { Rare: "#4aa3ff", Epic: "#b36bff", Legendary: "#ffb23e" };
 const hexNum = (s) => parseInt(s.slice(1), 16);
@@ -42,6 +43,11 @@ const show = (id) => {
     cardDraw.update(null);
     shopShowcase.clear();
     duelBanners.clear();
+    const tool = document.querySelector('[data-tool="equipment"]');
+    tool.classList.remove("on");
+    tool.setAttribute("aria-expanded", "false");
+    $("bagPanel").classList.add("hidden");
+    loadoutBench.clear();
   }
   if (id === "menu") Audio2.music("title");
   else setCommanderPicker(false);
@@ -204,6 +210,7 @@ function onMessage(m) {
     setCommanderVisual(m.you.commander);
     refreshHud();
     cardDraw.update(m);
+    loadoutBench.update(m);
     if (m.phase === "Combat" && combat?.done && scouting === null && !duelCue.hidden) duelBanners.update(duelMatchup(combat.m));
     if (m.phase === "Preparation" && m.round !== lastRound) { lastRound = m.round; banner(`Round ${m.round}`, m.npc ? (m.npc.boss ? `BOSS · ${m.npc.name}` : "Creep encounter") : "Preparation phase"); }
   } else if (m.t === "avatars") {
@@ -238,6 +245,23 @@ const cardDraw = createCardDraw($("cardPanel"), (action) => {
   send(action);
   return true;
 });
+const loadoutBench = createLoadoutBench($("bagPanel"), {
+  item: (key) => DATA?.itemBy[key],
+  def: defOf,
+  name: nameOf,
+  pokemon: (u) => artPath("sprites", formId(u)) || portraitOf(u.id, u),
+  isLocal: () => scouting === null && !cardDraw.active && !document.body.classList.contains("modalpick") && $("settingsPanel").classList.contains("hidden"),
+  send(action) {
+    if (ws?.readyState !== WebSocket.OPEN) return false;
+    send(action);
+    return true;
+  },
+  close() {
+    const tool = document.querySelector('[data-tool="equipment"]');
+    if (tool.classList.contains("on")) tool.click();
+    tool.focus();
+  },
+});
 $("reroll").onclick = () => { const r = $("reroll"); r.classList.remove("spin"); void r.offsetWidth; r.classList.add("spin"); send({ a: "reroll" }); };
 $("xp").onclick = () => send({ a: "xp" });
 $("lock").onclick = () => send({ a: "lock" });
@@ -257,7 +281,13 @@ addEventListener("keydown", (e) => {
       return;
     }
   }
-  if (e.key === "Escape") { selUid = null; selItem = null; renderInspector(); }
+  if (e.key === "Escape" && !$("bagPanel").classList.contains("hidden")) {
+    const tool = document.querySelector('[data-tool="equipment"]');
+    tool.click();
+    tool.focus();
+    return;
+  }
+  if (e.key === "Escape") { selUid = null; renderInspector(); }
 });
 
 // ---------------- HUD ----------------
@@ -349,22 +379,9 @@ function refreshHud() {
     st.appendChild(el);
   }
   { const c = $("xpCost"); if (c) { c.textContent = DATA.rules.xpBuyGold ?? 1; $("xp").title = `Buy ${DATA.rules.xpBuyAmount ?? 1} XP (F)`; } }
-  renderBag(); renderInspector();
+  renderInspector();
   if (synOpen) renderSynDetail();
   $("msg").textContent = state.message || (state.phase === "Preparation" && y.reward ? y.reward : "") || (y.eliminated ? "You were eliminated — waiting for the match to end." : "");
-}
-function renderBag() {
-  const y = state.you, bag = $("bag"); bag.innerHTML = "";
-  if (selItem && !y.items.includes(selItem)) selItem = null;
-  if (!y.items.length) { bag.innerHTML = '<span class="hint">Equipment drops from creep and boss rounds.</span>'; return; }
-  for (const key of y.items) {
-    const it = DATA.itemBy[key]; if (!it) continue;
-    const el = document.createElement("span");
-    el.className = "item" + (key === selItem ? " sel" : ""); el.style.borderColor = RARITY_COLORS[it.rarity] || "#888"; el.innerHTML = (it.icon ? `<img src="${it.icon}" alt="">` : "") + `<span>${it.id}</span>`;
-    el.onclick = () => { if (it.stone) { const su = state.you.units.find((x) => x.uid === selUid); if (su && defOf(su.id).stoneEvolutions?.[key]) send({ a: "evolve", uid: su.uid, stone: key }); return; } selItem = selItem === key ? null : key; renderBag(); };
-    el.onmouseenter = () => (hoverTip = { text: `<b style="color:${RARITY_COLORS[it.rarity]}">${it.id}</b> · ${it.rarity}<br>${it.text}<br><i>${it.stone ? "Select an Eevee, then click this stone." : "Click, then click a fighter."}</i>` }); el.onmouseleave = () => (hoverTip = null);
-    bag.appendChild(el);
-  }
 }
 function renderInspector() {
   const box = $("inspector"), u = state && selUid != null ? state.you.units.find((x) => x.uid === selUid) : null;
@@ -376,13 +393,13 @@ function renderInspector() {
   box.classList.remove("closed"); document.body.classList.add("inspecting"); hoverTip = null;
   box.style.setProperty("--rc", rc); box.style.setProperty("--fc", factionColor(d.faction));
   const stat = (img, lab, v) => `<span title="${lab}"><img src="${UI}icons/${img}.png" alt="${lab}"><b>${v}</b></span>`;
-  const slots = [0, 1, 2].map((i) => { const k = u.items[i], it = k && DATA.itemBy[k]; return it ? `<div class="slot fill" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}" title="${it.id}: ${it.text} (click to unequip)" data-i="${i}">${it.icon ? `<img src="${it.icon}" alt="${it.id}">` : it.id.slice(0, 6)}</div>` : `<div class="slot" title="Empty equipment slot"></div>`; }).join("");
+  const slots = heldItemIndices(u).map((i) => { const k = u.items[i], it = k && DATA.itemBy[k]; return it ? `<div class="slot fill" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}" title="${it.id}: ${it.text} (click to unequip)" data-i="${i}">${it.icon ? `<img src="${it.icon}" alt="${it.id}">` : it.id.slice(0, 6)}</div>` : `<div class="slot" title="Empty equipment slot"></div>`; }).join("");
   box.innerHTML = `<button class="x" title="Close">✕</button><div class="top"><div class="pt" style="background-image:url(${artPath("portraits", formId(u)) || artPath("portraits", u.id) || portrait(u.id, d, fRGB(d.faction))})"><div class="st">${"★".repeat(u.stars)}</div></div>
   <div><h4>${formId(u) === u.id ? d.name : prettyName(formId(u))}<small>${TIER_NAME[d.tier - 1]} · Tier ${d.tier}</small></h4>
   <div class="tags">${(d.types || [d.faction]).map((t) => `<span>${emb(t)}${t}</span>`).join("")}<span>${ric(d.role)}${roleName(d.role)}</span></div>
   <div class="stats">${stat("health", "Health", Math.round(d.health * S))}${stat("attack", "Attack", Math.round(d.attack * S))}${stat("defense", "Armor", d.armor)}${stat("mr", "Magic resist", d.mr)}${stat("mp", "Mana (start / max)", d.maxMana ? `${d.startMana || 0}/${d.maxMana}` : "–")}${stat("attack_speed", "Attack speed", d.speed.toFixed(2))}${stat("range", "Range", d.range)}</div></div></div>
   <div class="abil">${abilityImg(u.id, d, "ico")}<div><b>${d.ability}</b><br>${d.description}</div></div>
-  ${d.stoneEvolutions ? `<div class="evo">${Object.entries(d.stoneEvolutions).filter(([k]) => y.items.includes(k)).map(([k, t]) => `<button class="wbtn" data-stone="${k}"><span>${DATA.itemBy[k]?.id || k} → ${prettyName(t)}</span></button>`).join("") || '<i>Eevee evolves with an Evolution Stone (dropped by creep/boss wins).</i>'}</div>` : ""}
+  ${d.stoneEvolutions ? `<div class="evo">${Object.entries(d.stoneEvolutions).filter(([k]) => state.you.items.includes(k)).map(([k, t]) => `<button class="wbtn" data-stone="${k}"><span>${DATA.itemBy[k]?.id || k} → ${prettyName(t)}</span></button>`).join("") || '<i>Eevee evolves with an Evolution Stone (dropped by creep/boss wins).</i>'}</div>` : ""}
   ${u.blessing ? `<div class="bless">✦ Blessing: ${emb(u.blessing)} <b>+1 ${u.blessing}</b></div>` : ""}
   <div class="foot"><div class="slots">${slots}</div><button class="wbtn red sell"><span>Sell</span><em>${COIN}${sellValue(d, u)}</em></button></div>`;
   box.querySelector(".x").onclick = () => { selUid = null; renderInspector(); };
@@ -653,7 +670,7 @@ function loop(now) {
     shop: inMatch && scouting === null && !cardDraw.active ? shopShowcase.marks : null
   });
   scene.frame();
-  if (inMatch) { renderDmg(); renderBagPanel(); renderRoundStrip(); renderPick(); renderBless(); renderSupply(); renderCardStack(); renderCmdSkill(); renderScout(); }
+  if (inMatch) { renderDmg(); renderRoundStrip(); renderPick(); renderBless(); renderSupply(); renderCardStack(); renderCmdSkill(); renderScout(); }
   if (inMatch) {
     renderPhaseClock(now);
     $("sellZone").classList.toggle("hidden", !dragging);
@@ -679,8 +696,8 @@ view.addEventListener("pointerdown", (e) => {
     if (uid == null) { cmdTarget = null; refreshCmd(); }
     return;
   }
-  if (uid != null && selItem) { send({ a: "equip", uid, item: selItem }); selItem = null; return; }
-  if (uid != null && selUid != null && uid !== selUid && !selItem) { // click-to-place: a selected fighter swaps with the fighter you click on the board
+  if (uid != null && loadoutBench.equipFromBoard(uid)) return;
+  if (uid != null && selUid != null && uid !== selUid) { // click-to-place: a selected fighter swaps with the fighter you click on the board
     const other = state.you.units.find((x) => x.uid === uid);
     if (other && other.col !== null) { send({ a: "move", uid: selUid, col: other.col, row: other.row }); selUid = null; renderInspector(); return; }
   }
@@ -954,30 +971,6 @@ function renderDmg() {
     + `<div class="tabs">${[["dealt", "⚔"], ["taken", "🛡"], ["heal", "✚"]].map(([m, g]) => `<button data-m="${m}" class="${m === dmgMode ? "on" : ""}" title="${titles[m]}">${g}</button>`).join("")}</div>`;
   for (const b of el.querySelectorAll(".tabs button")) b.onclick = () => { dmgMode = b.dataset.m; el._sig = null; renderDmg(); };
 }
-function renderBagPanel() {
-  const el = $("bagPanel"); if (el.classList.contains("hidden") || !state) return;
-  const y = state.you, prep = state.phase === "Preparation" && !y.eliminated;
-  const all = y.items.filter((k) => DATA.itemBy[k]), items = all.filter((k) => !DATA.itemBy[k].stone && !DATA.itemBy[k].transfer), stones = [...new Set(all.filter((k) => DATA.itemBy[k].stone))];
-  const sig = JSON.stringify([y.units.map((u) => [u.uid, u.col === null, u.stars, u.items, u.blessing]), y.items.includes("blessing_transfer"), xferFrom, items, stones, bagPick, selItem, selUid, prep]);
-  if (el._sig === sig) return; el._sig = sig;
-  const row = (u) => { const d = defOf(u.id); const slots = [0, 1, 2].map((i) => { const k = u.items[i], it = k && DATA.itemBy[k]; return it ? `<button class="sl fill" data-u="${u.uid}" data-i="${i}" title="${it.id}: ${it.text} (click to unequip)">${it.icon ? `<img src="${it.icon}" alt="">` : it.id.slice(0, 2)}</button>` : `<button class="sl" data-u="${u.uid}" data-add="1" title="Equip an item">+</button>`; }).join("");
-    return `<div class="hr${u.blessing ? " blessed" : ""}${xferFrom === u.uid ? " xfer" : ""}" data-u="${u.uid}"><div class="pt" style="background-image:url(${portraitOf(u.id, u)})"></div><div class="nm" style="color:${u.stars > 1 ? "#7be0a0" : "#fff"}">${nameOf(u)}<br><small>${"★".repeat(u.stars)}${u.blessing ? ` · ✦${u.blessing}` : ""}</small></div>${slots}</div>`; };
-  const dep = y.units.filter((u) => u.col !== null), und = y.units.filter((u) => u.col === null);
-  const pick = bagPick != null || selItem
-    ? `<div class="pick"><span>${items.length ? "Choose an item:" : "No equipment in your bag."}</span>${[...new Set(items)].map((k) => { const it = DATA.itemBy[k], n = items.filter((x) => x === k).length; return `<button data-k="${k}" class="${k === selItem ? "sel" : ""}" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}${it.id}${n > 1 ? " ×" + n : ""}</button>`; }).join("")}</div>`
-    : `<div class="pick"><span>${items.length ? "Click a + slot, or pick an item below then a slot:" : "Equipment drops from creep and boss rounds."}</span>${[...new Set(items)].map((k) => { const it = DATA.itemBy[k]; return `<button data-k="${k}" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}${it.id}</button>`; }).join("")}</div>`;
-  const hasXfer = y.items.includes("blessing_transfer");
-  const xferHtml = hasXfer ? `<div class="pick"><span>Blessing Transfer: ${xferFrom != null ? "now click the Pokémon to receive it" : "select a blessed Pokémon first, then press"}</span><button data-xfer="1" class="${xferFrom != null ? "sel" : ""}">✦ Transfer Blessing</button></div>` : "";
-  const stoneHtml = stones.length ? `<div class="pick"><span>Stones (select an Eevee, then click):</span>${stones.map((k) => { const it = DATA.itemBy[k]; return `<button data-stone="${k}" style="border-color:${RARITY_COLORS[it.rarity] || "#888"}">${it.icon ? `<img src="${it.icon}" alt="">` : ""}${it.id}</button>`; }).join("")}</div>` : "";
-  el.innerHTML = `<div class="cols"><div class="col"><h4>Deployed Heroes</h4><div class="list">${dep.length ? dep.map(row).join("") : `<div class="empty">No Pokémon on the field</div>`}</div></div><div class="col"><h4>Undeployed Heroes</h4><div class="list">${und.length ? und.map(row).join("") : `<div class="empty">Bench is empty</div>`}</div></div></div>${pick}${stoneHtml}${xferHtml}`;
-  for (const b of el.querySelectorAll(".sl[data-add]")) b.onclick = () => { if (!prep) return; const uid = Number(b.dataset.u); if (selItem) { send({ a: "equip", uid, item: selItem }); selItem = null; bagPick = null; } else { bagPick = bagPick === uid ? null : uid; } el._sig = null; renderBagPanel(); renderBag(); };
-  for (const b of el.querySelectorAll(".sl.fill")) b.onclick = () => { if (prep) send({ a: "unequip", uid: Number(b.dataset.u), index: Number(b.dataset.i) }); };
-  for (const b of el.querySelectorAll("[data-xfer]")) b.onclick = () => { const su = y.units.find((x) => x.uid === selUid); if (xferFrom != null) xferFrom = null; else if (su && su.blessing) xferFrom = su.uid; el._sig = null; renderBagPanel(); };
-  for (const r of el.querySelectorAll(".hr")) r.onclick = (e) => { if (e.target.closest(".sl")) return; const uid = Number(r.dataset.u); if (xferFrom != null && uid !== xferFrom) { send({ a: "transfer", from: xferFrom, to: uid }); xferFrom = null; } else { selUid = uid; renderInspector(); } el._sig = null; };
-  for (const b of el.querySelectorAll("[data-stone]")) b.onclick = () => { const su = y.units.find((x) => x.uid === selUid); if (su && defOf(su.id).stoneEvolutions?.[b.dataset.stone]) send({ a: "evolve", uid: su.uid, stone: b.dataset.stone }); };
-  for (const b of el.querySelectorAll(".pick button[data-k]")) b.onclick = () => { if (!prep) return; const k = b.dataset.k; if (bagPick != null) { send({ a: "equip", uid: bagPick, item: k }); bagPick = null; selItem = null; } else selItem = selItem === k ? null : k; el._sig = null; renderBagPanel(); renderBag(); };
-}
-
 // ---- left toolbar ----
 { const tool = (n) => document.querySelector(`[data-tool="${n}"]`), toggle = (n, el, off) => { const on = tool(n).classList.toggle("on"); el.classList.toggle(off, !on); };
   const TABS = { synergies: ["synergies", "off"], damage: ["dmgPanel", "hidden"], equipment: ["bagPanel", "hidden"] }; // one left panel at a time
@@ -993,7 +986,9 @@ function renderBagPanel() {
       }
     }
     if (n === "damage") { $("dmgPanel")._sig = null; renderDmg(); }
-    if (n === "equipment") { $("bagPanel")._sig = null; renderBagPanel(); }
+    const equipmentOpen = tool("equipment").classList.contains("on");
+    tool("equipment").setAttribute("aria-expanded", String(equipmentOpen));
+    loadoutBench.setOpen(equipmentOpen, selUid);
   };
   $("cardStack").onclick = () => { cardsOpen = !cardsOpen; cmdOpen = false; $("cardStack")._sig = null; $("cmdSkill")._sig = null; renderCardStack(); renderCmdSkill(); };
   $("cmdSkill").onclick = () => { cmdOpen = !cmdOpen; cardsOpen = false; $("cmdSkill")._sig = null; $("cardStack")._sig = null; renderCmdSkill(); renderCardStack(); };

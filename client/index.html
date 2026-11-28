@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>PokéTactix</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=4"><link rel="stylesheet" href="interface.css?v=9"><link rel="stylesheet" href="finals-broadcast.css"></head>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=5"><link rel="stylesheet" href="interface.css?v=10"><link rel="stylesheet" href="finals-broadcast.css"><link rel="stylesheet" href="loadout-bench.css"></head>
 <body>
 <canvas id="view"></canvas>
 <div id="numbers"></div>
@@ -70,7 +70,7 @@
     <div id="toolbar">
       <button data-tool="synergies" class="tb-btn on" title="Synergies" aria-controls="synergies" aria-expanded="true"><img src="art/ui/toolbar/synergies.png" alt="Synergies"></button>
       <button data-tool="damage" class="tb-btn" title="Damage"><img src="art/ui/toolbar/damage.png" alt="Damage"></button>
-      <button data-tool="equipment" class="tb-btn" title="Bag: equip items"><img src="art/ui/toolbar/equipment.png" alt="Bag"></button>
+      <button data-tool="equipment" class="tb-btn" title="Equipment" aria-controls="bagPanel" aria-expanded="false"><img src="art/ui/toolbar/equipment.png" alt="Equipment"></button>
       <button data-tool="emotes" class="tb-btn" title="Emotes"><img src="art/ui/toolbar/emotes.png" alt="Emotes"></button>
       <button data-tool="statistics" class="tb-btn on" title="Standings"><img src="art/ui/toolbar/statistics.png" alt="Standings"></button>
       <div id="emoteMenu" class="hidden"><button>😀</button><button>👍</button><button>😢</button><button>🔥</button><button>❤️</button></div>
@@ -104,8 +104,41 @@
       </template>
     </div>
     <button id="cardStack" title="Pokémon Cards"></button><div id="cardDetails" class="hidden"></div><button id="cmdSkill" title="Commander skill"></button><div id="cmdDetails" class="hidden"></div><div id="joy"><i id="joyKnob"></i></div><button id="jumpBtn" title="Jump (Space)">⤒</button><div id="scoutBar" class="hidden"></div><div id="scoutPanel" class="hidden"></div><div id="dmgPanel" class="lpanel hidden"></div>
-    <div id="bagPanel" class="lpanel hidden"></div>
-    <div id="bag" class="hidden"></div>
+    <section id="bagPanel" class="loadout hidden" aria-labelledby="loadoutTitle">
+      <header class="loadout-header">
+        <div><p data-loadout-phase></p><h2 id="loadoutTitle">Equipment</h2></div>
+        <button type="button" class="loadout-close" data-loadout-action="close" aria-label="Close equipment">✕</button>
+      </header>
+      <div class="loadout-scroll">
+        <section class="loadout-roster" aria-label="Pokémon loadouts">
+          <div class="loadout-section-title"><h3>Pokémon loadouts</h3><span>3 held slots each</span></div>
+          <div class="loadout-units"></div>
+          <p class="loadout-empty" data-loadout-no-units hidden>No Pokémon owned yet.</p>
+        </section>
+        <div class="loadout-workspace">
+          <section class="loadout-bag" aria-label="Item bag">
+            <div class="loadout-section-title"><h3>Item bag</h3><span data-loadout-count></span></div>
+            <div class="loadout-items"></div>
+            <p class="loadout-empty" data-loadout-empty hidden>Equipment drops from wild encounters and bosses.</p>
+          </section>
+          <section class="loadout-inspector" aria-label="Item inspection">
+            <p class="loadout-empty" data-loadout-no-item>Select a bag item or inspect a filled slot.</p>
+            <div class="loadout-inspection" hidden>
+              <div class="loadout-display" aria-hidden="true"></div>
+              <div class="loadout-copy">
+                <span data-loadout-rarity></span>
+                <h3 data-loadout-name></h3>
+                <p data-loadout-effect></p>
+                <p data-loadout-fit></p>
+              </div>
+              <div class="loadout-inspector-footer"><span data-loadout-source></span><button type="button" class="loadout-apply" data-loadout-action="apply"></button></div>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div class="loadout-status" role="status" aria-live="polite"></div>
+      <div class="loadout-effects" aria-hidden="true"></div>
+    </section>
     <section id="standings2" aria-labelledby="standingsHeading"><h2 id="standingsHeading">Standings</h2><div id="standingRows"></div></section>
     <div id="inspector" class="closed"></div>
     <div id="sellZone" class="hidden">Drop here to sell</div>
@@ -194,6 +227,6 @@
     <span class="draw-copy"><strong class="draw-name"></strong><span class="draw-effect"></span></span>
   </span>
 </template>
-<script type="module" src="client.js?v=12"></script>
+<script type="module" src="client.js?v=13"></script>
 <script type="module" src="blossom-background.js?v=3"></script>
 </body></html>

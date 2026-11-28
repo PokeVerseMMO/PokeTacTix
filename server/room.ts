@@ -21,6 +21,7 @@ const CREEP_SETS: string[][] = TRANSFORM.pve.creepSets;
 
 interface DuelSide { seat: number; name: string; commander: string; hp: number; loss: number; ghost?: boolean }
 interface Fight { you: 0 | 1; result: CombatResult; vs: string; duel?: [DuelSide, DuelSide] }
+interface ActionReceipt { shopPurchase?: { slot: number; ok: boolean }; equipmentAction?: { requestId: number; ok: boolean } }
 
 function duelDamage(base: number, result: CombatResult, side: 0 | 1, ghost: boolean): number | null {
   if (result.winner === side || (ghost && side === 1)) return null;
@@ -150,8 +151,10 @@ export class Room {
       this.supplyTake(p, e); S.idx++; this.supplyTurn(); return;
     }
     const res = act(m, p, action);
-    const shopPurchase = action.a === "buy" ? { slot: action.slot, ok: res.ok } : undefined;
-    this.push(seat, res.ok ? "" : res.error, shopPurchase);
+    const receipt: ActionReceipt = {};
+    if (action.a === "buy") receipt.shopPurchase = { slot: action.slot, ok: res.ok };
+    if ("requestId" in action && Number.isSafeInteger(action.requestId)) receipt.equipmentAction = { requestId: action.requestId!, ok: res.ok };
+    this.push(seat, res.ok ? "" : res.error, receipt);
     if (res.ok && action.a === "ready") this.checkAllReady();
   }
 
@@ -330,7 +333,7 @@ export class Room {
     this.onFinish?.();
   }
 
-  snapshot(seat: number, message = "", shopPurchase?: { slot: number; ok: boolean }) {
+  snapshot(seat: number, message = "", receipt?: ActionReceipt) {
     const m = this.match, p = m.players[seat];
     const counts = traitCounts(deployed(p));
     const need = xpNeed(p);
@@ -345,7 +348,7 @@ export class Room {
       t: "state", round: m.round, phase: m.phase,
       timeLeft: Math.round(phaseClock?.remaining ?? 0), phaseClock,
       supply: m.phase === "Supply" && this.supply ? { stage: this.supply.stage, entries: this.supply.entries, order: this.supply.order, turn: this.supply.order[this.supply.idx] ?? null } : null,
-      message, shopPurchase, seat, npc: this.npcMeta, opponent: this.opponentOf(seat), ranked: this.ranked, pool: this.poolInfo(p),
+      message, ...receipt, seat, npc: this.npcMeta, opponent: this.opponentOf(seat), ranked: this.ranked, pool: this.poolInfo(p),
       you: {
         name: p.name, hp: p.hp, gold: p.gold, level: p.level, xp: p.xp, xpNeed: need, commander: p.commander, cmd: p.cmd ?? { used: 0 },
         units: p.units, shop: p.shop, shopLocked: p.shopLocked, rerollCost: rerollCost(p), fastPromotions: pk(p).fastPromo, ready: p.ready,
@@ -373,9 +376,9 @@ export class Room {
     return out;
   }
 
-  push(seat: number, message = "", shopPurchase?: { slot: number; ok: boolean }) {
+  push(seat: number, message = "", receipt?: ActionReceipt) {
     const c = this.conns.get(seat);
-    if (c) c.send(this.snapshot(seat, message, shopPurchase));
+    if (c) c.send(this.snapshot(seat, message, receipt));
   }
   pushAll() { for (const seat of this.conns.keys()) this.push(seat); }
 }

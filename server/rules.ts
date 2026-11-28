@@ -2,7 +2,7 @@
 import { traitCounts } from "./synergy.ts";
 import { BY_ID, ITEM_LIST, ITEMS, ROSTER, RULES, SPECIAL_ITEMS, STONES, SYNERGIES, GOGO, TYPE_ITEMS, CRYSTALS } from "./data.ts";
 
-export interface Unit { uid: number; id: string; stars: number; col: number | null; row: number | null; items: string[]; blessing?: string }
+export interface Unit { uid: number; id: string; stars: number; col: number | null; row: number | null; items: string[]; itemSlots?: number[]; blessing?: string }
 export interface Player {
   seat: number; name: string; human: boolean; hp: number; gold: number; level: number; xp: number;
   units: Unit[]; shop: (string | null)[]; shopLocked: boolean; rerolled: boolean; commander: string;
@@ -96,7 +96,14 @@ export function merge(p: Player, m?: Match) {
       if (matches.length < 3) continue;
       matches.sort((a, b) => Number(b.col !== null) - Number(a.col !== null)); // keep a deployed copy in place
       const keep = matches[0];
-      for (const gone of matches.slice(1, 3)) { keep.blessing ||= gone.blessing; p.units.splice(p.units.indexOf(gone), 1); for (const it of gone.items) keep.items.length < 3 && !keep.items.includes(it) ? keep.items.push(it) : p.items.push(it); }
+      for (const gone of matches.slice(1, 3)) {
+        keep.blessing ||= gone.blessing;
+        p.units.splice(p.units.indexOf(gone), 1);
+        for (const item of gone.items) {
+          if (keep.items.length < 3 && !keep.items.includes(item)) putHeldItem(keep, item);
+          else p.items.push(item);
+        }
+      }
       keep.stars++; if (m && pk(p).allyCall) grantAlly(m, p, keep);
       again = true;
       break;
@@ -154,7 +161,17 @@ export function move(p: Player, uid: number, col: number | null, row: number | n
   return ok();
 }
 
-export function equip(p: Player, uid: number, item: string): Result {
+const HELD_SLOTS = [0, 1, 2];
+const heldPositions = (u: Unit) => u.itemSlots ?? u.items.map((_, index) => index);
+
+function putHeldItem(u: Unit, item: string, slot?: number) {
+  const positions = heldPositions(u);
+  const target = slot ?? HELD_SLOTS.find((index) => !positions.includes(index))!;
+  u.itemSlots = [...positions, target];
+  u.items.push(item);
+}
+
+export function equip(p: Player, uid: number, item: string, slot?: number): Result {
   const u = p.units.find((x) => x.uid === uid);
   if (!u) return fail("Select a fighter first.");
   const bagIdx = p.items.indexOf(item);
@@ -162,7 +179,11 @@ export function equip(p: Player, uid: number, item: string): Result {
   if (!ITEMS[item] || (ITEMS[item] as any).transfer) return fail("That item cannot be equipped.");
   if (u.items.length >= 3) return fail("A fighter can carry up to 3 pieces of equipment.");
   if (u.items.includes(item)) return fail("That fighter already carries this equipment.");
-  p.items.splice(bagIdx, 1); u.items.push(item); return ok();
+  if (slot !== undefined && !HELD_SLOTS.includes(slot)) return fail("Select a valid held-item slot.");
+  if (slot !== undefined && heldPositions(u).includes(slot)) return fail("That held-item slot is occupied.");
+  p.items.splice(bagIdx, 1);
+  putHeldItem(u, item, slot);
+  return ok();
 }
 // Branching evolution: an Evolution Stone turns a compatible species (Eevee) into one of its listed forms. Stars and items carry over.
 export function evolve(p: Player, uid: number, stone: string): Result {
@@ -177,7 +198,10 @@ export function evolve(p: Player, uid: number, stone: string): Result {
 export function unequip(p: Player, uid: number, index: number): Result {
   const u = p.units.find((x) => x.uid === uid);
   if (!u || !Number.isInteger(index) || index < 0 || index >= u.items.length) return fail("Nothing to remove.");
-  p.items.push(...u.items.splice(index, 1)); return ok();
+  const positions = heldPositions(u);
+  u.itemSlots = positions.filter((_, i) => i !== index);
+  p.items.push(...u.items.splice(index, 1));
+  return ok();
 }
 
 // NPC rounds: every Nth round the whole lobby fights creeps (odd encounters) or a boss (even encounters).
@@ -319,8 +343,8 @@ export function rerollCost(p: Player) { return RULES.rerollCost; }
 
 export type Action =
   | { a: "buy"; slot: number } | { a: "sell"; uid: number } | { a: "move"; uid: number; col: number | null; row: number | null }
-  | { a: "equip"; uid: number; item: string } | { a: "unequip"; uid: number; index: number }
-  | { a: "reroll" } | { a: "xp" } | { a: "evolve"; uid: number; stone: string } | { a: "lock" } | { a: "ready" } | { a: "pick"; item: string } | { a: "cardpick"; id: string } | { a: "cardreroll"; slot: number } | { a: "bless"; uid: number } | { a: "cmd"; uid?: number; col?: number; row?: number } | { a: "blesspick"; type: string } | { a: "transfer"; from: number; to: number };
+  | { a: "equip"; uid: number; item: string; slot?: number; requestId?: number } | { a: "unequip"; uid: number; index: number; requestId?: number }
+  | { a: "reroll" } | { a: "xp" } | { a: "evolve"; uid: number; stone: string; requestId?: number } | { a: "lock" } | { a: "ready" } | { a: "pick"; item: string } | { a: "cardpick"; id: string } | { a: "cardreroll"; slot: number } | { a: "bless"; uid: number } | { a: "cmd"; uid?: number; col?: number; row?: number } | { a: "blesspick"; type: string } | { a: "transfer"; from: number; to: number; requestId?: number };
 
 export function act(m: Match, p: Player, action: Action): Result {
   // Buying, selling, refreshing the shop, buying XP and locking work at any time (even mid-battle); everything else is preparation-only
@@ -331,7 +355,7 @@ export function act(m: Match, p: Player, action: Action): Result {
     case "buy": return Number.isInteger(action.slot) ? buy(m, p, action.slot) : fail("Bad slot.");
     case "sell": return sell(m, p, action.uid);
     case "move": return move(p, action.uid, action.col, action.row);
-    case "equip": return equip(p, action.uid, action.item);
+    case "equip": return equip(p, action.uid, action.item, action.slot);
     case "unequip": return unequip(p, action.uid, action.index);
     case "cardpick": { const c = p.card; if (!c || !c.options.includes(action.id)) return fail("No card to choose."); applyCard(m, p, GOGO.cards.find((x) => x.id === action.id)); afterCard(m, p, c.rarity, c.options); delete p.card; if (p.cardExtra) { p.cardExtra--; nextCard(m, p, c.rarity, [action.id]); } return ok(); }
     case "cmd": return cmdSkill(m, p, action);
@@ -445,7 +469,7 @@ export function botTurn(m: Match, p: Player, difficulty: "Beginner" | "Intermedi
     }
   });
   while (bench(p).length > RULES.benchSize) sell(m, p, bench(p)[bench(p).length - 1].uid);
-  for (const u of deployed(p)) for (let i = p.items.length - 1; i >= 0; i--) if (u.items.length < 3 && !u.items.includes(p.items[i])) u.items.push(p.items.splice(i, 1)[0]);
+  for (const u of deployed(p)) for (let i = p.items.length - 1; i >= 0; i--) if (u.items.length < 3 && !u.items.includes(p.items[i])) putHeldItem(u, p.items.splice(i, 1)[0]);
 }
 
 // Active trait counts (unique fighters by id on the board), e.g. {JJK:3, Caster:2}.

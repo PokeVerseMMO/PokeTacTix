@@ -1,4 +1,4 @@
-// Browser regression test for the 3D client. Needs a running server (PORT=8096 PREP_SECONDS=60 TEST_START_ITEMS=cloud,odm node server/server.ts).
+// Browser regression test for the 3D client. Needs a running server (PORT=8096 PREP_SECONDS=60 TEST_START_ITEMS=choice_band,scope_lens node server/server.ts).
 import { chromium } from "/opt/npm-tools/node_modules/playwright/index.mjs";
 const URL = process.env.URL || "http://localhost:8096/";
 const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
@@ -21,7 +21,12 @@ await p.click("#inspector .sell"); await p.waitForTimeout(500);
 ok((await p.textContent("#fielded")).startsWith("0/"), "sell button sells the unit");
 await p.click("#reroll"); await p.waitForTimeout(400);
 ok(true, "reroll clicked");
-await p.click("#bag .item:nth-child(1)"); await p.mouse.click(310, 410); await p.waitForTimeout(400);
+await p.click('[data-tool="equipment"]');
+await p.locator(".loadout-item").first().click();
+await p.locator(".loadout-target").first().click();
+await p.click(".loadout-apply");
+await p.waitForSelector('.loadout-slot[data-filled="true"]');
+await p.click(".loadout-close");
 await p.click("#ready"); await p.waitForTimeout(7000);
 await p.screenshot({ path: "shots/ui3d-combat.png" });
 ok(/Round 2/.test(await p.textContent("#round")) || /Combat|Preparation/.test(await p.textContent("#phase")), "round progresses");

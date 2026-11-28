@@ -731,7 +731,7 @@
 
 .lpanel, #scoutPanel { top: 130px; }
 .lpanel h4 { color: var(--champagne); background: var(--score-raised); border-color: var(--line-soft); }
-#bagPanel .col+.col, #bagPanel .pick, #dmgPanel .tabs { border-color: var(--line-soft); }
+#dmgPanel .tabs { border-color: var(--line-soft); }
 #dmgPanel .tabs button.on { background: #edbc9e; color: #351f36; }
 #pickPanel .opt, #blessPanel .opt { background: var(--glass); border: 1px solid var(--line-soft); border-radius: 10px; box-shadow: var(--panel-shadow); }
 #supplyPanel { top: 171px; }

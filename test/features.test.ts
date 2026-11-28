@@ -29,6 +29,32 @@ test("equip / unequip rules", () => {
   assert.strictEqual(p.items.length, 5, "selling returns equipment to the bag");
 });
 
+test("held item positions survive removals and unit merges", () => {
+  const { m, p } = player();
+  const unit: import("../server/rules.ts").Unit =
+    { uid: 1, id: "charmander", stars: 1, col: 0, row: 3, items: ["leftovers"] };
+  p.units.push(unit);
+  p.items.push("scope_lens", "choice_band");
+
+  assert.equal(rules.act(m, p, { a: "equip", uid: 1, item: "scope_lens", slot: 0 }).ok, false);
+  assert.equal(rules.act(m, p, { a: "equip", uid: 1, item: "scope_lens", slot: 3 }).ok, false);
+  assert.ok(rules.act(m, p, { a: "equip", uid: 1, item: "scope_lens", slot: 2 }).ok);
+  assert.deepEqual(unit.itemSlots, [0, 2]);
+  assert.ok(rules.act(m, p, { a: "unequip", uid: 1, index: 0 }).ok);
+  assert.deepEqual(unit.itemSlots, [2]);
+  assert.ok(rules.act(m, p, { a: "equip", uid: 1, item: "choice_band" }).ok);
+  assert.deepEqual(unit.itemSlots, [2, 0]);
+
+  p.units.push(
+    { uid: 2, id: "charmander", stars: 1, col: null, row: null, items: ["focus_sash"] },
+    { uid: 3, id: "charmander", stars: 1, col: null, row: null, items: ["scope_lens"] },
+  );
+  rules.merge(p, m);
+  assert.deepEqual(unit.items, ["scope_lens", "choice_band", "focus_sash"]);
+  assert.deepEqual(unit.itemSlots, [2, 0, 1]);
+  assert.ok(p.items.includes("scope_lens"), "duplicate equipment returns to the bag");
+});
+
 test("reward schedule follows the original rules", () => {
   const { m, p } = player(); const reward = (...a: any[]) => { const r = (rules.reward as any)(...a); rules.autoPick(a[1]); return r; };
   reward(m, p, 4, true); assert.deepStrictEqual(p.items.filter((k) => ITEMS[k] && ITEMS[k].rarity !== "Mega").map((k) => ITEMS[k].rarity), ["Rare"]);
